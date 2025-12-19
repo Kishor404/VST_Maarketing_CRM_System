@@ -1,0 +1,348 @@
+Below is a **clean, professional backend documentation** for your **VST Maarketing CRM Backend**, written as something you can **share with your client, teammates, or evaluators**.
+It explains **architecture, responsibilities, flows, rules, and APIs at a system level**, not just endpoint lists.
+
+You can copy this directly into a README / PDF / Word file.
+
+---
+
+# VST Maarketing CRM
+
+## Backend System Documentation (Django + DRF)
+
+This document describes the **backend architecture, business rules, data flow, and API responsibilities** of the **VST Maarketing CRM System**, built using **Django + Django REST Framework**.
+
+---
+
+## 1. System Overview
+
+**VST Maarketing CRM** is a backend system designed to digitize and automate purifier service management.
+It replaces manual service cards and phone-based tracking with a **centralized, role-based service workflow**.
+
+### Key Goals
+
+* Digitize service cards
+* Automate warranty & free-service logic
+* Track services from booking → completion
+* Control staff availability via admin-managed attendance
+* Maintain complete service history per machine
+
+---
+
+## 2. Technology Stack
+
+| Layer             | Technology                                |
+| ----------------- | ----------------------------------------- |
+| Backend Framework | Django                                    |
+| API Layer         | Django REST Framework (DRF)               |
+| Authentication    | JWT (SimpleJWT)                           |
+| Database          | MySQL                                     |
+| Admin UI          | Django Admin (developer use only)         |
+| Client Apps       | Flutter (Customer & Staff), React (Admin) |
+
+---
+
+## 3. User Roles & Responsibilities
+
+### 1️⃣ Customer
+
+* Login using phone/password (JWT)
+* View their service cards
+* Book new services
+* View service history
+* Give feedback after service completion
+
+### 2️⃣ Staff (Worker)
+
+* Login via staff app
+* View assigned services
+* Perform service work
+* Complete service using OTP verification
+* View feedback given by customers
+
+### 3️⃣ Admin
+
+* Create & manage customers, staff, cards
+* Assign services to staff
+* Manage attendance (availability)
+* View reports (warranty, upcoming services)
+* Export data for auditing
+
+---
+
+## 4. Core Domain Models (Conceptual)
+
+### User
+
+Represents **Customer / Staff / Admin**
+
+Key fields:
+
+* `role` → customer / worker / admin
+* `region`
+* `is_available` → controlled by attendance
+
+---
+
+### Card (Service Card)
+
+Represents **one purifier machine at a location**
+
+* One customer → many cards
+* Card can be:
+
+  * **Normal card** (VST machine)
+  * **OM card** (Other Machine)
+* Stores:
+
+  * Installation date
+  * Warranty dates
+  * Address
+  * Service history
+
+---
+
+### Service
+
+Represents **one service booking**
+
+Lifecycle:
+
+```
+pending → assigned → awaiting_otp → completed / cancelled
+```
+
+Types:
+
+* `free` → warranty service
+* `normal` → paid service
+
+Key rule:
+
+> **Free service is allowed only once every 3 months during warranty**
+
+---
+
+### ServiceEntry
+
+Represents **actual work done during a service**
+
+Created only when:
+
+* OTP is verified
+* Service is completed
+
+Stores:
+
+* Work details
+* Parts replaced
+* Amount charged
+* Next service date
+
+📌 **This preserves service history even if service fields change later**
+
+---
+
+### Feedback
+
+Customer rating and comments for a completed service.
+
+Rules:
+
+* Only one feedback per service
+* Only after service is completed
+
+---
+
+### Attendance
+
+Admin-managed daily availability of staff.
+
+Rules:
+
+* Staff **cannot** mark attendance themselves
+* Admin sets:
+
+  * `present` → `user.is_available = True`
+  * `absent` → `user.is_available = False`
+* Assignment logic relies on availability
+
+---
+
+## 5. Business Rules (Very Important)
+
+### 🔹 Warranty & Free Service Logic
+
+* Warranty duration: **12 months**
+* Free service frequency: **once every 3 months**
+* A free service is allowed **only if**:
+
+  * Card is under warranty
+  * No completed free service in the last 3 months
+
+This logic is enforced **server-side only**.
+
+---
+
+### 🔹 Service Booking Rules
+
+* Preferred date:
+
+  * Cannot be in the past
+  * Must be within booking window (`CRM_BOOKING_WINDOW_DAYS`)
+* Service type:
+
+  * `auto` → backend decides free/normal
+* Customer can only book services for **their own cards**
+
+---
+
+### 🔹 OTP Completion Flow
+
+1. Staff completes work
+2. Staff requests OTP
+3. OTP sent to customer
+4. Customer shares OTP
+5. Staff verifies OTP
+6. Service marked completed
+7. ServiceEntry created
+8. Feedback unlocked
+
+---
+
+### 🔹 Attendance Rules
+
+* Attendance is **admin-controlled**
+* Availability affects:
+
+  * Manual assignment
+  * Auto-assignment (future)
+
+---
+
+## 6. API Architecture
+
+### API Prefixes
+
+| Prefix                      | Purpose            |
+| --------------------------- | ------------------ |
+| `/api/auth/`                | Authentication     |
+| `/api/crm/cards/`           | Service cards      |
+| `/api/crm/services/`        | Service lifecycle  |
+| `/api/crm/service-entries/` | Work logs          |
+| `/api/crm/feedbacks/`       | Ratings            |
+| `/api/crm/attendance/`      | Staff availability |
+| `/api/crm/reports/`         | Admin reports      |
+
+All APIs are **JWT protected** unless stated otherwise.
+
+---
+
+## 7. Service Booking → Completion Flow (End-to-End)
+
+### Step 1: Customer Books Service
+
+```
+POST /api/crm/services/
+```
+
+Backend:
+
+* Validates card ownership
+* Validates preferred date
+* Decides free/normal service
+* Creates service with status `pending`
+
+---
+
+### Step 2: Admin Assigns Staff
+
+```
+POST /api/crm/services/{id}/assign/
+```
+
+Backend:
+
+* Checks staff availability
+* Updates service status to `assigned`
+
+---
+
+### Step 3: Staff Performs Service
+
+* Views assigned services
+* Visits customer
+
+---
+
+### Step 4: OTP Verification
+
+```
+POST /api/crm/services/{id}/request_otp/
+POST /api/crm/services/{id}/verify_otp/
+```
+
+Backend:
+
+* Generates OTP
+* Validates OTP
+* Creates ServiceEntry
+* Marks service as completed
+
+---
+
+### Step 5: Customer Feedback
+
+```
+POST /api/crm/feedbacks/
+```
+
+---
+
+## 8. Security Considerations
+
+* JWT-based authentication
+* Role-based permissions enforced at view level
+* OTP hashes stored (not raw OTP)
+* Dev-only OTP return disabled in production
+* Customers cannot access other customers’ data
+
+---
+
+## 9. Development vs Production Notes
+
+### Development
+
+* `CRM_DEV_RETURN_OTP = True`
+* Django Admin enabled
+* Debug logs active
+
+### Production
+
+* OTP never returned in API
+* Admin panel restricted
+* HTTPS mandatory
+* SMS gateway integration required
+
+---
+
+## 10. Future Enhancements (Optional)
+
+* Auto staff assignment using attendance + region
+* Push notifications via FCM
+* Payment gateway integration
+* AMC (Annual Maintenance Contract)
+* Analytics dashboard
+
+---
+
+## 11. Summary
+
+This backend:
+
+* Enforces **business rules strictly**
+* Separates **booking, execution, and history**
+* Prevents misuse of free services
+* Scales well with mobile + web clients
+* Keeps admin in full control of operations
+
+---

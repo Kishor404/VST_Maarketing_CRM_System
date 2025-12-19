@@ -1,0 +1,79 @@
+.Login-main{
+    background-color: #3762ae;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    
+}
+.Login-box{
+    background-color: white;
+    width: 25%;
+    height: 60%;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.Login-input{
+    border: none;
+    background-color: #e2e2e2;
+    padding: 15px 20px;
+    border-radius: 10px;
+    margin: 10px;
+    width: 60%;
+    font-family: 'Poppins';
+}
+.Login-button{
+    border: none;
+    background-color: #3762ae;
+    color: white;
+    padding: 10px 30px;
+    border-radius: 10px;
+    margin: 20px;
+    width: 30%;
+    font-family: 'Poppins';
+}
+.Login-form{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 90%;
+}
+.Login-heading{
+    font-size: 16pt;
+    color: #3762ae;
+    font-family: 'Poppins';
+}
+
+.Login-input-phone{
+    width: calc(60% + 40px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.Login-input-phonecode{
+    background-color: #e2e2e2;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 60px;
+    padding: 15px 0;
+    margin-right: 10px;
+    border-radius: 10px;
+    font-family: 'Poppins';
+}
+.Login-input-number{
+    width: 100%;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-family: 'Poppins';
+    background-color: #e2e2e2;
+    border: none;
+}

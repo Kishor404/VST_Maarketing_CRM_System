@@ -1,0 +1,159 @@
+/* Base Layout */
+.attendance-container {
+  background-color: #3763ae; /* Soft neutral background */
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Top Header Bar */
+.attendance-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1300px;
+  margin-bottom: 2rem;
+  margin-top: 4rem;
+}
+
+.attendance-top h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.025em;
+}
+
+.attendance-note {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+/* Controls Area */
+.attendance-top-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.attendance-top input[type="date"] {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: #475569;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.attendance-top input[type="date"]:focus {
+  border-color: #3b82f6;
+}
+
+.save-btn {
+  padding: 10px 24px;
+  background: #09c221; /* Strong blue */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #3763ae;
+  transform: translateY(-1px);
+}
+
+.save-btn:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Table Container Card */
+.attendance-table-cont {
+  width: 100%;
+  max-width: 1300px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: scroll;
+  height: 60vh;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.attendance-table th {
+  background: #2f324e;
+  padding: 16px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  border-bottom: 1px solid #f1f5f9;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.attendance-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.attendance-table tr:last-child td {
+  border-bottom: none;
+}
+
+.attendance-table tr:hover {
+  background-color: #fbfcfe;
+}
+
+/* Styling the Radio Buttons to look like modern Toggles */
+.attendance-table input[type="radio"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #cbd5e1;
+  border-radius: 50%;
+  cursor: pointer;
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.attendance-table input[type="radio"]:checked {
+  border-color: #3763ae;
+  background-color: #3763ae;
+}
+
+.attendance-table input[type="radio"]:checked::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.attendance-table input[type="radio"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

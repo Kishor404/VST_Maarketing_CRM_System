@@ -1,0 +1,65 @@
+certificate.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff:
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+db.sqlite3
+*.mo
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+
+# Media and static files
+/media
+/staticfiles
+/static/
+
+# If using Django Compressor
+COMPRESSED/
+
+# If using dotenv to manage environment variables
+.env
+.env.*
+
+# Virtualenv
+venv/
+ENV/
+env/
+.venv/
+.idea/
+
+# VS Code settings
+.vscode/
+
+# PyCharm
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# macOS
+.DS_Store
+
+# System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Migrations - optional, depending on your strategy
+# Comment out if you want to keep migrations in version control
+*/migrations/*.py
+*/migrations/*.pyc
+
+/envy

@@ -1,0 +1,297 @@
+# A. Authentication
+
+### 1. LOGIN Authorization: Bearer {{CUSTOMER_TOKEN}}
+
+POST http://127.0.0.1:8000/api/auth/login/
+Content-Type: application/json
+
+{
+  "phone":"+911234567890",
+  "password":"aaa12345"
+}
+
+### 2. REGISTER
+
+POST http://127.0.0.1:8000/api/auth/register/
+Content-Type: application/json
+
+{
+  "name":"Ether",
+  "phone":"+91",
+  "password":"45"
+}
+
+### 3. REFRESH TOKEN 
+
+POST http://127.0.0.1:8000/api/auth/token/refresh/
+Content-Type: application/json
+
+{
+  "refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2Njc2Mjc1MywiaWF0IjoxNzY2MTU3OTUzLCJqdGkiOiIyODY2YWJkNmMyZTI0MWUyOGE4NjZlOWVkMGI4NDhiYyIsInVzZXJfaWQiOiIyOSJ9.V40R9xkHgfQdw0wiK6iHBJldTnk2-eaHJOheZ98Tq7w"
+}
+
+# B. USER
+
+### 1. GET ME
+
+GET http://127.0.0.1:8000/api/auth/me/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NzEwMzI1LCJpYXQiOjE3NjU3MDg1MjUsImp0aSI6ImZmNzQ3ZGQ3YzgwYzRlMWM4YTAzN2U4NWNjYjlhZDVhIiwidXNlcl9pZCI6IjMifQ.KgDxtM-Hw9o1WQGYdDHnVBYJyCxqVmQYd6EumCieof0
+
+### 2. PATCH ME
+
+PATCH http://127.0.0.1:8000/api/auth/me/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTQ0ODY0LCJpYXQiOjE3NjU1NDMwNjUsImp0aSI6IjM3NzI0OTBhMDI2ZDQyZTJiMDkxNDk2MDczODE0ZjRjIiwidXNlcl9pZCI6IjMifQ.61NU8KPDmM94d5g2HAWUIXKQB_hU3clxqDg7cLxQkUc
+
+{
+  "role":"admin"
+}
+
+# C. CARD
+
+### 1. GET CARDS
+
+GET http://127.0.0.1:8000/api/crm/cards/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY2MTU3ODk1LCJpYXQiOjE3NjYxNTYwOTYsImp0aSI6IjNlMjYwMWJlYThmZDQ1MGE4ZmE5MWJjYWUzNjk3YTcxIiwidXNlcl9pZCI6IjMyIn0.rip2h-EEoTrwyGv7BSnI_6A-ZlOuSfy_ZdH2_raCSl4
+
+### 2. CREATE CARDS
+
+POST http://127.0.0.1:8000/api/crm/cards/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1OTA1NjQ0LCJpYXQiOjE3NjU5MDM4NDQsImp0aSI6Ijk2NTAwOGVmNGI4ZDRiMDI5ZTM0NzhjYWYwMjQ5NTA2IiwidXNlcl9pZCI6IjUifQ.HqYPrKR5zJ8H9Nm1Q3a7ANNEBgGQ9XHYhhvgxi1JTH4
+
+{
+  "model": "AX404",
+  "customer": 10,
+  "customer_name": "Tester2",
+  "card_type": "normal",
+  "region": "rajapalayam",
+  "address": "TT Road",
+  "city": "Mamsaburam",
+  "postal_code": "626117",
+  "date_of_installation": "2025-09-15",
+  "warranty_start_date": "2025-09-15",
+  "warranty_end_date": "2026-09-14"
+}
+
+### 3. GET CARD BY ID
+
+GET http://127.0.0.1:8000/api/crm/cards/13/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY2MTU4MDQ3LCJpYXQiOjE3NjYxNTYyNDcsImp0aSI6Ijg2M2UzODgwZWIxOTQ1Zjg5NmNhMzA5N2VlN2IxMTliIiwidXNlcl9pZCI6IjM0In0.1s002EZchN8LX7kfRlALI1k8_wfR9Jil_S_i5kGCJyQ
+
+### 4. PATCH CARD BY ID
+
+PATCH http://127.0.0.1:8000/api/crm/cards/1/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTQ2MDQzLCJpYXQiOjE3NjU1NDQyNDMsImp0aSI6IjBhOTk5OTVkMmZjODQ0ODI4OGU0NzdlYjAyZmQ2ODUzIiwidXNlcl9pZCI6IjMifQ.HbH9MOHZJakTTffFHc8RbLZVQ-o3Xu-3DH1O5Ge57UM
+
+{
+  "model":"VST"
+}
+
+### 5. DELETE CARD BY ID
+
+DELETE http://127.0.0.1:8000/api/crm/cards/1/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTQ2MDQzLCJpYXQiOjE3NjU1NDQyNDMsImp0aSI6IjBhOTk5OTVkMmZjODQ0ODI4OGU0NzdlYjAyZmQ2ODUzIiwidXNlcl9pZCI6IjMifQ.HbH9MOHZJakTTffFHc8RbLZVQ-o3Xu-3DH1O5Ge57UM
+
+# D. SERVICE
+
+### 1. BOOK SERVICE
+
+POST http://127.0.0.1:8000/api/crm/services/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTUwMTcyLCJpYXQiOjE3NjU1NDgzNzIsImp0aSI6IjZmZGZkOTE0YTg2ODQwMWJhOTY4ZGNiZWU1YzQwYTA5IiwidXNlcl9pZCI6IjQifQ.PSLTdTTxjO6kloM_uVa9_FJglOpCtkOB3UpNJKk_kg8
+
+{
+  "card": 2,
+  "description": "Not dispensing water",
+  "service_type": "auto",
+  "preferred_date": "2026-01-06",
+  "visit_type": "I"
+}
+
+### 2. GET SERVICE
+
+GET http://127.0.0.1:8000/api/crm/services/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY2MTU4NjcwLCJpYXQiOjE3NjYxNTY4NzAsImp0aSI6ImJiOTc3ODg5ZDRmMTQ5MGQ5ZjA5ZTMxYjJiMDU1N2E1IiwidXNlcl9pZCI6IjI5In0.wFAhPlvtXwoSdOKpAgmUwC-PZTw25v6KNrQ8_F3Qg6Y
+
+### 3. GET SERVICE BY ID
+
+GET http://127.0.0.1:8000/api/crm/services/50/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY2MTE0MTE2LCJpYXQiOjE3NjYxMTIzMTYsImp0aSI6IjczM2U3NjZlNDgxMTRjMTBhMzdmN2I0ZWZlYmE0NzA0IiwidXNlcl9pZCI6IjEyIn0.RHglPGqZiq7Xi4soYedYOE3y6ZZV5MoHe5QU-L0rCR0
+
+### 4. PATCH SERVICE BY ID
+
+PATCH http://127.0.0.1:8000/api/crm/services/12/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTUwNzY3LCJpYXQiOjE3NjU1NDg5NjcsImp0aSI6IjM1MjhiOTY1NjA2ZDQwM2NiNTZhNjI3NWYzOGFiNzFiIiwidXNlcl9pZCI6IjUifQ.ZRokEQOFyqW_IG1n1je8_CcMRVSrxgD7h02jcAmt6tQ
+
+{
+  "description": "NN"
+}
+
+### 5. ASSIGN SERVICE BY ID
+
+POST http://127.0.0.1:8000/api/crm/services/18/assign/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NzMxMzQwLCJpYXQiOjE3NjU3Mjk1NDAsImp0aSI6ImVkYTU3Nzk2NDQ3YTRhZTg4ZDdhYzk4YmIyMTNiYjdkIiwidXNlcl9pZCI6IjUifQ.0UvVQVHB28mciiDu9IsxOYPnydjm5I0rnE57x51LXQ8
+
+{
+  "assigned_to": 3,
+  "scheduled_at":"2025-12-14"
+}
+
+### 6. RESCHEDULE SERVICE BY ID
+
+POST http://127.0.0.1:8000/api/crm/services/12/reschedule/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTUwNzY3LCJpYXQiOjE3NjU1NDg5NjcsImp0aSI6IjM1MjhiOTY1NjA2ZDQwM2NiNTZhNjI3NWYzOGFiNzFiIiwidXNlcl9pZCI6IjUifQ.ZRokEQOFyqW_IG1n1je8_CcMRVSrxgD7h02jcAmt6tQ
+
+{
+  "scheduled_at":"2025-12-25"
+}
+
+### 7. CANCEL SERVICE BY ID
+
+POST http://127.0.0.1:8000/api/crm/services/12/cancel/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTUwNzY3LCJpYXQiOjE3NjU1NDg5NjcsImp0aSI6IjM1MjhiOTY1NjA2ZDQwM2NiNTZhNjI3NWYzOGFiNzFiIiwidXNlcl9pZCI6IjUifQ.ZRokEQOFyqW_IG1n1je8_CcMRVSrxgD7h02jcAmt6tQ
+
+
+# E. OTP AND COMPLETION
+
+### 1. SEND OTP TO CUSTOMER
+
+POST http://127.0.0.1:8000/api/crm/services/32/request_otp/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1OTY0OTEwLCJpYXQiOjE3NjU5NjMxMTAsImp0aSI6IjJiNWM4Y2QxZjYwZjQ2NzliZGZlMzEwNTUyNTI4ZTg3IiwidXNlcl9pZCI6IjMifQ.0bcddckMmAaBnge3CRGL-ZBETpnbWjlQ9ehCB3TJHr8
+
+### 2. VERIFY OTP
+
+POST http://127.0.0.1:8000/api/crm/services/32/verify_otp/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1OTY0OTEwLCJpYXQiOjE3NjU5NjMxMTAsImp0aSI6IjJiNWM4Y2QxZjYwZjQ2NzliZGZlMzEwNTUyNTI4ZTg3IiwidXNlcl9pZCI6IjMifQ.0bcddckMmAaBnge3CRGL-ZBETpnbWjlQ9ehCB3TJHr8
+
+{
+  "otp": "8118",
+  "work_detail": "TTF, cleaned filter",
+  "parts_replaced": ["Pump"],
+  "amount_charged": 0.0,
+  "next_service_date": "2026-03-15"
+}
+
+# F. SERVICE ENTRIES
+
+### 1. GET SERVICE ENTRIES
+
+GET http://127.0.0.1:8000/api/crm/service-entries/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTUyNTQ4LCJpYXQiOjE3NjU1NTA3NDgsImp0aSI6ImU0YTdjMWM2NGJiNjRmZjI5MGE5MTFlNDhlMzM1MmJlIiwidXNlcl9pZCI6IjQifQ.1jmVGG09OZhjA9aZlHIaiLnqOMyi6ZNw50_OsIsBv2k
+
+### 2. POST SERVICE ENTRIES
+
+POST http://127.0.0.1:8000/api/crm/service-entries/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTUyNjI1LCJpYXQiOjE3NjU1NTA4MjUsImp0aSI6ImI1NzExODJlOTJmMzQwZjg4MzY3MTExMWZmODI2MDM5IiwidXNlcl9pZCI6IjMifQ.xnbEuhEs3VThZq2RwkUJmPjdqgRp6Dw8q8H31xQP6Wc
+
+{
+  "service":13, 
+  "work_detail":"Replaced valve", 
+  "parts_replaced":["Filter"], 
+  "amount_charged":50.0 
+}
+
+# G. FEEDBACK
+
+### 1. POST FEEDBACK
+
+POST http://127.0.0.1:8000/api/crm/feedbacks/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTU2NzA4LCJpYXQiOjE3NjU1NTQ5MDgsImp0aSI6ImJlZjQxYTg2MDc4NTQxMTFiMzRjNzg1NTU1NmU0NjAzIiwidXNlcl9pZCI6IjQifQ.tQvPSc_74mjg-SS7DmdlrGsfXM9Uf-Dr-PSZO6CaMfo
+
+{
+  "service":13,
+  "rating":5,
+  "comments":"Great"
+}
+
+### 2. GET FEEDBACK
+
+GET http://127.0.0.1:8000/api/crm/feedbacks/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTU2NzA4LCJpYXQiOjE3NjU1NTQ5MDgsImp0aSI6ImJlZjQxYTg2MDc4NTQxMTFiMzRjNzg1NTU1NmU0NjAzIiwidXNlcl9pZCI6IjQifQ.tQvPSc_74mjg-SS7DmdlrGsfXM9Uf-Dr-PSZO6CaMfo
+
+# H. ATTEDANCE
+
+### 1. MARK PRESENT
+
+POST http://127.0.0.1:8000/api/crm/attendance/mark_present/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NzIyMTQ1LCJpYXQiOjE3NjU3MjAzNDUsImp0aSI6ImEzZjk0MTIyNzVlOTRhNjU5Nzc2MDE1NDg5ODFmMjgzIiwidXNlcl9pZCI6IjUifQ.D7AZWTulF-Gnj8TtdX8-4TgNJzuq4a390GQ8tPfXMsM
+
+{
+  "user":3,
+  "date":"2025-12-14"
+}
+
+### 2. MARK ABSENT
+
+POST http://127.0.0.1:8000/api/crm/attendance/mark_absent/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NzIyMTQ1LCJpYXQiOjE3NjU3MjAzNDUsImp0aSI6ImEzZjk0MTIyNzVlOTRhNjU5Nzc2MDE1NDg5ODFmMjgzIiwidXNlcl9pZCI6IjUifQ.D7AZWTulF-Gnj8TtdX8-4TgNJzuq4a390GQ8tPfXMsM
+
+{
+  "user":3,
+  "date":"2025-12-14"
+}
+
+### 3. GET ATTENANCE LIST
+
+GET http://127.0.0.1:8000/api/crm/attendance/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTU4NDI1LCJpYXQiOjE3NjU1NTY2MjUsImp0aSI6IjAyYjA0ZGUxZDc0NDQ1YWZhMzRhMjc5ODA2NzliM2Q2IiwidXNlcl9pZCI6IjUifQ.nGZAijHOcIwqNmeaPhkB6nvH5QgiAjPDXk5PTLX9eos
+
+### 4. CHECK ATTENANCE
+
+GET http://127.0.0.1:8000/api/crm/attendance/me/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NzEwMzI1LCJpYXQiOjE3NjU3MDg1MjUsImp0aSI6ImZmNzQ3ZGQ3YzgwYzRlMWM4YTAzN2U4NWNjYjlhZDVhIiwidXNlcl9pZCI6IjMifQ.KgDxtM-Hw9o1WQGYdDHnVBYJyCxqVmQYd6EumCieof0
+
+### 5. TAKE BULK ATTENANCE
+
+POST http://127.0.0.1:8000/api/crm/attendance/bulk/
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1NTU4NDI1LCJpYXQiOjE3NjU1NTY2MjUsImp0aSI6IjAyYjA0ZGUxZDc0NDQ1YWZhMzRhMjc5ODA2NzliM2Q2IiwidXNlcl9pZCI6IjUifQ.nGZAijHOcIwqNmeaPhkB6nvH5QgiAjPDXk5PTLX9eos
+
+{
+  "date": "2025-12-12",
+  "present": [3],
+  "absent": [1]
+}
+
+### 6. GET ATTENDANCE BY DATE
+
+GET http://127.0.0.1:8000/api/crm/attendance/by_date/?date=2025-12-16
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY1OTQ2ODQ1LCJpYXQiOjE3NjU5NDUwNDUsImp0aSI6IjU1YTBjYmRkZjkwMTRiYWZhZGU5ZmZhNzk5M2NlMDViIiwidXNlcl9pZCI6IjUifQ.s1hc14BDPi4cTVMY5QcAFCGV4dn7RWvjt0s_ONrtiL4
+
+
+# I. REPORT
+
+### 1. GET WARRENTY REPORT
+
+GET http://127.0.0.1:8000/api/crm/reports/warranty/?month=2026-12
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY2MDQ5OTY2LCJpYXQiOjE3NjYwNDgxNjYsImp0aSI6ImQ2YjAwNTY1OGMwZjQ3ZWFhOTkwYTVjNmIxNWQ4M2UxIiwidXNlcl9pZCI6IjE0In0.gH1m4z_4oykyCOei79iAwcOnKDp2fh5FThIbJ7ux2x0
+
+### 2. GET WARRENTY REPORT BY CARD ID
+
+GET http://127.0.0.1:8000/api/crm/reports/warranty-report/by_card/?card_id=10
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzY2MTIzMjAxLCJpYXQiOjE3NjYxMjE0MDEsImp0aSI6IjU1Y2RkNjE3YjgwYzQ2ZTI4YTM4ZTY1Mzg1NjY4YjExIiwidXNlcl9pZCI6IjEyIn0.5PEgT0UB7rnxz_eqoPD1N48UeZ9bONVVftHzWQh2htE

@@ -1,0 +1,218 @@
+.showcard-cont{
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #3763ae;
+}
+
+.showcard-left{
+    width: 90%;
+    height: 90%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    margin-left: 60px;
+}
+
+.showcard-bottom{
+    width: 100%;
+    height: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+}
+
+.showcard-count-cont{
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0px 20px;
+    border-radius: 20px;
+    height: 70%;
+    width: 15%;
+    gap: 20px;
+}
+.showcard-count-icon{
+    padding-left: 30px;
+}
+.showcard-count-box{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.showcard-count-value{
+    margin: 0;
+    font-size: 18pt;
+}
+.showcard-count-title{
+    margin: 0;
+    font-size: 12pt;
+    color: grey;
+}
+
+.showcard-list-cont{
+    display: flex;
+    justify-content: start;
+    align-items: start;
+    width: 60%;
+    height: 100%;
+    background-color: #ffffff;
+    overflow-y: scroll;
+    border-radius: 20px;
+    border: 2px solid white;
+}
+.showcard-list{
+    background-color: white;
+    width: 100%;
+}
+.showcard-list thead{
+    background-color: #3763ae;
+    color: white;
+}
+.showcard-list tbody{
+    background-color: #f0f0f0;
+}
+.showcard-list td, .showcard-list th{
+    text-align: center;
+    padding: 10px;
+    font-weight: 100;
+}
+
+.showcard-top{
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    width: 100%;
+    height: 20%;
+}
+
+.showcard-edit-cont{
+    background-color: white;
+    height: 70%;
+    width: 75%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 0px 20px;
+    border-radius: 20px;
+    flex-direction: row;
+    gap:20px;
+}
+.showcard-edit-box{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+.showcard-edit-input{
+    background-color: #e2e2e2;
+    border: none;
+    padding: 20px 15px;
+    width: 55%;
+    border-radius: 15px;
+}
+.showcard-edit-select{
+    background-color: #e2e2e2;
+    border: none;
+    padding: 20px 15px;
+    width: 20%;
+    border-radius: 15px;
+}
+.showcard-edit-button{
+    background-color: #3763ae;
+    border: none;
+    padding: 15px 30px;
+    color: white;
+    border-radius: 15px;
+    cursor: pointer;
+}
+.showcard-edit-button:hover{
+    background-color: #4073cc;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* For IE/Edge */
+body {
+  -ms-overflow-style: none;
+}
+
+.showcard-right{
+    width: 40%;
+    margin: 0 0 0 4%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.showcard-details-cont{
+    background-color: white;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 20px;
+}
+
+.showcard-details-box-cont{
+    background-color: white;
+    width: 100%;
+    height: 75%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 20px;
+    overflow-y: scroll;
+}
+
+.showcard-details-value{
+    border: none;
+    background-color: #e2e2e2;
+    padding: 15px;
+    border-radius: 10px;
+    width: 100%;
+}
+.showcard-details-box{
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    width: 70%;
+    margin: 10px 0;
+    flex-direction: column;
+}
+.showcard-details-key{
+    margin: 0;
+    color: #444444;
+}
+.showcard-details-title{
+    margin: 0;
+    color: #3763ae;
+    font-size: 18pt;
+    padding: 20px;
+}
+.showcard-details-but{
+    background-color: #3763ae;
+    border: none;
+    padding: 15px 35px;
+    margin: 20px;
+    color: white;
+    border-radius: 15px;
+    cursor: pointer;
+    font-size: 12pt;
+}

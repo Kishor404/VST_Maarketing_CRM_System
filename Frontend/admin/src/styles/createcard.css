@@ -1,0 +1,99 @@
+.createcard-cont{
+    background-color: #3763ae;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+}
+.createcard-l{
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.createcard-card{
+    background-color: white;
+    width: 80%;
+    height: 75%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 20px;
+    padding: 20px 0px;
+}
+.createcard-inputs{
+    width: 100%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+.createcard-card-input{
+    width: calc(100% - 40px);
+    background-color: #e2e2e2;
+    border-radius: 10px;
+    border: none;
+    padding: 20px;
+}
+.createcard-card-button{
+    background-color: #3763ae;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    color: white;
+    margin: 20px;
+    font-size: 14pt;
+}
+.createcard-title{
+    color: #3763ae;
+    font-size: 18pt;
+}
+.createcard-input-cont{
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    flex-direction: column;
+    margin: 15px 0px;
+}
+.createcard-input-cont p{
+    margin: 0;
+    color: #444444;
+    margin: 5px 0px;
+}
+
+.createcard-r{
+    width: 50%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.createcard-img-cont{
+    width: 80%;
+    height: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    flex-direction: column;
+}
+.createcard-img-cont img{
+    width: 70%;
+    object-fit: cover;
+}
+.createcard-img-cont p{
+    width: 70%;
+    margin: 0;
+    height: 25%;
+    text-align: justify;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

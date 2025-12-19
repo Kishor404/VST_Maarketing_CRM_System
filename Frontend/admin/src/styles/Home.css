@@ -1,0 +1,37 @@
+.Home-main{
+    display: flex;
+}
+.Home-card{
+    background-color: #3762ae;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 10px 40px;
+    border-radius: 10px;
+    margin: 20px;
+}
+.Home-card-title{
+    font-family: 'Poppins';
+    font-size: 10pt;
+    margin: 0;
+    color: white;
+}
+.Home-card-value{
+    font-family: 'Poppins';
+    font-size: 22pt;
+    margin: 0;
+    color:white;
+}
+.Home-card-L{
+    padding: 10px 20px 10px 0px;
+}
+.Home-card-icon{
+    padding-left: 10px;
+}
+.Home-count-cards{
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
