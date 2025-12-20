@@ -7,19 +7,19 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
 
-      primaryColor: const Color(0xFF0B3C5D),
+      primaryColor: const Color(0xFF023E8A),
       scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
 
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF0B3C5D),
+        backgroundColor: Color(0xFF023E8A),
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
       ),
 
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF0B3C5D),
-        primary: const Color(0xFF0B3C5D),
+        seedColor: const Color(0xFF023E8A),
+        primary: const Color(0xFF023E8A),
         secondary: const Color(0xFFE6EEF6),
         background: const Color(0xFFF7F9FC),
         surface: Colors.white,
@@ -29,12 +29,12 @@ class AppTheme {
         headlineLarge: TextStyle(
           fontSize: 26,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF0B3C5D),
+          color: Color(0xFF023E8A),
         ),
         headlineMedium: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF0B3C5D),
+          color: Color(0xFF023E8A),
         ),
         bodyLarge: TextStyle(
           fontSize: 16,
@@ -48,7 +48,7 @@ class AppTheme {
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF0B3C5D),
+          backgroundColor: const Color(0xFF023E8A),
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
@@ -68,7 +68,7 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide:
-              const BorderSide(color: Color(0xFF0B3C5D)),
+              const BorderSide(color: Color(0xFF023E8A)),
         ),
       ),
 

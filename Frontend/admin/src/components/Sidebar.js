@@ -64,7 +64,6 @@ return (
                 <div className="sidebar-profile">
                     <p className="sidebar-profile-name">{name}</p>
                     <p className="sidebar-profile-city">{region}</p>
-                    <button>LOGOUT</button>
                 </div>
             </div>
         </div>
