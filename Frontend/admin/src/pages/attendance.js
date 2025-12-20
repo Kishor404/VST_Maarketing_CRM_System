@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Attendance = () => {
 
-  const BASEURL="http://127.0.0.1:8000";
+  const BASEURL="http://157.173.220.208";
 
   const today = new Date().toISOString().split("T")[0];
 

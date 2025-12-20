@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const BASEURL = "http://127.0.0.1:8000";
+const BASEURL = "http://157.173.220.208";
 
 const CreateCard = () => {
 

@@ -12,7 +12,7 @@ class AppConstants {
   ///
   /// Production:
   /// https://api.vstmaarketing.com
-  static const String baseUrl = 'http://192.168.222.222:8000';
+  static const String baseUrl = 'http://157.173.220.208';
 
   /// API timeout values (seconds)
   static const int connectTimeout = 15;

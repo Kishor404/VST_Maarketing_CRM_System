@@ -5,7 +5,7 @@ import Logo from "../assets/logo.jpg";
 import "../styles/fonts.css";
 import Cookies from "js-cookie";
 
-const BASEURL = "http://127.0.0.1:8000";
+const BASEURL = "http://157.173.220.208";
 
 const Login = () => {
   const [phone, setPhone] = useState("");
