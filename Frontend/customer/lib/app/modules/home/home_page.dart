@@ -62,7 +62,7 @@ class HomePage extends GetView<HomeController> {
                             /// BANNER (RESPONSIVE)
                             /// --------------------
                             AspectRatio(
-                              aspectRatio: 16 / 9,
+                              aspectRatio: 16 / 7,
                               child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(16),
