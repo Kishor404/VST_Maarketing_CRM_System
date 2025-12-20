@@ -6,6 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 
 const Attendance = () => {
+
+  const BASEURL="http://127.0.0.1:8000";
+
   const today = new Date().toISOString().split("T")[0];
 
   const [staffList, setStaffList] = useState([]);
@@ -27,7 +30,7 @@ const Attendance = () => {
         const rToken = Cookies.get('refresh_token');
 
         try {
-            const res = await axios.post('http://127.0.0.1:8000/api/auth/token/refresh/', 
+            const res = await axios.post(BASEURL+'/api/auth/token/refresh/', 
                 { 'refresh': rToken }, 
                 { headers: { "Content-Type": "application/json" } }
             );
@@ -51,11 +54,11 @@ const Attendance = () => {
       try {
         const [staffRes, attendanceRes] = await Promise.all([
           axios.get(
-            "http://127.0.0.1:8000/api/auth/admin/users/?role=worker",
+            BASEURL+"/api/auth/admin/users/?role=worker",
             { headers: { Authorization: `Bearer ${AT}` } }
           ),
           axios.get(
-            `http://127.0.0.1:8000/api/crm/attendance/by_date/?date=${date}`,
+            BASEURL+`/api/crm/attendance/by_date/?date=${date}`,
             { headers: { Authorization: `Bearer ${AT}` } }
           ),
         ]);
@@ -107,7 +110,7 @@ const Attendance = () => {
 
     try {
       await axios.post(
-        "http://127.0.0.1:8000/api/crm/attendance/bulk/",
+        BASEURL+"/api/crm/attendance/bulk/",
         { date: today, present, absent },
         {
           headers: {

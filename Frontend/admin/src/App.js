@@ -3,8 +3,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Outlet } from "rea
 import Login from "./pages/Login";
 import Customer from "./pages/customer";
 import Staff from "./pages/staff";
-import EditReq from "./pages/editReq";
-import UnavaReq from "./pages/unavaReq";
 import CreateCard from "./pages/createcard";
 import Service from "./pages/service";
 import Sidebar from "./components/Sidebar";
@@ -37,8 +35,6 @@ const App = () => {
           <Route index element={<Login />} />
           <Route path="customer" element={<Customer />} />
           <Route path="staff" element={<Staff />} />
-          <Route path="editreq" element={<EditReq />} />
-          <Route path="unavareq" element={<UnavaReq />} />
           <Route path="createcard" element={<CreateCard />} />
           <Route path="showcard" element={<ShowCard />} />
           <Route path="service" element={<Service />} />

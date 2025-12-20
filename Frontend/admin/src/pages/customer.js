@@ -5,6 +5,8 @@ import Cookies from 'js-cookie';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+const BASEURL = "http://127.0.0.1:8000";
+
 const Customer = () => {
     const [searchMode, setSearchMode] = useState("name"); // default search by name
     const [searchQuery, setSearchQuery] = useState("");
@@ -43,7 +45,7 @@ const Customer = () => {
         const rToken = Cookies.get('refresh_token');
 
         try {
-            const res = await axios.post('http://127.0.0.1:8000/api/auth/token/refresh/', 
+            const res = await axios.post(BASEURL+'/api/auth/token/refresh/', 
                 { 'refresh': rToken }, 
                 { headers: { "Content-Type": "application/json" } }
             );
@@ -64,7 +66,7 @@ const Customer = () => {
 
             try {
             const res = await axios.get(
-                "http://127.0.0.1:8000/api/auth/admin/users/?role=customer",
+                BASEURL+"/api/auth/admin/users/?role=customer",
                 {
                 headers: { Authorization: `Bearer ${AT}` },
                 }
@@ -137,7 +139,7 @@ const Customer = () => {
 
         try {
             await axios.patch(
-            `http://127.0.0.1:8000/api/auth/admin/users/${fetchData.id}/update/`,
+            BASEURL+`/api/auth/admin/users/${fetchData.id}/update/`,
             fetchData,
             {
                 headers: {
@@ -200,7 +202,7 @@ const Customer = () => {
 
         try {
             await axios.post(
-            "http://127.0.0.1:8000/api/auth/admin/users/create/",
+            BASEURL+"/api/auth/admin/users/create/",
             newCustomer,
             {
                 headers: {

@@ -2,8 +2,10 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+const BASEURL = "http://127.0.0.1:8000";
+
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/',
+  baseURL: BASEURL+'/api/',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -36,7 +38,7 @@ api.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          'http://127.0.0.1:8000/api/auth/token/refresh/',
+          BASEURL+'/api/auth/token/refresh/',
           { refresh: rToken },
           { headers: { 'Content-Type': 'application/json' } }
         );

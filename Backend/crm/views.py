@@ -226,7 +226,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
         # ensure request is in serializer context (DRF normally does this)
         serializer.context.setdefault("request", self.request)
         service = serializer.save()
-        # Optionally enqueue auto-assign background job here (Celery)
+        message="A New Service Was Booked By Customer."
+        phone = getattr(settings, "ADMIN_PHONE")
+        Send_SMS(phone, message)
         return service
     
     @action(
@@ -369,14 +371,12 @@ class ServiceViewSet(viewsets.ModelViewSet):
         service.status = "awaiting_otp"
         service.save()
 
-        # TODO: integrate SMS gateway to actually send OTP to phone
+        message = str(otp)+" is your OTP for verfiy the service "+str(service.id)+" for "+service.description+". Thanks For Choosing VST Maarketing."
+        Send_SMS(phone, message)
+        
         if getattr(settings, "CRM_DEV_RETURN_OTP", False):
-            # development only: return OTP in response
-            print("-------------------------------")
-            print("Requested OTP : "+otp)
-            print("Send To : "+phone)
-            print("-------------------------------")
             return Response({"detail": "otp-generated", "otp": otp})
+        
         return Response({"detail": "otp-sent"}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
@@ -974,3 +974,12 @@ class DevSendOtpView(APIView):
         service.otp_expires_at = otp_expiry_time()
         service.save()
         return Response({"otp": otp, "detail": "dev otp generated"}, status=status.HTTP_200_OK)
+
+
+def Send_SMS(phone, message):
+    print("SMS Send !")
+    if getattr(settings, "CRM_DEV_SMS_TEST", False):
+        print("-----------------------")
+        print("To : "+phone)
+        print("Message : "+message)
+        print("-----------------------")

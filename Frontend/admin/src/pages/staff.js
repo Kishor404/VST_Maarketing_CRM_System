@@ -6,6 +6,8 @@ import { FaUsers } from "react-icons/fa";
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+const BASEURL = "http://127.0.0.1:8000";
+
 const Staff = () => {
     /* ------------------------------------------------------------------ */
         /* ───────────────────────────  ROUTING  ──────────────────────────── */
@@ -53,7 +55,7 @@ const Staff = () => {
         const rToken = Cookies.get('refresh_token');
 
         try {
-            const res = await axios.post('http://127.0.0.1:8000/api/auth/token/refresh/', 
+            const res = await axios.post(BASEURL+'/api/auth/token/refresh/', 
                 { 'refresh': rToken }, 
                 { headers: { "Content-Type": "application/json" } }
             );
@@ -74,7 +76,7 @@ const Staff = () => {
 
             try {
             const res = await axios.get(
-                "http://127.0.0.1:8000/api/auth/admin/users/?role=worker",
+                BASEURL+"/api/auth/admin/users/?role=worker",
                 {
                 headers: {
                     Authorization: `Bearer ${AT}`,
@@ -158,7 +160,7 @@ const Staff = () => {
 
         try {
             await axios.patch(
-            `http://127.0.0.1:8000/api/auth/admin/users/${fetchData.id}/update/`,
+            BASEURL+`/api/auth/admin/users/${fetchData.id}/update/`,
             payload,
             {
                 headers: {
@@ -219,7 +221,7 @@ const createstaff = async () => {
 
   try {
     await axios.post(
-      "http://127.0.0.1:8000/api/auth/admin/users/create/",
+      BASEURL+"/api/auth/admin/users/create/",
       payload,
       {
         headers: {
@@ -277,7 +279,7 @@ const createstaff = async () => {
             return null;
         }
         try {
-            const res = await axios.get(`http://127.0.0.1:8000/api/auth/admin/users/?phone=${phone}`, { headers: { Authorization: `Bearer ${Token}` } });
+            const res = await axios.get(BASEURL+`/api/auth/admin/users/?phone=${phone}`, { headers: { Authorization: `Bearer ${Token}` } });
             console.log("GET USER BY PHONE");
             return res.data[0];
         } catch (error) {
@@ -309,7 +311,7 @@ const createstaff = async () => {
 
         try {
             await axios.post(
-            `http://127.0.0.1:8000/api/auth/admin/users/${user.id}/change-password/`,
+            BASEURL+`/api/auth/admin/users/${user.id}/change-password/`,
             { new_password: changePasswordPassword },
             {
                 headers: {

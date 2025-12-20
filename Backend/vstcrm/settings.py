@@ -6,6 +6,9 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 CRM_DEV_RETURN_OTP = True
+CRM_DEV_SMS_TEST = True
+
+ADMIN_PHONE=config('ADMIN_PHONE', default='')
 
 # Firebase credential path (do NOT commit credential json to repo)
 FIREBASE_CRED_PATH = config('FIREBASE_CRED_PATH', default='')  # set in .env if using Firebase
