@@ -265,6 +265,39 @@ class WorkCompletionPage extends GetView<WorkController> {
             ),
             const SizedBox(height: 16),
 
+            Obx(() {
+              if (controller.devOtp.value.isEmpty) {
+                return const SizedBox.shrink();
+              }
+
+              return Container(
+                margin: const EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.bug_report, color: Colors.orange),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'DEV OTP: ${controller.devOtp.value}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            const SizedBox(height: 16),
+
             // OTP Input Field
             TextField(
               keyboardType: TextInputType.number,

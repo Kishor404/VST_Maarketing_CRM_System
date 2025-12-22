@@ -25,6 +25,9 @@ class WorkController extends GetxController {
 
   final phone = ''.obs;
 
+  final devOtp = ''.obs; // ⚠️ DEV ONLY
+
+
   
 
   @override
@@ -92,10 +95,16 @@ class WorkController extends GetxController {
 
       final fullPhone = "+91${phone.value}";
 
-      await _provider.requestOtp(
+      final otpFromApi = await _provider.requestOtp(
         serviceId,
         phone: fullPhone,
       );
+
+      // DEV ONLY
+      if (otpFromApi != null) {
+        devOtp.value = otpFromApi;
+      }
+
 
       AppSnackbar.success(
         title: "OTP Sent",
@@ -133,6 +142,7 @@ class WorkController extends GetxController {
       selectedService.value = null;
       workDetail.value = '';
       amountCharged.value = '';
+      devOtp.value = '';
       otp = '';
       partsReplaced.clear();
 

@@ -738,6 +738,8 @@ class WarrantyReportView(APIView):
         # 3. Process milestones
         # ----------------------------------
         for c in cards:
+            if(c.card_type=="om"):
+                continue
             if c.warranty_start_date > last_day or c.warranty_end_date < first_day:
                 continue
 
@@ -778,6 +780,7 @@ class WarrantyReportView(APIView):
                     "milestone": m.isoformat(),
                     "status": status,   # ✅ done / notdone
                 })
+            
 
         return Response(results)
     
@@ -864,6 +867,8 @@ class WarrantyReportByCardView(APIView):
                 "milestone": m.isoformat(),
                 "status": status_flag,
             })
+        if(card.card_type=="om"):
+            results=[]
 
         return Response(
             {
