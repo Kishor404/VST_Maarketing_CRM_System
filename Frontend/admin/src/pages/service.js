@@ -16,6 +16,10 @@ const Service = () => {
     const BASEURL = "http://157.173.220.208";
     const navigate = useNavigate();
 
+    const [exportFromDate, setExportFromDate] = useState("");
+    const [exportToDate, setExportToDate] = useState("");
+
+
     const [serviceList, setServiceList]=useState([]);
     const [boxData, setBoxData] = useState({ "pending": 0, "assigned": 0,"completed": 0, "total": 0 });
     const [showAssignStaffForm, setShowAssignStaffForm] = useState(false);
@@ -271,6 +275,33 @@ const Service = () => {
         }
     };
 
+    // -------- DATE HELPERS --------
+    const getStartOfWeek = () => {
+        const d = new Date();
+        const day = d.getDay() || 7;
+        d.setDate(d.getDate() - day + 1);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    };
+
+    const getEndOfWeek = () => {
+        const d = getStartOfWeek();
+        d.setDate(d.getDate() + 6);
+        d.setHours(23, 59, 59, 999);
+        return d;
+    };
+
+    const getStartOfMonth = () => {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth(), 1);
+    };
+
+    const getEndOfMonth = () => {
+        const d = new Date();
+        return new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+    };
+
+
 
 
 
@@ -519,6 +550,125 @@ const Service = () => {
         }
     };
 
+    const exportToCSV = (services, filename) => {
+        if (!services.length) {
+            alert("No services to export");
+            return;
+        }
+
+        const headers = [
+            "Service ID",
+            "Card ID",
+
+            "Requested By ID",
+            "Requested By Name",
+            "Requested By Phone",
+
+            "Service Type",
+            "Visit Type",
+            "Status",
+            "Description",
+
+            "Preferred Date",
+            "Scheduled Date",
+
+            "Assigned Staff ID",
+            "Assigned Staff Name",
+
+            "Amount Charged",
+            "OTP Phone",
+
+            "Created At"
+        ];
+
+        console.log(services)
+        const rows = services.map(s => [
+            s.id,
+            s.card,
+
+            s.requested_by || "",
+            `="${s.customer_data?.name || ""}"`,
+            `="${s.customer_data?.phone || ""}"`,
+
+            s.service_type,
+            s.visit_type,
+            s.status,
+            `"${(s.description || "").replace(/"/g, '""')}"`,
+
+            `="${s.preferred_date || ""}"`,
+            `="${s.scheduled_at || ""}"`,
+
+            s.assigned_to || "",
+            `="${s.assigned_to_detail?.name || ""}"`,
+
+            s.amount_charged || "0.00",
+            `="${s.otp_phone || ""}"`,
+
+            `="${s.created_at}"`
+        ]);
+
+
+        const csv =
+        headers.join(",") +
+        "\n" +
+        rows.map(r => r.join(",")).join("\n");
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+    };
+
+    const exportCurrentWeek = () => {
+        const start = getStartOfWeek();
+        const end = getEndOfWeek();
+
+        const data = serviceList.filter(s => {
+            const d = new Date(s.created_at);
+            return d >= start && d <= end;
+        });
+
+        exportToCSV(data, "services_current_week.csv");
+    };
+
+    const exportCurrentMonth = () => {
+        const start = getStartOfMonth();
+        const end = getEndOfMonth();
+
+        const data = serviceList.filter(s => {
+            const d = new Date(s.created_at);
+            return d >= start && d <= end;
+        });
+
+        exportToCSV(data, "services_current_month.csv");
+    };
+    const exportCustomRange = () => {
+        if (!exportFromDate || !exportToDate) {
+            alert("Select both dates");
+            return;
+        }
+
+        const start = new Date(exportFromDate);
+        const end = new Date(exportToDate);
+        end.setHours(23, 59, 59, 999);
+
+        const data = serviceList.filter(s => {
+            const d = new Date(s.created_at);
+            return d >= start && d <= end;
+        });
+
+        exportToCSV(
+            data,
+            `services_${exportFromDate}_to_${exportToDate}.csv`
+        );
+    };
+
+
+
+
 
 
     // ============= RELOAD DATA =========
@@ -751,6 +901,8 @@ const Service = () => {
             <div className='service-bottom'>
                 <div className='service-bottom-main'>
                     <div className='service-bottom-left'>
+                        
+
                         <div className='service-bottom-left-top'>
                             <select value={searchType} onChange={(e) => setSearchType(e.target.value)}>
                                 <option value="id">Search by ID</option>
@@ -799,6 +951,48 @@ const Service = () => {
                                     ))}
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div className="service-export-box">
+
+                            <div className='service-export-butbox'>
+                                <button onClick={exportCurrentWeek}>
+                                    Export This Week
+                                </button>
+
+                                <button onClick={exportCurrentMonth}>
+                                    Export This Month
+                                </button>
+
+                            </div>
+                            
+
+                            <div className="service-export-range">
+                                <div className='service-export-fromto'>
+                                    <div className='service-export-fromto-data'>
+                                        <p>From</p>
+                                        <input
+                                            type="date"
+                                            value={exportFromDate}
+                                            onChange={(e) => setExportFromDate(e.target.value)}
+                                        />
+                                    </div>
+                                    
+                                    <div className='service-export-fromto-data'>
+                                        <p>To</p>
+                                        <input
+                                            type="date"
+                                            value={exportToDate}
+                                            onChange={(e) => setExportToDate(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                
+                                
+                                <button onClick={exportCustomRange}>
+                                    Export
+                                </button>
+                            </div>
                         </div>
                     </div>
 
