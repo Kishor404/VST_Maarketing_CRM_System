@@ -86,6 +86,12 @@
   text-transform: uppercase;
 }
 
+.btn-secondary {
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 12pt;
+  margin-left: 10px;
+}
 .btn-primary:disabled {
   background-color: #90caf9;
   cursor: not-allowed;
