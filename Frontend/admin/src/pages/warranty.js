@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosInstance';
 import '../styles/warranty.css';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 const Warranty = () => {
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,7 @@ const Warranty = () => {
       const res = await api.get(`/crm/reports/warranty/`, {
         params: { month },
       });
+      console.log(res.data);
       setCards(res.data);
       const defaults = {};
       res.data.forEach((card) => {
@@ -108,6 +111,54 @@ const Warranty = () => {
     setSelectedMonth(month);
     fetchWarrantyCards(month);
   };
+
+  const exportWarrantyExcel = () => {
+    if (!cards.length) {
+      alert('No data to export');
+      return;
+    }
+
+    const data = cards.map((card) => ({
+      Milestone: card.milestone || '',
+      customer_id: card.customer_id || '',
+      Customer: card.customer_name || '',
+      Phone: card.customer_phone || '',
+      Address: card.address || '',
+      'Card Model': card.card_model || '',
+      City: card.city || '',
+      Status: card.status || '',
+      'Scheduled Date': scheduledDates[card.card_id] || '',
+      'Assign Staff':
+        staffList.find((s) => s.id === selectedStaff[card.card_id])?.name || '',
+      'Attendance (Today)':
+        selectedStaff[card.card_id]
+          ? attendanceMap[selectedStaff[card.card_id]] || '—'
+          : '—',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data, {
+      cellDates: true,
+    });
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Warranty');
+
+    const buffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+
+    const blob = new Blob([buffer], {
+      type:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    saveAs(blob, `Warranty_Customers_${selectedMonth}.xlsx`);
+  };
+
+
+
+
 
   const handleStaffChange = (cardId, staffId) => {
     setSelectedStaff((prev) => {
@@ -248,6 +299,16 @@ const Warranty = () => {
           {bulkBooking ? 'Booking...' : 'Bulk Book'}
         </button>
 
+        <button
+          className="btn btn-secondary"
+          onClick={exportWarrantyExcel}
+          disabled={loading || cards.length === 0}
+        >
+          Export Excel
+        </button>
+
+
+
         </div>
         
       </div>
@@ -262,6 +323,7 @@ const Warranty = () => {
             <thead>
               <tr>
                 <th>Milestone</th>
+                <th>Customer ID</th>
                 <th>Customer</th>
                 <th>Phone</th>
                 <th>Address</th>
@@ -287,6 +349,7 @@ const Warranty = () => {
                     className={getRowBgClass(card.status)}
                   >
                     <td>{card.milestone}</td>
+                    <td>{card.customer_id}</td>
                     <td>{card.customer_name}</td>
                     <td>{card.customer_phone}</td>
                     <td>{card.address}</td>
