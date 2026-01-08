@@ -22,6 +22,19 @@ const Warranty = () => {
     return d.toISOString().split('T')[0];
   };
 
+  function formatDate(dateInput) {
+    const date = new Date(dateInput);
+
+    if (isNaN(date)) return null;
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
+
+
 
   const generateMonthOptions = () => {
     const options = [];
@@ -52,6 +65,7 @@ const Warranty = () => {
       });
       console.log(res.data);
       setCards(res.data);
+      console.log(res.data);
       const defaults = {};
       res.data.forEach((card) => {
         if (card.milestone) {
@@ -326,7 +340,6 @@ const Warranty = () => {
                 <th>Customer ID</th>
                 <th>Customer</th>
                 <th>Phone</th>
-                <th>Address</th>
                 <th>Card Model</th>
                 <th>City</th>
                 <th>Status</th>
@@ -348,11 +361,10 @@ const Warranty = () => {
                     key={card.card_id}
                     className={getRowBgClass(card.status)}
                   >
-                    <td>{card.milestone}</td>
+                    <td>{formatDate(card.milestone)}</td>
                     <td>{card.customer_id}</td>
                     <td>{card.customer_name}</td>
                     <td>{card.customer_phone}</td>
-                    <td>{card.address}</td>
                     <td>{card.card_model}</td>
                     <td>{card.city}</td>
                     <td>{card.status}</td>

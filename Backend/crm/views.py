@@ -737,17 +737,20 @@ class WarrantyReportView(APIView):
         # ----------------------------------
         # 3. Process milestones
         # ----------------------------------
+
         for c in cards:
-            if(c.card_type=="om"):
+            if c.card_type == "om":
                 continue
+
             if c.warranty_start_date > last_day or c.warranty_end_date < first_day:
                 continue
 
-            milestones = [
-                c.warranty_start_date + relativedelta(months=3),
-                c.warranty_start_date + relativedelta(months=6),
-                c.warranty_start_date + relativedelta(months=9),
-            ]
+            milestones = []
+            current_milestone = c.warranty_start_date + relativedelta(months=3)
+
+            while current_milestone <= c.warranty_end_date:
+                milestones.append(current_milestone)
+                current_milestone += relativedelta(months=3)
 
             card_services = services_by_card.get(c.id, [])
 
@@ -755,16 +758,11 @@ class WarrantyReportView(APIView):
                 if not (first_day <= m <= last_day):
                     continue
 
-                # ±30 day window
                 start_window = m - timedelta(days=30)
                 end_window = m + timedelta(days=30)
 
-                print(start_window, end_window)
-
                 status = "notdone"
-
                 for svc_date in card_services:
-                    print(svc_date)
                     if svc_date and start_window <= svc_date <= end_window:
                         status = "done"
                         break
@@ -778,9 +776,9 @@ class WarrantyReportView(APIView):
                     "address": c.address,
                     "city": c.city,
                     "milestone": m.isoformat(),
-                    "status": status,   # ✅ done / notdone
+                    "status": status,
+                    "allmilestones":[m.isoformat() for m in milestones]
                 })
-            
 
         return Response(results)
     
