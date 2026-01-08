@@ -337,6 +337,7 @@ const Warranty = () => {
             <thead>
               <tr>
                 <th>Milestone</th>
+                <th>All Milestone</th>
                 <th>Customer ID</th>
                 <th>Customer</th>
                 <th>Phone</th>
@@ -362,6 +363,18 @@ const Warranty = () => {
                     className={getRowBgClass(card.status)}
                   >
                     <td>{formatDate(card.milestone)}</td>
+                    <td>
+                      {card.allmilestones?.length ? (
+                        <ul className="milestone-list">
+                          {card.allmilestones.map((mi, i) => (
+                            <li key={i}>{formatDate(mi)}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </td>
+
                     <td>{card.customer_id}</td>
                     <td>{card.customer_name}</td>
                     <td>{card.customer_phone}</td>

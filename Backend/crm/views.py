@@ -748,7 +748,7 @@ class WarrantyReportView(APIView):
             milestones = []
             current_milestone = c.warranty_start_date + relativedelta(months=3)
 
-            while current_milestone <= c.warranty_end_date:
+            while current_milestone < c.warranty_end_date:
                 milestones.append(current_milestone)
                 current_milestone += relativedelta(months=3)
 
