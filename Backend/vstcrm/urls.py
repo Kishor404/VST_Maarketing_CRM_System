@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/crm/', include('crm.urls')),
     path("api/auth/", include("user.urls")),
+    path("api/reminder/", include("reminder.urls")),
 ]

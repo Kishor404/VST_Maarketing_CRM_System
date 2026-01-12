@@ -16,6 +16,7 @@ This document lists all APIs implemented for the VST Maarketing CRM backend (Dja
 7. Feedback
 8. Attendance
 9. Reports & Admin utilities
+10. Remainder
 
 ---
 
@@ -500,3 +501,179 @@ Response
 - **Purpose:** Export services CSV
 - **Method:** GET
 - **Permission:** admin
+
+## 10. Reminders
+
+### 1. Create Reminder
+
+**POST** `/api/remainder/admin-reminders/`
+
+**Purpose:**  
+Create an admin reminder about a customer.
+
+#### Request Example
+```json
+{
+  "customer_id": 12,
+  "reminder_dates": [
+    "2026-01-10T10:00:00",
+    "2026-01-20T09:30:00"
+  ],
+  "message": "Follow up with customer regarding warranty renewal",
+  "is_active": true
+}
+```
+
+#### Response (201 Created)
+```json
+{
+  "id": 5,
+  "customer": {
+    "id": 12,
+    "name": "Ramesh Kumar",
+    "phone": "+9198xxxx",
+    "address": "12 MG Road",
+    "city": "Rajapalayam",
+    "postal_code": "626117",
+    "region": "TN",
+    "role": "customer",
+    "is_active": true,
+    "is_staff": false,
+    "is_available": true,
+    "fcm_token": "xxxx",
+    "created_at": "2025-12-01T10:00:00Z",
+    "updated_at": "2026-01-05T09:00:00Z"
+  },
+  "reminder_dates": [
+    "2026-01-10T10:00:00",
+    "2026-01-20T09:30:00"
+  ],
+  "message": "Follow up with customer regarding warranty renewal",
+  "is_active": true,
+  "created_at": "2026-01-07T11:00:00Z",
+  "updated_at": "2026-01-07T11:00:00Z"
+}
+```
+
+---
+
+### 2. List Reminders
+
+**GET** `/api/reminder/admin-reminders/`
+
+**Purpose:**  
+List all admin reminders.
+
+**Query Parameters (optional):**
+- `customer_id=<id>` → Filter reminders for a specific customer  
+- `is_active=true|false` → Filter active or inactive reminders
+
+#### Response Example
+```json
+[
+  {
+    "id": 5,
+    "customer": {
+      "id": 12,
+      "name": "Ramesh Kumar",
+      "phone": "+9198xxxx",
+      "role": "customer",
+      "region": "TN"
+    },
+    "reminder_dates": [
+      "2026-01-10T10:00:00",
+      "2026-01-20T09:30:00"
+    ],
+    "message": "Follow up with customer regarding warranty renewal",
+    "is_active": true,
+    "created_at": "2026-01-07T11:00:00Z",
+    "updated_at": "2026-01-07T11:00:00Z"
+  }
+]
+```
+
+---
+
+### 3. Get Reminder Details
+
+**GET** `/api/remainder/admin-reminders/{id}/`
+
+**Purpose:**  
+Retrieve details of a specific reminder by ID.
+
+#### Response Example
+```json
+{
+  "id": 5,
+  "customer": {
+    "id": 12,
+    "name": "Ramesh Kumar",
+    "phone": "+9198xxxx",
+    "role": "customer",
+    "region": "TN"
+  },
+  "reminder_dates": [
+    "2026-01-10T10:00:00",
+    "2026-01-20T09:30:00"
+  ],
+  "message": "Follow up with customer regarding warranty renewal",
+  "is_active": true,
+  "created_at": "2026-01-07T11:00:00Z",
+  "updated_at": "2026-01-07T11:00:00Z"
+}
+```
+
+---
+
+### 4. Update Reminder
+
+**PATCH** `/api/remainder/admin-reminders/{id}/`
+
+**Purpose:**  
+Update reminder details such as message or reminder dates.
+
+#### Request Example
+```json
+{
+  "message": "Customer requested call back next week",
+  "reminder_dates": [
+    "2026-01-15T11:00:00"
+  ]
+}
+```
+
+#### Response Example
+```json
+{
+  "id": 5,
+  "message": "Customer requested call back next week",
+  "reminder_dates": [
+    "2026-01-15T11:00:00"
+  ],
+  "is_active": true,
+  "updated_at": "2026-01-08T09:15:00Z"
+}
+```
+
+---
+
+### 5. Delete Reminder
+
+**DELETE** `/api/remainder/admin-reminders/{id}/`
+
+**Purpose:**  
+Delete (or deactivate) a reminder.
+
+#### Response Example
+```json
+{
+  "detail": "Reminder deleted successfully"
+}
+```
+
+---
+
+## Notes
+- These reminders are **admin-only** and never visible to customers.
+- Each reminder supports **multiple follow-up dates**.
+- You can **filter reminders** by `customer_id` or `is_active` status.
