@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaUsers, FaIdBadge, FaEdit, FaInfo, FaAddressCard, FaPlus } from "react-icons/fa";
+import { FaUsers, FaIdBadge, FaEdit, FaInfo, FaAddressCard, FaPlus, FaTicketAlt, FaStickyNote, FaAdversal, FaBook, FaArrowsAltH, FaLocationArrow } from "react-icons/fa";
 import { MdRoomService } from "react-icons/md";
 import { MdHotelClass } from "react-icons/md";
 import '../styles/sidebar.css';
@@ -49,7 +49,7 @@ return (
                 </div>
                 <div className="sidebar-item">
                     <Link to="/head/attendance" className="sidebar-link">
-                        <FaInfo className="sidebar-item-icon" size={20}/>
+                        <FaBook className="sidebar-item-icon" size={20}/>
                         Attendance
                     </Link>
                 </div>
@@ -57,6 +57,18 @@ return (
                     <Link to="/head/showcard" className="sidebar-link">
                         <FaAddressCard className="sidebar-item-icon" size={20}/>
                         Customer Card
+                    </Link>
+                </div>
+                <div className="sidebar-item">
+                    <Link to="/head/reminder" className="sidebar-link">
+                        <FaInfo className="sidebar-item-icon" size={20}/>
+                        Reminder
+                    </Link>
+                </div>
+                <div className="sidebar-item">
+                    <Link to="/head/followup" className="sidebar-link">
+                        <FaLocationArrow className="sidebar-item-icon" size={20}/>
+                        Follow Up
                     </Link>
                 </div>
             </div>

@@ -11,6 +11,8 @@ import NotFound from "./pages/NotFound";
 import "./App.css";
 import Attendance from './pages/attendance';
 import Warranty from './pages/warranty';
+import Reminder from "./pages/reminder";
+import FollowUp from "./pages/followup";
 
 const HeadLayout = () => {
   const location = useLocation();
@@ -40,6 +42,8 @@ const App = () => {
           <Route path="service" element={<Service />} />
           <Route path="warranty" element={<Warranty />} />
           <Route path="attendance" element={<Attendance />} />
+          <Route path="reminder" element={<Reminder />} />
+          <Route path="followup" element={<FollowUp />} />
         </Route>
 
         {/* All OTHER ROUTES ➔ NotFound */}

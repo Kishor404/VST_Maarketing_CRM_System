@@ -10,6 +10,13 @@ CRM_DEV_SMS_TEST = True
 
 ADMIN_PHONE=config('ADMIN_PHONE', default='')
 
+CHATINFY_LICENSE_NUMBER = config("CHATINFY_LICENSE_NUMBER")
+CHATINFY_API_KEY = config("CHATINFY_API_KEY")
+CHATINFY_CONTACT = config("CHATINFY_CONTACT")
+
+if not all([CHATINFY_LICENSE_NUMBER, CHATINFY_API_KEY, CHATINFY_CONTACT]):
+    raise RuntimeError("Missing Chatinfy environment variables")
+
 # Firebase credential path (do NOT commit credential json to repo)
 FIREBASE_CRED_PATH = config('FIREBASE_CRED_PATH', default='')  # set in .env if using Firebase
 
