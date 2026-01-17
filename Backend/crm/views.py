@@ -71,6 +71,8 @@ class CardViewSet(viewsets.ModelViewSet):
         "date_of_installation",
         "warranty_start_date",
         "warranty_end_date",
+        "amc_start_date",
+        "amc_end_date",
     ]
 
     ordering = ["-id"]  # default latest first
@@ -839,11 +841,13 @@ class WarrantyReportByCardView(APIView):
             .values_list("preferred_date", flat=True)
         )
 
-        milestones = [
-            card.warranty_start_date + relativedelta(months=3),
-            card.warranty_start_date + relativedelta(months=6),
-            card.warranty_start_date + relativedelta(months=9),
-        ]
+        milestones = []
+
+        current = card.warranty_start_date + relativedelta(months=3)
+
+        while current <= card.warranty_end_date:
+            milestones.append(current)
+            current += relativedelta(months=3)
 
         results = []
 
@@ -879,6 +883,199 @@ class WarrantyReportByCardView(APIView):
                 "city": card.city,
                 "warranty_start": card.warranty_start_date,
                 "warranty_end": card.warranty_end_date,
+                "milestones": results,
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class AMCReportView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        month = request.query_params.get("month")
+        if not month:
+            today = timezone.localdate()
+            month = f"{today.year}-{today.month:02d}"
+
+        year, mon = map(int, month.split("-"))
+
+        first_day = datetime(year, mon, 1).date()
+        last_day = datetime(year, mon, monthrange(year, mon)[1]).date()
+
+        results = []
+
+        # ----------------------------------
+        # 1. Fetch cards
+        # ----------------------------------
+        cards = Card.objects.select_related("customer").filter(
+            amc_start_date__isnull=False,
+            amc_end_date__isnull=False,
+        )
+
+        # ----------------------------------
+        # 2. Fetch ALL free services once
+        # ----------------------------------
+        free_services = (
+            Service.objects
+            .filter(service_type="free")
+            .values("card_id", "scheduled_at")
+        )
+
+        # Group services by card_id
+        services_by_card = {}
+        for s in free_services:
+            services_by_card.setdefault(s["card_id"], []).append(
+                s["scheduled_at"]
+            )
+
+        # ----------------------------------
+        # 3. Process milestones
+        # ----------------------------------
+
+        for c in cards:
+            if c.card_type == "om":
+                continue
+
+            if c.amc_start_date > last_day or c.amc_end_date < first_day:
+                continue
+
+            milestones = []
+            current_milestone = c.amc_start_date + relativedelta(months=3)
+
+            while current_milestone < c.amc_end_date:
+                milestones.append(current_milestone)
+                current_milestone += relativedelta(months=3)
+
+            card_services = services_by_card.get(c.id, [])
+
+            for m in milestones:
+                if not (first_day <= m <= last_day):
+                    continue
+
+                start_window = m - timedelta(days=30)
+                end_window = m + timedelta(days=30)
+
+                status = "notdone"
+                for svc_date in card_services:
+                    if svc_date and start_window <= svc_date <= end_window:
+                        status = "done"
+                        break
+
+                results.append({
+                    "card_id": c.id,
+                    "card_model": c.model,
+                    "customer_id": c.customer.id,
+                    "customer_name": c.customer.name,
+                    "customer_phone": c.customer.phone,
+                    "address": c.address,
+                    "city": c.city,
+                    "milestone": m.isoformat(),
+                    "status": status,
+                    "allmilestones":[m.isoformat() for m in milestones]
+                })
+
+        return Response(results)
+    
+class AMCReportByCardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        card_id = request.query_params.get("card_id")
+        user = request.user
+
+        
+        if not card_id:
+            return Response(
+                {"detail": "card_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        month = request.query_params.get("month")
+        if month:
+            try:
+                year, mon = map(int, month.split("-"))
+                first_day = datetime(year, mon, 1).date()
+                last_day = datetime(year, mon, monthrange(year, mon)[1]).date()
+            except Exception:
+                return Response(
+                    {"detail": "invalid month format, expected YYYY-MM"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        else:
+            # if month not given → full warranty period
+            first_day = None
+            last_day = None
+
+        card = get_object_or_404(
+            Card.objects.select_related("customer"),
+            pk=card_id
+        )
+
+        if user.role in ("worker", "staff"):
+            raise PermissionDenied("Workers are not allowed")
+
+        if user.role == "customer" and card.customer_id != user.id:
+            raise PermissionDenied("You do not have permission to view this card JJ")
+        
+
+        if not card.amc_start_date or not card.amc_end_date:
+            return Response(
+                {"detail": "Card has no amc dates"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # ------------------------------
+        # Fetch free services for card
+        # ------------------------------
+        free_services = (
+            Service.objects
+            .filter(card=card, service_type="free")
+            .values_list("preferred_date", flat=True)
+        )
+
+        milestones = []
+
+        current = card.amc_start_date + relativedelta(months=3)
+
+        while current <= card.amc_end_date:
+            milestones.append(current)
+            current += relativedelta(months=3)
+
+        results = []
+
+        for m in milestones:
+            if first_day and last_day:
+                if not (first_day <= m <= last_day):
+                    continue
+
+            start_window = m - timedelta(days=30)
+            end_window = m + timedelta(days=30)
+
+            status_flag = "notdone"
+            for svc_date in free_services:
+                if svc_date and start_window <= svc_date <= end_window:
+                    status_flag = "done"
+                    break
+
+            results.append({
+                "milestone": m.isoformat(),
+                "status": status_flag,
+            })
+        if(card.card_type=="om"):
+            results=[]
+
+        return Response(
+            {
+                "card_id": card.id,
+                "card_model": card.model,
+                "customer_id": card.customer.id,
+                "customer_name": card.customer.name,
+                "customer_phone": card.customer.phone,
+                "address": card.address,
+                "city": card.city,
+                "amc_start": card.amc_start_date,
+                "amc_end": card.amc_end_date,
                 "milestones": results,
             },
             status=status.HTTP_200_OK

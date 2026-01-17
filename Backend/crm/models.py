@@ -71,6 +71,9 @@ class Card(models.Model):
     warranty_start_date = models.DateField(null=True, blank=True, db_index=True)
     warranty_end_date = models.DateField(null=True, blank=True, db_index=True)
 
+    amc_start_date = models.DateField(null=True, blank=True, db_index=True)
+    amc_end_date = models.DateField(null=True, blank=True, db_index=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -15,7 +15,9 @@ from .views import (
     AdminUserDetailView,
     AdminUserUpdateView,
     AdminChangeUserPasswordView,
-    AdminCreateUserView
+    AdminCreateUserView,
+
+    AdminDeleteUserView
 )
 
 urlpatterns = [
@@ -48,5 +50,7 @@ urlpatterns = [
         AdminCreateUserView.as_view(),
         name="admin-user-create",
     ),
+
+    path("admin/users/<int:id>/delete/", AdminDeleteUserView.as_view()),
     
 ]

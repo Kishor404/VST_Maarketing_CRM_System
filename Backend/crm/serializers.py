@@ -41,7 +41,7 @@ class CardCreateSerializer(serializers.ModelSerializer):
         fields = [
             "id", "model", "customer", "customer_name", "card_type",
             "region", "address", "city", "postal_code",
-            "date_of_installation", "warranty_start_date", "warranty_end_date",
+            "date_of_installation", "warranty_start_date", "warranty_end_date", "amc_start_date", "amc_end_date",
             "created_at", "updated_at"
         ]
         read_only_fields = ("id", "created_at", "updated_at")

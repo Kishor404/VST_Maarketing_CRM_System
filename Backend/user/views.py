@@ -177,3 +177,22 @@ class AdminChangeUserPasswordView(APIView):
 class AdminCreateUserView(generics.CreateAPIView):
     serializer_class = AdminCreateUserSerializer
     permission_classes = [IsAdmin]
+
+class AdminDeleteUserView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def delete(self, request, id):
+        user = get_object_or_404(User, id=id)
+
+        # Prevent admin from deleting himself (optional but recommended)
+        if user.id == request.user.id:
+            return Response(
+                {"detail": "You cannot delete your own account"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.delete()
+        return Response(
+            {"detail": "User deleted successfully"},
+            status=status.HTTP_200_OK
+        )
