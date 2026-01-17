@@ -232,6 +232,51 @@ const Customer = () => {
         }
     };
 
+    const deleteCustomer = async () => {
+        if (!fetchData) {
+            alert("No customer selected");
+            return;
+        }
+
+        const confirmDelete = window.confirm(
+            `Are you sure you want to delete customer "${fetchData.name}" ?`
+        );
+
+        if (!confirmDelete) {
+            alert("Delete Cancelled");
+            return;
+        }
+
+        const AT = await refresh_token();
+        if (!AT) return;
+
+        try {
+            await axios.delete(
+                BASEURL + `/api/auth/admin/users/delete/${fetchData.id}/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${AT}`,
+                    },
+                }
+            );
+
+            alert("Customer deleted successfully");
+
+            // Remove deleted customer from UI
+            const updatedList = customerList.filter(
+                (c) => c.id !== fetchData.id
+            );
+
+            setCustomerList(updatedList);
+            setFilteredList(updatedList);
+            setFetchData(null);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete customer");
+        }
+    };
+
+
 
     // When clicking a row, show details on right panel
     const selectCustomer = (customer) => {
@@ -426,11 +471,25 @@ const Customer = () => {
                             </button>
                         ) : (
                             fetchData && (
-                                <button className="customer-details-but" onClick={updateCustomer}>
-                                    Update
-                                </button>
+                                <div style={{ display: "flex", gap: "10px" }}>
+                                    <button
+                                        className="customer-details-but"
+                                        onClick={updateCustomer}
+                                    >
+                                        Update
+                                    </button>
+
+                                    <button
+                                        className="customer-details-but"
+                                        style={{ backgroundColor: "#d9534f" }}
+                                        onClick={deleteCustomer}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             )
                         )}
+
                     </div>
                 </div>
             </div>

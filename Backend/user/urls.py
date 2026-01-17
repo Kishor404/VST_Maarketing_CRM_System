@@ -51,6 +51,6 @@ urlpatterns = [
         name="admin-user-create",
     ),
 
-    path("admin/users/<int:id>/delete/", AdminDeleteUserView.as_view()),
+    path("admin/users/delete/<int:id>/", AdminDeleteUserView.as_view()),
     
 ]

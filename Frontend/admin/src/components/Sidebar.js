@@ -78,12 +78,12 @@ return (
                     </Link>
                 </div>
             </div>
-            <div className="sidebar-profile-cont">
+            {/* <div className="sidebar-profile-cont">
                 <div className="sidebar-profile">
                     <p className="sidebar-profile-name">{name}</p>
                     <p className="sidebar-profile-city">{region}</p>
                 </div>
-            </div>
+            </div> */}
         </div>
     </div>
 );
