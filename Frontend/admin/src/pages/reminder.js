@@ -45,6 +45,18 @@ const Reminder = () => {
         }
     };
 
+    const localToUTC = (localDateTime) => {
+        const localDate = new Date(localDateTime);
+        return new Date(localDate.getTime() - localDate.getTimezoneOffset() * 60000).toISOString();
+    };
+
+    const utcToIST = (utcDateTime) => {
+        return new Date(utcDateTime).toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            hour12: true
+        });
+    };
+
     // ~~~~~~~~~~~ GET ALL REMINDER ~~~~~~~~~~~~~~
 
     const getAllReminders=async()=>{
@@ -127,7 +139,7 @@ const Reminder = () => {
 
         const data = {
             customer_id: reminderCustomer.id,
-            reminder_dates: reminderDates,
+            reminder_dates: reminderDates.map(d => d+"+05:30"),
             message: message,
             is_active: true
         };

@@ -4,6 +4,7 @@ from django.utils.dateparse import parse_datetime
 from reminder.models import AdminReminder
 from reminder.services import notify_admin
 import logging
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,9 @@ def process_admin_reminders(self):
             if reminder_time <= now and date_str not in reminder.triggered_dates:
                 notify_admin(reminder, reminder_time)
                 logger.info("🔥 REMINDER TRIGGERED 🔥")
+
+                logger.info(settings.CHATINFY_LICENSE_NUMBER)
+                logger.info(settings.CHATINFY_API_KEY)
 
                 reminder.triggered_dates.append(date_str)
                 reminder.save(update_fields=["triggered_dates"])
