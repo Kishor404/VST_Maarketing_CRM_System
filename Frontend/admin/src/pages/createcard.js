@@ -29,6 +29,26 @@ const CreateCard = () => {
     const [doi, setDoi] = useState("");
     const [wsd, setWsd] = useState("");
     const [wed, setWed] = useState("");
+    const [asd, setAsd] = useState("");
+    const [aed, setAed] = useState("");
+
+    const [isAmc, setIsAmc] = useState(false);
+    const [hasWarranty, setHasWarranty] = useState(true);
+
+
+    useEffect(() => {
+        if (!isAmc) {
+            setAsd("");
+            setAed("");
+        }
+    }, [isAmc]);
+
+    useEffect(() => {
+        if (!hasWarranty && doi) {
+            setWsd(doi);
+            setWed(doi);
+        }
+    }, [hasWarranty, doi]);
 
     /* ---------------- REFRESH TOKEN ---------------- */
     const refresh_token = async () => {
@@ -80,13 +100,27 @@ const CreateCard = () => {
 
     /* ---------------- WARRANTY AUTO CALC ---------------- */
     const handleWarrantyStart = (date) => {
+        if (!hasWarranty) return;
+
         setWsd(date);
+
+        if (date) {
+            const start = new Date(date);
+            const end = new Date(start - 1);
+            end.setFullYear(end.getFullYear() + 1);
+            setWed(end.toISOString().split("T")[0]);
+        }
+    };
+
+
+    const handleAMCStart = (date) => {
+        setAsd(date);
 
         if (date) {
             const start = new Date(date);
             const end = new Date(start-1);
             end.setFullYear(end.getFullYear() + 1);
-            setWed(end.toISOString().split("T")[0]);
+            setAed(end.toISOString().split("T")[0]);
         }
     };
 
@@ -112,6 +146,16 @@ const CreateCard = () => {
             alert("Please fill all required fields");
             return;
         }
+        if (isAmc && (!asd || !aed)) {
+            alert("Please select AMC start and end dates");
+            return;
+        }
+        if (hasWarranty && (!wsd || !wed)) {
+            alert("Please select warranty start and end dates");
+            return;
+        }
+
+
 
         const confirmCreate = window.confirm(
             `Are you sure you want to create this card?\n\n` +
@@ -137,6 +181,10 @@ const CreateCard = () => {
             date_of_installation: doi,
             warranty_start_date: wsd,
             warranty_end_date: wed,
+            ...(isAmc && {
+                amc_start_date: asd,
+                amc_end_date: aed,
+            }),
         };
 
         try {
@@ -221,14 +269,80 @@ const CreateCard = () => {
                                 </div>
 
                                 <div className='createcard-input-cont'>
-                                    <p>Warranty Start Date *</p>
-                                    <input type="date" className="createcard-card-input" onChange={(e) => handleWarrantyStart(e.target.value)} />
+                                    <p>Has Warranty</p>
+
+                                    <label className="toggle-switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={hasWarranty}
+                                            onChange={(e) => setHasWarranty(e.target.checked)}
+                                        />
+                                        <span className="slider"></span>
+                                    </label>
                                 </div>
 
+
+                                {hasWarranty && (
+                                    <>
+                                        <div className='createcard-input-cont'>
+                                            <p>Warranty Start Date *</p>
+                                            <input
+                                                type="date"
+                                                className="createcard-card-input"
+                                                onChange={(e) => handleWarrantyStart(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className='createcard-input-cont'>
+                                            <p>Warranty End Date *</p>
+                                            <input
+                                                type="date"
+                                                className="createcard-card-input"
+                                                value={wed}
+                                                onChange={(e) => setWed(e.target.value)}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
+
                                 <div className='createcard-input-cont'>
-                                    <p>Warranty End Date *</p>
-                                    <input type="date" className="createcard-card-input" value={wed} onChange={(e) => setWed(e.target.value)} />
+                                    <p>Is AMC</p>
+
+                                    <label className="toggle-switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={isAmc}
+                                            onChange={(e) => setIsAmc(e.target.checked)}
+                                        />
+                                        <span className="slider"></span>
+                                    </label>
                                 </div>
+
+
+                                {isAmc && (
+                                    <>
+                                        <div className='createcard-input-cont'>
+                                            <p>AMC Start Date *</p>
+                                            <input
+                                                type="date"
+                                                className="createcard-card-input"
+                                                onChange={(e) => handleAMCStart(e.target.value)}
+                                            />
+                                        </div>
+
+                                        <div className='createcard-input-cont'>
+                                            <p>AMC End Date *</p>
+                                            <input
+                                                type="date"
+                                                className="createcard-card-input"
+                                                value={aed}
+                                                onChange={(e) => setAed(e.target.value)}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+
                             </>
                         )}
 

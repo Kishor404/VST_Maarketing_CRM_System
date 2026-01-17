@@ -13,6 +13,7 @@ import Attendance from './pages/attendance';
 import Warranty from './pages/warranty';
 import Reminder from "./pages/reminder";
 import FollowUp from "./pages/followup";
+import AMC from "./pages/amc";
 
 const HeadLayout = () => {
   const location = useLocation();
@@ -41,6 +42,7 @@ const App = () => {
           <Route path="showcard" element={<ShowCard />} />
           <Route path="service" element={<Service />} />
           <Route path="warranty" element={<Warranty />} />
+          <Route path="amc" element={<AMC />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="reminder" element={<Reminder />} />
           <Route path="followup" element={<FollowUp />} />

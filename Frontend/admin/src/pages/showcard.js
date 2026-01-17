@@ -96,6 +96,10 @@ const ShowCard = () => {
             date_of_installation: selectedCard.date_of_installation,
             warranty_start_date: selectedCard.warranty_start_date,
             warranty_end_date: selectedCard.warranty_end_date,
+            ...(selectedCard.amc_start_date && {
+                amc_start_date: selectedCard.amc_start_date,
+                amc_end_date: selectedCard.amc_end_date,
+            }),
         };
 
         try {
@@ -222,13 +226,15 @@ const ShowCard = () => {
                             <div className="showcard-details-box-cont">
                                 {selectedCard ? (
                                     <>
-                                        <DetailBox label="Model" field="model" data={selectedCard} setData={setSelectedCard} />
-                                        <DetailBox label="Customer Name" field="customer_name" data={selectedCard} setData={setSelectedCard} />
-                                        <DetailBox label="Region" field="region" data={selectedCard} setData={setSelectedCard} />
-                                        <DetailBox label="Address" field="address" data={selectedCard} setData={setSelectedCard} />
-                                        <DetailBox label="Date Of Installation" field="date_of_installation" data={selectedCard} setData={setSelectedCard} />
-                                        <DetailBox label="Warranty Start Date" field="warranty_start_date" data={selectedCard} setData={setSelectedCard} />
-                                        <DetailBox label="Warranty End Date" field="warranty_end_date" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="text" label="Model" field="model" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="text" label="Customer Name" field="customer_name" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="text" label="Region" field="region" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="text" label="Address" field="address" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="date" label="Date Of Installation" field="date_of_installation" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="date" label="Warranty Start Date" field="warranty_start_date" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="date" label="Warranty End Date" field="warranty_end_date" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="date" label="AMC Start Date" field="amc_start_date" data={selectedCard} setData={setSelectedCard} />
+                                        <DetailBox type="date" label="AMC End Date" field="amc_end_date" data={selectedCard} setData={setSelectedCard} />
                                     </>
                                 ) : <p>No Card Selected</p>}
                             </div>
@@ -246,11 +252,12 @@ const ShowCard = () => {
 };
 
 /* ---------------- DETAIL BOX ---------------- */
-const DetailBox = ({ label, field, data, setData }) => (
+const DetailBox = ({ type, label, field, data, setData }) => (
     <div className="showcard-details-box">
         <p className="showcard-details-key">{label}</p>
         <input
             className="showcard-details-value"
+            type={type}
             value={data[field] || ""}
             onChange={(e) => setData(prev => ({ ...prev, [field]: e.target.value }))}
         />
