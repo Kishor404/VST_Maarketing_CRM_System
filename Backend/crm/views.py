@@ -129,6 +129,44 @@ class CardViewSet(viewsets.ModelViewSet):
 
         # otherwise not allowed
         raise PermissionDenied("Only admin can create cards.")
+    
+    @action(
+        detail=True,
+        methods=["delete"],
+        permission_classes=[IsAuthenticated, IsAdmin],
+        url_path="admin-delete"
+    )
+    def admin_delete(self, request, pk=None):
+        """
+        Admin-only: Delete a card.
+        Prevent deletion if active services exist.
+        """
+        card = self.get_object()
+
+        # 🚫 Check for active services
+        active_services = Service.objects.filter(
+            card=card,
+            status__in=["pending", "assigned", "scheduled", "awaiting_otp"]
+        ).exists()
+
+        if active_services:
+            return Response(
+                {
+                    "detail": "Card cannot be deleted. Active services exist."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # ✅ Safe to delete
+        card.delete()
+
+        return Response(
+            {
+                "detail": "Card deleted successfully",
+                "card_id": pk
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 # crm/views.py — updated ServiceViewSet (replace existing ServiceViewSet class)
