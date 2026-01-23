@@ -62,6 +62,41 @@ const ShowCard = () => {
         fetchCards();
     }, []);
 
+    /* ---------------- DELETE CARD (ADMIN) ---------------- */
+    const deleteCard = async () => {
+        if (!selectedCard) return;
+
+        const confirmDelete = window.confirm(
+            "⚠️ Are you sure you want to DELETE this card?\nThis action cannot be undone."
+        );
+        if (!confirmDelete) return;
+
+        const accessToken = await refresh_token();
+        if (!accessToken) return;
+
+        try {
+            await axios.delete(
+                `${BASEURL}/api/crm/cards/${selectedCard.id}/admin-delete/`,
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+
+            alert("Card deleted successfully");
+
+            // remove from list without reload
+            setCardList(prev => prev.filter(c => c.id !== selectedCard.id));
+            setSelectedCard(null);
+
+        } catch (error) {
+            console.error("Delete failed:", error);
+
+            const msg =
+                error.response?.data?.detail ||
+                "Failed to delete card (active services may exist)";
+            alert(msg);
+        }
+    };
+
+
     /* ---------------- FETCH SINGLE CARD ---------------- */
     const fetchCardDetails = async (id) => {
         const accessToken = await refresh_token();
@@ -239,9 +274,26 @@ const ShowCard = () => {
                                 ) : <p>No Card Selected</p>}
                             </div>
 
-                            <button className='showcard-details-but' onClick={updateCard}>
-                                Update
-                            </button>
+                            <div style={{ display: "flex", gap: "10px" }}>
+                                <button
+                                    className='showcard-details-but'
+                                    onClick={updateCard}
+                                >
+                                    Update
+                                </button>
+
+                                <button
+                                    className='showcard-details-but'
+                                    style={{
+                                        backgroundColor: "#d9534f",
+                                        color: "#fff"
+                                    }}
+                                    onClick={deleteCard}
+                                >
+                                    Delete
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
