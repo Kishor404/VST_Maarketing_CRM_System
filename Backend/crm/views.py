@@ -791,6 +791,9 @@ class WarrantyReportView(APIView):
             while current_milestone < c.warranty_end_date:
                 milestones.append(current_milestone)
                 current_milestone += relativedelta(months=3)
+            
+            if c.warranty_end_date not in milestones:
+                milestones.append(c.warranty_end_date)
 
             card_services = services_by_card.get(c.id, [])
 
@@ -883,9 +886,12 @@ class WarrantyReportByCardView(APIView):
 
         current = card.warranty_start_date + relativedelta(months=3)
 
-        while current <= card.warranty_end_date:
+        while current < card.warranty_end_date:
             milestones.append(current)
             current += relativedelta(months=3)
+        
+        if card.warranty_end_date not in milestones:
+            milestones.append(card.warranty_end_date)
 
         results = []
 
@@ -984,6 +990,9 @@ class AMCReportView(APIView):
             while current_milestone < c.amc_end_date:
                 milestones.append(current_milestone)
                 current_milestone += relativedelta(months=3)
+            
+            if c.amc_end_date not in milestones:
+                milestones.append(c.amc_end_date)
 
             card_services = services_by_card.get(c.id, [])
 
@@ -1080,6 +1089,9 @@ class AMCReportByCardView(APIView):
             milestones.append(current)
             current += relativedelta(months=3)
 
+        if card.amc_end_date not in milestones:
+            milestones.append(card.amc_end_date)
+            
         results = []
 
         for m in milestones:
