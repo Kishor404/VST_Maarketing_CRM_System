@@ -69,9 +69,13 @@ const Warranty = () => {
       const defaults = {};
       const staffDefaults = {};
       res.data.forEach((card) => {
-        if (card.milestone) {
+        if (card.status === 'done' && card.scheduled_date) {
+          // ✅ use actual service date
+          defaults[card.card_id] = card.scheduled_date;
+        } else if (card.milestone) {
           defaults[card.card_id] = card.milestone;
         }
+
         if (card.status === 'done' && card.staff) {
           staffDefaults[card.card_id] = card.staff.staff_id;
         }
@@ -138,7 +142,7 @@ const Warranty = () => {
     }
 
     const data = cards.map((card) => ({
-      Milestone: card.milestone || '',
+      Milestone: formatDate(card.milestone) || '',
       customer_id: card.customer_id || '',
       Customer: card.customer_name || '',
       Phone: card.customer_phone || '',
@@ -146,16 +150,24 @@ const Warranty = () => {
       'Card Model': card.card_model || '',
       City: card.city || '',
       Status: card.status || '',
-      'Scheduled Date': scheduledDates[card.card_id] || '',
+
+      'Scheduled Date': formatDate(
+        card.status === 'done' && card.scheduled_date
+          ? card.scheduled_date
+          : scheduledDates[card.card_id]
+      ) || '',
+
       'Assign Staff':
         card.status === 'done' && card.staff
-        ? card.staff.staff_name
-        : staffList.find((s) => s.id === selectedStaff[card.card_id])?.name || '',
+          ? card.staff.staff_name
+          : staffList.find((s) => s.id === selectedStaff[card.card_id])?.name || '',
+
       'Attendance (Today)':
         selectedStaff[card.card_id]
           ? attendanceMap[selectedStaff[card.card_id]] || '—'
           : '—',
     }));
+
 
     const worksheet = XLSX.utils.json_to_sheet(data, {
       cellDates: true,
@@ -393,13 +405,15 @@ const Warranty = () => {
                       <input
                         type="date"
                         className="date-input"
-                        value={scheduledDates[card.card_id] || card.milestone}
+                        value={scheduledDates[card.card_id] || ''}
+                        disabled={card.status === 'done'}   // ✅ lock completed services
                         min={addDays(card.milestone, -20)}
                         max={addDays(card.milestone, 20)}
                         onChange={(e) =>
                           handleScheduledDateChange(card.card_id, e.target.value)
                         }
                       />
+
                     ) : (
                       <span>—</span>
                     )}
