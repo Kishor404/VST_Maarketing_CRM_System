@@ -4,6 +4,9 @@ import '../styles/showcard.css';
 import { FaAddressCard } from "react-icons/fa";
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+
 
 const BASEURL = "http://157.173.220.208";
 
@@ -112,6 +115,44 @@ const ShowCard = () => {
             console.error("Error fetching card:", error);
         }
     };
+
+    const exportCardsExcel = () => {
+        if (!filteredCards.length) {
+            alert("No data to export");
+            return;
+        }
+
+        const data = filteredCards.map(card => ({
+            ID: card.id,
+            Model: card.model || "",
+            Customer: card.customer_name || "",
+            Phone: card.customer_phone || "",
+            Region: card.region || "",
+            Address: card.address || "",
+            "Installation Date": formatDate(card.date_of_installation),
+            "Warranty Start": formatDate(card.warranty_start_date),
+            "Warranty End": formatDate(card.warranty_end_date),
+            "AMC Start": formatDate(card.amc_start_date),
+            "AMC End": formatDate(card.amc_end_date),
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Cards");
+
+        const buffer = XLSX.write(workbook, {
+            bookType: "xlsx",
+            type: "array",
+        });
+
+        const blob = new Blob([buffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+
+        saveAs(blob, "Service_Cards.xlsx");
+    };
+
 
     /* ---------------- UPDATE CARD ---------------- */
     const updateCard = async () => {
@@ -222,6 +263,12 @@ const ShowCard = () => {
                             <option value="name">Customer Name (A-Z)</option>
                             <option value="install">Installation Date</option>
                         </select>
+                        <button
+                            className="showcard-details-but"
+                            onClick={exportCardsExcel}
+                        >
+                            Export
+                        </button>
                     </div>
                 </div>
                 <div className='showcard-bottom'>
