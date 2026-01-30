@@ -764,15 +764,17 @@ class WarrantyReportView(APIView):
         free_services = (
             Service.objects
             .filter(service_type="free")
-            .values("card_id", "scheduled_at")
+            .values("card_id", "scheduled_at", "assigned_to_id", "assigned_to__name")
         )
 
         # Group services by card_id
         services_by_card = {}
         for s in free_services:
-            services_by_card.setdefault(s["card_id"], []).append(
-                s["scheduled_at"]
-            )
+            services_by_card.setdefault(s["card_id"], []).append({
+                "date": s["scheduled_at"],
+                "staff_id": s["assigned_to_id"],
+                "staff_name": s["assigned_to__name"]
+            })
 
         # ----------------------------------
         # 3. Process milestones
@@ -805,9 +807,16 @@ class WarrantyReportView(APIView):
                 end_window = m + timedelta(days=30)
 
                 status = "notdone"
-                for svc_date in card_services:
+                done_staff = None
+                for svc in card_services:
+                    svc_date = svc["date"]
+
                     if svc_date and start_window <= svc_date <= end_window:
                         status = "done"
+                        done_staff = {
+                            "staff_id": svc["staff_id"],
+                            "staff_name": svc["staff_name"],
+                        }
                         break
 
                 results.append({
@@ -820,6 +829,7 @@ class WarrantyReportView(APIView):
                     "city": c.city,
                     "milestone": m.isoformat(),
                     "status": status,
+                    "staff": done_staff,
                     "allmilestones":[m.isoformat() for m in milestones]
                 })
 
@@ -932,7 +942,6 @@ class WarrantyReportByCardView(APIView):
             status=status.HTTP_200_OK
         )
 
-
 class AMCReportView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
@@ -958,25 +967,33 @@ class AMCReportView(APIView):
         )
 
         # ----------------------------------
-        # 2. Fetch ALL free services once
+        # 2. Fetch ALL free services + staff
         # ----------------------------------
         free_services = (
             Service.objects
             .filter(service_type="free")
-            .values("card_id", "scheduled_at")
+            .select_related("assigned_to")
+            .values(
+                "card_id",
+                "scheduled_at",
+                "assigned_to_id",
+                "assigned_to__name",  # adjust field if needed
+            )
         )
 
         # Group services by card_id
         services_by_card = {}
+
         for s in free_services:
-            services_by_card.setdefault(s["card_id"], []).append(
-                s["scheduled_at"]
-            )
+            services_by_card.setdefault(s["card_id"], []).append({
+                "date": s["scheduled_at"],
+                "staff_id": s["assigned_to_id"],
+                "staff_name": s["assigned_to__name"],
+            })
 
         # ----------------------------------
         # 3. Process milestones
         # ----------------------------------
-
         for c in cards:
             if c.card_type == "om":
                 continue
@@ -990,7 +1007,7 @@ class AMCReportView(APIView):
             while current_milestone < c.amc_end_date:
                 milestones.append(current_milestone)
                 current_milestone += relativedelta(months=3)
-            
+
             if c.amc_end_date not in milestones:
                 milestones.append(c.amc_end_date)
 
@@ -1004,9 +1021,17 @@ class AMCReportView(APIView):
                 end_window = m + timedelta(days=30)
 
                 status = "notdone"
-                for svc_date in card_services:
+                done_staff = None
+
+                for svc in card_services:
+                    svc_date = svc["date"]
+
                     if svc_date and start_window <= svc_date <= end_window:
                         status = "done"
+                        done_staff = {
+                            "staff_id": svc["staff_id"],
+                            "staff_name": svc["staff_name"],
+                        }
                         break
 
                 results.append({
@@ -1019,10 +1044,12 @@ class AMCReportView(APIView):
                     "city": c.city,
                     "milestone": m.isoformat(),
                     "status": status,
-                    "allmilestones":[m.isoformat() for m in milestones]
+                    "staff": done_staff,
+                    "allmilestones": [m.isoformat() for m in milestones],
                 })
 
         return Response(results)
+
     
 class AMCReportByCardView(APIView):
     permission_classes = [IsAuthenticated]
