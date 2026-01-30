@@ -67,12 +67,17 @@ const Warranty = () => {
       setCards(res.data);
       console.log(res.data);
       const defaults = {};
+      const staffDefaults = {};
       res.data.forEach((card) => {
         if (card.milestone) {
           defaults[card.card_id] = card.milestone;
         }
+        if (card.status === 'done' && card.staff) {
+          staffDefaults[card.card_id] = card.staff.staff_id;
+        }
       });
       setScheduledDates(defaults);
+      setSelectedStaff(staffDefaults);
 
     } catch (err) {
       setError('Failed to load warranty customers. Please try again.');
@@ -143,7 +148,9 @@ const Warranty = () => {
       Status: card.status || '',
       'Scheduled Date': scheduledDates[card.card_id] || '',
       'Assign Staff':
-        staffList.find((s) => s.id === selectedStaff[card.card_id])?.name || '',
+        card.status === 'done' && card.staff
+        ? card.staff.staff_name
+        : staffList.find((s) => s.id === selectedStaff[card.card_id])?.name || '',
       'Attendance (Today)':
         selectedStaff[card.card_id]
           ? attendanceMap[selectedStaff[card.card_id]] || '—'
@@ -401,19 +408,19 @@ const Warranty = () => {
                       <select
                         className="form-select"
                         value={selectedStaff[card.card_id] || ''}
+                        disabled={card.status === 'done'}   // ✅ lock if done
                         onChange={(e) =>
                           handleStaffChange(card.card_id, e.target.value)
                         }
                       >
-                        <option value="">
-                          None
-                        </option>
+                        <option value="">None</option>
                         {staffList.map((staff) => (
                           <option key={staff.id} value={staff.id}>
                             {staff.name}
                           </option>
                         ))}
                       </select>
+
                     </td>
                     <td>
                       {selectedStaff[card.card_id] ? (

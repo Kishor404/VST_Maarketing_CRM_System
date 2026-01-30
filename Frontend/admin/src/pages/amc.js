@@ -59,28 +59,38 @@ const AMC = () => {
   const fetchAMCCards = async (month) => {
     setLoading(true);
     setError('');
+
     try {
       const res = await api.get(`/crm/reports/amc/`, {
         params: { month },
       });
-      console.log(res.data);
+
       setCards(res.data);
-      console.log(res.data);
+
       const defaults = {};
+      const staffDefaults = {};
+
       res.data.forEach((card) => {
         if (card.milestone) {
           defaults[card.card_id] = card.milestone;
         }
+
+        // ✅ auto-fill staff if already done
+        if (card.status === 'done' && card.staff) {
+          staffDefaults[card.card_id] = card.staff.staff_id;
+        }
       });
+
       setScheduledDates(defaults);
+      setSelectedStaff(staffDefaults);
 
     } catch (err) {
       setError('Failed to load amc customers. Please try again.');
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
 
   const fetchStaffList = async () => {
     try {
@@ -401,19 +411,19 @@ const AMC = () => {
                       <select
                         className="form-select"
                         value={selectedStaff[card.card_id] || ''}
+                        disabled={card.status === 'done'}   // ✅ prevent reassign
                         onChange={(e) =>
                           handleStaffChange(card.card_id, e.target.value)
                         }
                       >
-                        <option value="">
-                          None
-                        </option>
+                        <option value="">None</option>
                         {staffList.map((staff) => (
                           <option key={staff.id} value={staff.id}>
                             {staff.name}
                           </option>
                         ))}
                       </select>
+
                     </td>
                     <td>
                       {selectedStaff[card.card_id] ? (
