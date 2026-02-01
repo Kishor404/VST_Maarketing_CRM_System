@@ -19,6 +19,11 @@ const Service = () => {
     const [exportFromDate, setExportFromDate] = useState("");
     const [exportToDate, setExportToDate] = useState("");
 
+    const [exportStaffPhone, setExportStaffPhone] = useState("");
+    const [exportStaff, setExportStaff] = useState(null);
+    const [staffList, setStaffList] = useState([]);
+    const [exportStaffId, setExportStaffId] = useState("");
+
 
     const [serviceList, setServiceList]=useState([]);
     const [boxData, setBoxData] = useState({ "pending": 0, "assigned": 0,"completed": 0, "total": 0 });
@@ -129,6 +134,25 @@ const Service = () => {
             return null;
         }
     }
+
+    const fetchStaffList = async () => {
+        const Token = await refresh_token();
+        if (!Token) {
+            navigate('/head/');
+            return;
+        }
+
+        try {
+            const res = await axios.get(
+                `${BASEURL}/api/auth/admin/users/?role=worker`,
+                { headers: { Authorization: `Bearer ${Token}` } }
+            );
+            setStaffList(res.data);
+        } catch (err) {
+            console.error("Failed to load staff list", err);
+        }
+    };
+
 
     // ~~~~~~~~~~~ PATCH SERVICE BY ID ~~~~~~~~~~~~~~
 
@@ -550,6 +574,47 @@ const Service = () => {
         }
     };
 
+    const assignExportStaffByPhone = async (phone) => {
+        setExportStaffPhone(phone);
+
+        if (phone.length >= 10) {
+            const user = await getUserByPhone(phone);
+            if (user && (user.role === "worker" || user.role === "staff")) {
+                setExportStaff(user);
+            } else {
+                setExportStaff(null);
+            }
+        } else {
+            setExportStaff(null);
+        }
+    };
+    const exportByStaff = () => {
+        if (!exportStaffId) {
+            alert("Please select a staff");
+            return;
+        }
+
+        const data = serviceList.filter(
+            s => s.assigned_to === Number(exportStaffId)
+        );
+
+        if (!data.length) {
+            alert("No services found for selected staff");
+            return;
+        }
+
+        const staffName =
+            staffList.find(s => s.id === Number(exportStaffId))?.name || "staff";
+
+        exportToCSV(
+            data,
+            `services_${staffName}_ID_${exportStaffId}.csv`
+        );
+    };
+
+
+
+
     const exportToCSV = (services, filename) => {
         if (!services.length) {
             alert("No services to export");
@@ -699,6 +764,11 @@ const Service = () => {
             setFilteredList(serviceList);
         }
     }, [searchQuery, searchType, serviceList]);
+
+    useEffect(() => {
+        fetchStaffList();
+    }, []);
+
 
     useEffect(() => {
         const checkAttendance = async () => {
@@ -955,13 +1025,15 @@ const Service = () => {
 
                         <div className="service-export-box">
 
+
+
                             <div className='service-export-butbox'>
                                 <button onClick={exportCurrentWeek}>
-                                    Export This Week
+                                    This Week
                                 </button>
 
                                 <button onClick={exportCurrentMonth}>
-                                    Export This Month
+                                    This Month
                                 </button>
 
                             </div>
@@ -991,6 +1063,25 @@ const Service = () => {
                                 
                                 <button onClick={exportCustomRange}>
                                     Export
+                                </button>
+                            </div>
+                            <div className="service-export-staff">
+
+                                <select
+                                    className="service-export-select"
+                                    value={exportStaffId}
+                                    onChange={(e) => setExportStaffId(e.target.value)}
+                                >
+                                    <option value="">-- Select Staff --</option>
+                                    {staffList.map((staff) => (
+                                        <option key={staff.id} value={staff.id}>
+                                            {staff.name}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <button onClick={exportByStaff}>
+                                    Export Staff Services
                                 </button>
                             </div>
                         </div>

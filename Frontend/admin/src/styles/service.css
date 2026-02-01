@@ -92,7 +92,7 @@
 }
 .service-export-butbox{
     height: 100%;
-    width: 30%;
+    width: 20%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -110,7 +110,7 @@
 }
 .service-export-range{
     background-color: #e2e2e2;
-    width: 65%;
+    width: 50%;
     height: calc(100% - 20px);
     display: flex;
     flex-direction: column; 
@@ -566,3 +566,29 @@ hr{
     font-size: 12pt;
 }
 
+.service-export-staff{
+    background-color: #e2e2e2;
+    width: 25%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    flex-direction: column;
+    height: 100%;
+    border-radius: 10px;
+}
+
+.service-export-staff .service-export-select{
+    width: 85%;
+    height: 35%;
+    border: none;
+    border-radius: 10px;
+    background-color: white;
+}
+.service-export-staff button{
+    width: 85%;
+    height: 35%;
+    border: none;
+    border-radius: 10px;
+    background-color: #3762ae;
+    color: white;
+}
