@@ -21,6 +21,7 @@ const Service = () => {
 
     const [exportStaffPhone, setExportStaffPhone] = useState("");
     const [exportStaff, setExportStaff] = useState(null);
+    const [exportStatus, setExportStatus] = useState("");
     const [staffList, setStaffList] = useState([]);
     const [exportStaffId, setExportStaffId] = useState("");
 
@@ -574,46 +575,6 @@ const Service = () => {
         }
     };
 
-    const assignExportStaffByPhone = async (phone) => {
-        setExportStaffPhone(phone);
-
-        if (phone.length >= 10) {
-            const user = await getUserByPhone(phone);
-            if (user && (user.role === "worker" || user.role === "staff")) {
-                setExportStaff(user);
-            } else {
-                setExportStaff(null);
-            }
-        } else {
-            setExportStaff(null);
-        }
-    };
-    const exportByStaff = () => {
-        if (!exportStaffId) {
-            alert("Please select a staff");
-            return;
-        }
-
-        const data = serviceList.filter(
-            s => s.assigned_to === Number(exportStaffId)
-        );
-
-        if (!data.length) {
-            alert("No services found for selected staff");
-            return;
-        }
-
-        const staffName =
-            staffList.find(s => s.id === Number(exportStaffId))?.name || "staff";
-
-        exportToCSV(
-            data,
-            `services_${staffName}_ID_${exportStaffId}.csv`
-        );
-    };
-
-
-
 
     const exportToCSV = (services, filename) => {
         if (!services.length) {
@@ -687,49 +648,91 @@ const Service = () => {
         link.click();
     };
 
-    const exportCurrentWeek = () => {
-        const start = getStartOfWeek();
-        const end = getEndOfWeek();
+    const getFilteredExportCount = () => {
 
-        const data = serviceList.filter(s => {
-            const d = new Date(s.created_at);
-            return d >= start && d <= end;
-        });
+        let filtered = [...serviceList];
 
-        exportToCSV(data, "services_current_week.csv");
+        // Staff filter
+        if (exportStaffId) {
+            filtered = filtered.filter(
+                s => s.assigned_to === Number(exportStaffId)
+            );
+        }
+
+        // Status filter
+        if (exportStatus) {
+            filtered = filtered.filter(
+                s => s.status === exportStatus
+            );
+        }
+
+        // Date filter
+        if (exportFromDate && exportToDate) {
+            const start = new Date(exportFromDate);
+            const end = new Date(exportToDate);
+            end.setHours(23, 59, 59, 999);
+
+            filtered = filtered.filter(s => {
+                const d = new Date(s.created_at);
+                return d >= start && d <= end;
+            });
+        }
+
+        return filtered.length;
     };
 
-    const exportCurrentMonth = () => {
-        const start = getStartOfMonth();
-        const end = getEndOfMonth();
+    const exportServicesFiltered = () => {
 
-        const data = serviceList.filter(s => {
-            const d = new Date(s.created_at);
-            return d >= start && d <= end;
-        });
+        let filtered = [...serviceList];
 
-        exportToCSV(data, "services_current_month.csv");
-    };
-    const exportCustomRange = () => {
-        if (!exportFromDate || !exportToDate) {
-            alert("Select both dates");
+        // ---- Staff Filter ----
+        if (exportStaffId) {
+            filtered = filtered.filter(
+                s => s.assigned_to === Number(exportStaffId)
+            );
+        }
+
+        // ---- Status Filter ----
+        if (exportStatus) {
+            filtered = filtered.filter(
+                s => s.status === exportStatus
+            );
+        }
+
+        // ---- Date Filter ----
+        if (exportFromDate && exportToDate) {
+            const start = new Date(exportFromDate);
+            const end = new Date(exportToDate);
+            end.setHours(23, 59, 59, 999);
+
+            filtered = filtered.filter(s => {
+                const d = new Date(s.created_at);
+                return d >= start && d <= end;
+            });
+        }
+
+        if (!filtered.length) {
+            alert("No services found for selected filters");
             return;
         }
 
-        const start = new Date(exportFromDate);
-        const end = new Date(exportToDate);
-        end.setHours(23, 59, 59, 999);
+        // ---- Filename Builder ----
+        let staffName = exportStaffId
+            ? staffList.find(s => s.id === Number(exportStaffId))?.name || "staff"
+            : "all_staff";
 
-        const data = serviceList.filter(s => {
-            const d = new Date(s.created_at);
-            return d >= start && d <= end;
-        });
+        let statusName = exportStatus || "all_status";
 
-        exportToCSV(
-            data,
-            `services_${exportFromDate}_to_${exportToDate}.csv`
-        );
+        let fileName = `services_${staffName}_${statusName}`;
+
+        if (exportFromDate && exportToDate) {
+            fileName += `_${exportFromDate}_to_${exportToDate}`;
+        }
+
+        exportToCSV(filtered, `${fileName}.csv`);
     };
+
+
 
 
 
@@ -1027,16 +1030,16 @@ const Service = () => {
 
 
 
-                            <div className='service-export-butbox'>
-                                <button onClick={exportCurrentWeek}>
-                                    This Week
-                                </button>
-
-                                <button onClick={exportCurrentMonth}>
-                                    This Month
-                                </button>
-
+                            <div className='service-export-count'>
+                                <p className='service-export-count-value'>
+                                    {getFilteredExportCount()}
+                                </p>
+                                <p>
+                                    Services
+                                </p>
                             </div>
+
+
                             
 
                             <div className="service-export-range">
@@ -1061,9 +1064,10 @@ const Service = () => {
                                 </div>
                                 
                                 
-                                <button onClick={exportCustomRange}>
-                                    Export
+                                <button onClick={exportServicesFiltered}>
+                                    Export Services
                                 </button>
+
                             </div>
                             <div className="service-export-staff">
 
@@ -1072,17 +1076,27 @@ const Service = () => {
                                     value={exportStaffId}
                                     onChange={(e) => setExportStaffId(e.target.value)}
                                 >
-                                    <option value="">-- Select Staff --</option>
+                                    <option value="">All Staff</option>
                                     {staffList.map((staff) => (
                                         <option key={staff.id} value={staff.id}>
                                             {staff.name}
                                         </option>
                                     ))}
                                 </select>
-
-                                <button onClick={exportByStaff}>
-                                    Export Staff Services
-                                </button>
+                                <select
+                                    className="service-export-select"
+                                    value={exportStatus}
+                                    onChange={(e) => setExportStatus(e.target.value)}
+                                >
+                                    <option value="">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="scheduled">Scheduled</option>
+                                    <option value="assigned">Assigned</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="awaiting_otp">Awaiting OTP</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
                             </div>
                         </div>
                     </div>

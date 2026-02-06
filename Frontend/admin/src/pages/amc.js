@@ -145,7 +145,8 @@ const AMC = () => {
       return;
     }
 
-    const data = cards.map((card) => ({
+    const data = cards.map((card, index) => ({
+      'S.No': index + 1,
       Milestone: formatDate(card.milestone) || '',
       customer_id: card.customer_id || '',
       Customer: card.customer_name || '',

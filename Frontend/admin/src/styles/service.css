@@ -90,23 +90,24 @@
     align-items: center;
     padding: 15px 15px;
 }
-.service-export-butbox{
+.service-export-count{
     height: 100%;
     width: 20%;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     flex-direction: column;
-}
-.service-export-butbox button{
-    background-color: #3763ae;
-    color: white;
-    border: none;
+    background-color: #3762ae;
     border-radius: 10px;
-    padding: 0px 20px;
-    height: 45%;
-    width: 100%;
-    font-size: 10pt;
+}
+.service-export-count p{
+    margin: 0;
+    padding: 4px;
+    color: white;
+}
+.service-export-count-value{
+    font-size: 20pt;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
 }
 .service-export-range{
     background-color: #e2e2e2;
