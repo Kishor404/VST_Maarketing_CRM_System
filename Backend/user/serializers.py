@@ -56,6 +56,10 @@ class LoginSerializer(serializers.Serializer):
         user = authenticate(phone=phone, password=password)
         if not user:
             raise serializers.ValidationError("Invalid phone or password")
+        if not user.phone:
+            raise serializers.ValidationError(
+                "This account does not support login"
+            )
         if not user.is_active:
             raise serializers.ValidationError("User account disabled")
 

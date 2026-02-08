@@ -2,6 +2,9 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
+from django.db import transaction
+from django.db.models import Max
+import re
 
 class UserManager(BaseUserManager):
     def normalize_phone(self, phone: str) -> str:
@@ -12,11 +15,11 @@ class UserManager(BaseUserManager):
         return p
 
     def create_user(self, phone, password=None, **extra_fields):
-        if not phone:
-            raise ValueError("The phone number must be set")
-        phone = self.normalize_phone(phone)
+        if phone:
+            phone = self.normalize_phone(phone)
         user = self.model(phone=phone, **extra_fields)
-        user.set_password(password)
+        if password:
+            user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -30,7 +33,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("customer", "Customer"),
         ("worker", "Worker"),
         ("admin", "Admin"),
+        ("industrial", "Industrial"),
     ]
+
     REGION_CHOICES = [
         ("rajapalayam", "Rajapalayam"),
         ("ambasamuthiram", "Ambasamuthiram"),
@@ -40,8 +45,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("chennai", "Chennai"),
     ]
 
+    customer_code = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
+
     name = models.CharField(max_length=150)
-    phone = models.CharField(max_length=20, unique=True)
+    phone = models.CharField(
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
     address = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=120, blank=True, null=True)
     postal_code = models.CharField(max_length=20, blank=True, null=True)
@@ -58,6 +75,47 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ["name"]
 
     objects = UserManager()
+
+    
+
+    def save(self, *args, **kwargs):
+        PREFIX_MAP = {
+            "customer": "VSTC",
+            "worker": "VSTS",
+            "admin": "VSTA",
+            "industrial": "VSTI",
+        }
+        if not self.customer_code:
+
+            prefix = PREFIX_MAP.get(self.role, "VSTC")  # default fallback
+
+            with transaction.atomic():
+
+                last_code = (
+                    User.objects
+                    .filter(customer_code__startswith=prefix)
+                    .aggregate(max_code=Max("customer_code"))
+                    .get("max_code")
+                )
+
+                if last_code:
+                    last_num = int(re.findall(r'\d+', last_code)[0])
+                    next_num = last_num + 1
+                else:
+                    next_num = 1
+
+                while True:
+                    new_code = f"{prefix}{next_num:04d}"
+
+                    if not User.objects.filter(customer_code=new_code).exists():
+                        self.customer_code = new_code
+                        break
+
+                    next_num += 1
+
+        super().save(*args, **kwargs)
+
+
 
     def __str__(self):
         return f"{self.name} ({self.role})"
