@@ -33,7 +33,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         ("customer", "Customer"),
         ("worker", "Worker"),
         ("admin", "Admin"),
-        ("industrial", "Industrial"),
     ]
 
     REGION_CHOICES = [
@@ -63,6 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     region = models.CharField(max_length=50, choices=REGION_CHOICES, default="rajapalayam")
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default="customer")
     fcm_token = models.CharField(max_length=255, blank=True, null=True)
+    is_industrial = models.BooleanField(default=False, db_index=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_available = models.BooleanField(default=True)  # worker availability
@@ -76,16 +76,23 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     
 
+    def get_prefix(self):
+        if self.role == "customer" and self.is_industrial:
+            return "VSTI"
+        elif self.role == "customer":
+            return "VSTC"
+        elif self.role == "worker":
+            return "VSTS"
+        elif self.role == "admin":
+            return "VSTA"
+        return "VSTC"
+
+
     def save(self, *args, **kwargs):
-        PREFIX_MAP = {
-            "customer": "VSTC",
-            "worker": "VSTS",
-            "admin": "VSTA",
-            "industrial": "VSTI",
-        }
+
         if not self.customer_code:
 
-            prefix = PREFIX_MAP.get(self.role, "VSTC")  # default fallback
+            prefix = self.get_prefix()
 
             with transaction.atomic():
 
@@ -112,6 +119,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                     next_num += 1
 
         super().save(*args, **kwargs)
+
 
 
 
