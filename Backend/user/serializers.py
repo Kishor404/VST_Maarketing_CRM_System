@@ -12,6 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id",
+            "customer_code",
             "name",
             "phone",
             "address",
@@ -19,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
             "postal_code",
             "region",
             "role",
+            "is_industrial",
             "is_active",
             "is_staff",
             "is_available",
@@ -34,7 +36,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "name", "address", "city", "postal_code", "phone", "password", "region"]
+        fields = ["id","customer_code", "name", "address", "city", "postal_code", "phone", "password", "region", "is_industrial"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
@@ -87,7 +89,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "name", "phone", "address", "city", "postal_code", "region", "role", "fcm_token"]
+        fields = ["id","customer_code", "name", "phone", "address", "city", "postal_code", "region", "role", "fcm_token", "is_industrial"]
         read_only_fields = ["id", "phone", "role"]
 
 class AdminChangePasswordSerializer(serializers.Serializer):
@@ -104,6 +106,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id",
+            "customer_code",
             "name",
             "phone",
             "password",
@@ -112,6 +115,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             "address",
             "city",
             "postal_code",
+            "is_industrial",
             "is_active",
             "is_staff",
             "is_available",
@@ -132,11 +136,13 @@ class AdminUserUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "name",
             "phone",
+            "customer_code",
             "address",
             "city",
             "postal_code",
             "region",
             "role",
+            "is_industrial",
             "is_active",
             "is_staff",
             "is_available",

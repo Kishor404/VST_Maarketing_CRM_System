@@ -46,7 +46,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     customer_code = models.CharField(
         max_length=20,
-        unique=True
+        unique=True,
+        editable=False
     )
 
     name = models.CharField(max_length=150)
