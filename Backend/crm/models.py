@@ -38,6 +38,7 @@ SERVICE_STATUS = (
     ("awaiting_otp", "Awaiting OTP"),
     ("completed", "Completed"),
     ("cancelled", "Cancelled"),
+    ("job_card_pending", "Job Card Pending")
 )
 
 VISIT_TYPE = (
@@ -47,6 +48,14 @@ VISIT_TYPE = (
     ("CS","Contract Service"),
     ("CC","Curtacy Call"),
 )
+
+JOB_CARD_STATUS = (
+    ("get_from_customer", "Get From Customer"),
+    ("received_office", "Received In Office"),
+    ("repair_completed", "Repair Completed"),
+    ("reinstalled", "Reinstalled"),
+)
+
 
 
 class Card(models.Model):
@@ -163,3 +172,32 @@ class AuditLog(models.Model):
     object_id = models.CharField(max_length=100)
     payload = JSONField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+class JobCard(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="job_cards")
+    service_entry = models.ForeignKey(ServiceEntry, on_delete=models.CASCADE, related_name="job_cards")
+
+    staff = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="job_cards_created")
+    reinstall_staff = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="job_cards_reinstall"
+    )
+    customer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    part_name = models.CharField(max_length=255)
+    details = models.TextField(blank=True)
+
+    image = models.ImageField(upload_to="job_cards/", null=True, blank=True)
+
+    status = models.CharField(max_length=30, choices=JOB_CARD_STATUS, default="get_from_customer")
+
+    get_from_customer_at = models.DateTimeField(auto_now_add=True)
+    received_office_at = models.DateTimeField(null=True, blank=True)
+    repair_completed_at = models.DateTimeField(null=True, blank=True)
+    reinstalled_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)

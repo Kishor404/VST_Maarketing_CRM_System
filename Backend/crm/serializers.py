@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from django.conf import settings
-from .models import Card, Service, ServiceEntry, Feedback, Attendance
+from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard
 from user.models import User  # your User model
 from .utils import generate_otp, hash_otp, otp_expiry_time,booking_is_eligible_for_free
 from datetime import timedelta
@@ -59,9 +59,32 @@ class CardCreateSerializer(serializers.ModelSerializer):
         if not validated_data.get("customer_name") and customer:
             validated_data["customer_name"] = customer.name
         return super().create(validated_data)
+    
+
+class JobCardSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = JobCard
+        fields = "__all__"
+        read_only_fields = (
+            "id",
+            "staff",
+            "customer",
+            "service",
+            "service_entry",
+            "get_from_customer_at",
+            "received_office_at",
+            "repair_completed_at",
+            "reinstalled_at",
+            "created_at"
+        )
+
+
+
 
 class ServiceEntrySerializer(serializers.ModelSerializer):
     performed_by = serializers.PrimaryKeyRelatedField(read_only=True)
+    job_cards = JobCardSerializer(many=True, read_only=True)
 
     class Meta:
         model = ServiceEntry
@@ -212,7 +235,7 @@ class ServiceSerializer(serializers.ModelSerializer):
 
     def get_assigned_to_detail(self, obj):
         if obj.assigned_to:
-            return {"id": obj.assigned_to.id, "name": getattr(obj.assigned_to, "name", obj.assigned_to.phone), "phone":obj.requested_by.phone}
+            return {"id": obj.assigned_to.id, "name": getattr(obj.assigned_to, "name", obj.assigned_to.phone), "phone":obj.assigned_to.phone}
         return None
 
     def to_representation(self, instance):
@@ -401,3 +424,5 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
         )
 
         return service
+
+

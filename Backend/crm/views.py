@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from user.models import User  # your custom user model
 
-from .models import Card, Service, ServiceEntry, Feedback, Attendance
+from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard
 from .serializers import (
     CardSerializer,
     CardCreateSerializer,
@@ -29,6 +29,7 @@ from .serializers import (
     ServiceEntrySerializer,
     FeedbackSerializer,
     AttendanceSerializer,
+    JobCardSerializer
     # assume User serializer exists if needed (e.g., UserSerializer)
 )
 from .permissions import IsAdmin, IsStaff, IsCustomer
@@ -418,6 +419,69 @@ class ServiceViewSet(viewsets.ModelViewSet):
             return Response({"detail": "otp-generated", "otp": otp})
         
         return Response({"detail": "otp-sent"}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def reinstall(self, request, pk=None):
+
+        service = self.get_object()
+        user = request.user
+
+        if service.status != "job_card_pending":
+            return Response({"detail": "Service has no pending job cards"}, status=400)
+
+        otp = request.data.get("otp")
+        job_card_ids = request.data.get("job_cards", [])
+
+        if not otp:
+            return Response({"detail": "otp required"}, status=400)
+
+        if not job_card_ids:
+            return Response({"detail": "job_cards list required"}, status=400)
+
+        # OTP expiry check
+        if not service.otp_hash or not service.otp_expires_at or timezone.now() > service.otp_expires_at:
+            return Response({"detail": "otp expired"}, status=400)
+
+        if not verify_otp_hash(otp, service.otp_hash):
+            return Response({"detail": "invalid otp"}, status=400)
+
+        # Fetch job cards
+        job_cards = JobCard.objects.filter(
+            id__in=job_card_ids,
+            service=service
+        )
+
+        if not job_cards.exists():
+            return Response({"detail": "Invalid job cards"}, status=400)
+
+        # Permission check
+        if user.role != "admin":
+
+            not_allowed = job_cards.exclude(reinstall_staff=user).exists()
+
+            if not_allowed:
+                return Response({"detail": "You are not reinstall staff for some job cards"}, status=403)
+
+        # Ensure repaired first
+        if job_cards.exclude(status="repair_completed").exists():
+            return Response({"detail": "Some job cards are not repaired"}, status=400)
+
+        # Mark selected job cards reinstalled
+        job_cards.update(
+            status="reinstalled",
+            reinstalled_at=timezone.now()
+        )
+
+        # Check if ALL job cards done → complete service
+        if not JobCard.objects.filter(service=service).exclude(status="reinstalled").exists():
+
+            service.status = "completed"
+            service.otp_hash = None
+            service.otp_expires_at = None
+            service.save()
+
+        return Response({"detail": "Selected parts reinstalled"})
+
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def verify_otp(self, request, pk=None):
@@ -450,11 +514,13 @@ class ServiceViewSet(viewsets.ModelViewSet):
             parsed_next_date = parse_date(next_service_date)
 
         # 🔒 ATOMIC BLOCK
+        job_cards_data = request.data.get("job_cards", [])
+
         with transaction.atomic():
-            # 1️⃣ Create service entry
+
             se = ServiceEntry.objects.create(
                 service=service,
-                performed_by=user if user.role in ("worker", "staff") else None,
+                performed_by=user,
                 actual_complaint=service.description,
                 visit_type=service.visit_type,
                 work_detail=work_detail,
@@ -462,19 +528,45 @@ class ServiceViewSet(viewsets.ModelViewSet):
                 amount_charged=amount_charged,
             )
 
-            # 2️⃣ FORCE DB UPDATE (NO SAVE())
-            Service.objects.filter(pk=service.pk).update(
-                status="completed",
-                otp_hash=None,
-                otp_expires_at=None,
-                next_service_date=parsed_next_date,
-            )
+            # If job cards exist → create them
+            if job_cards_data:
+
+                for jc in job_cards_data:
+                    JobCard.objects.create(
+                        service=service,
+                        service_entry=se,
+                        staff=user,
+                        reinstall_staff=user, 
+                        customer=service.card.customer,
+                        part_name=jc.get("part_name"),
+                        details=jc.get("details"),
+                        image=jc.get("image"),
+                    )
+
+                # DO NOT COMPLETE SERVICE
+                Service.objects.filter(pk=service.pk).update(
+                    status="job_card_pending",
+                    otp_hash=None,
+                    otp_expires_at=None,
+                )
+
+            else:
+                # Normal completion
+                Service.objects.filter(pk=service.pk).update(
+                    status="completed",
+                    otp_hash=None,
+                    otp_expires_at=None,
+                    next_service_date=parsed_next_date,
+                )
+
+
+        final_status = "job_card_pending" if job_cards_data else "completed"
 
         return Response(
             {
-                "detail": "service completed",
+                "detail": "service processed",
                 "service_entry_id": se.id,
-                "status": "completed",
+                "status": final_status,
             },
             status=status.HTTP_200_OK,
         )
@@ -1267,3 +1359,8 @@ def Send_SMS(phone, message):
         print("To : "+phone)
         print("Message : "+message)
         print("-----------------------")
+
+class JobCardViewSet(viewsets.ModelViewSet):
+    queryset = JobCard.objects.select_related("service", "staff", "customer")
+    serializer_class = JobCardSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
