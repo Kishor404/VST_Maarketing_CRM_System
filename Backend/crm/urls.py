@@ -7,7 +7,7 @@ from .views import (
     FeedbackViewSet, AttendanceViewSet,
     WarrantyReportView, UpcomingServicesReportView,
     AutoAssignRunView, ExportServicesCSVView, DevSendOtpView, WarrantyReportByCardView,
-    AMCReportByCardView, AMCReportView, JobCardViewSet
+    AMCReportByCardView, AMCReportView, JobCardViewSet, IndustrialAMCViewSet, IndustrialAMCReportView
 )
 
 router = DefaultRouter()
@@ -17,6 +17,7 @@ router.register(r"service-entries", ServiceEntryViewSet, basename="service-entry
 router.register(r"feedbacks", FeedbackViewSet, basename="feedback")
 router.register(r"attendance", AttendanceViewSet, basename="attendance")
 router.register(r"job-cards", JobCardViewSet)
+router.register(r"industrial-amc", IndustrialAMCViewSet)
 
 
 urlpatterns = [
@@ -30,6 +31,7 @@ urlpatterns = [
     path("reports/amc-report/by_card/",AMCReportByCardView.as_view(),name="amc-report-by-card"),
     path("autoassign/run/", AutoAssignRunView.as_view(), name="autoassign-run"),
     path("admin/export/services/", ExportServicesCSVView.as_view(), name="export-services"),
+    path("reports/industrial-amc/", IndustrialAMCReportView.as_view()),
 
     # Dev only
     path("test/send-otp/", DevSendOtpView.as_view(), name="dev-send-otp"),

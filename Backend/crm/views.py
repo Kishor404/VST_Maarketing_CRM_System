@@ -19,7 +19,7 @@ from rest_framework.views import APIView
 
 from user.models import User  # your custom user model
 
-from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard
+from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard, IndustrialAMC
 from .serializers import (
     CardSerializer,
     CardCreateSerializer,
@@ -29,7 +29,8 @@ from .serializers import (
     ServiceEntrySerializer,
     FeedbackSerializer,
     AttendanceSerializer,
-    JobCardSerializer
+    JobCardSerializer,
+    IndustrialAMCSerializer,
     # assume User serializer exists if needed (e.g., UserSerializer)
 )
 from .permissions import IsAdmin, IsStaff, IsCustomer
@@ -1364,3 +1365,125 @@ class JobCardViewSet(viewsets.ModelViewSet):
     queryset = JobCard.objects.select_related("service", "staff", "customer")
     serializer_class = JobCardSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
+
+
+from dateutil.relativedelta import relativedelta
+
+def generate_industrial_milestones(amc):
+
+    milestones = []
+    current = amc.start_date + relativedelta(months=amc.interval_months)
+
+    while current <= amc.end_date:
+        milestones.append(current)
+        current += relativedelta(months=amc.interval_months)
+
+    return milestones
+
+
+class IndustrialAMCViewSet(viewsets.ModelViewSet):
+
+    queryset = IndustrialAMC.objects.select_related("card", "card__customer")
+    serializer_class = IndustrialAMCSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+
+class IndustrialAMCReportView(APIView):
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+
+        month = request.query_params.get("month")
+
+        if not month:
+            today = timezone.localdate()
+            month = f"{today.year}-{today.month:02d}"
+
+        year, mon = map(int, month.split("-"))
+
+        first_day = datetime(year, mon, 1).date()
+        last_day = datetime(year, mon, monthrange(year, mon)[1]).date()
+
+        results = []
+
+        amcs = IndustrialAMC.objects.select_related(
+            "card",
+            "card__customer"
+        )
+
+        for amc in amcs:
+
+            milestones = []
+
+            current = amc.start_date + relativedelta(
+                months=amc.interval_months
+            )
+
+            while current <= amc.end_date:
+                milestones.append(current)
+                current += relativedelta(months=amc.interval_months)
+
+            # 🔹 fetch free services
+            services = (
+                Service.objects
+                .filter(card=amc.card, service_type="free")
+                .values(
+                    "scheduled_at",
+                    "assigned_to_id",
+                    "assigned_to__name"
+                )
+            )
+
+            for m in milestones:
+
+                if not (first_day <= m <= last_day):
+                    continue
+
+                start_window = m - timedelta(days=30)
+                end_window = m + timedelta(days=30)
+
+                status = "notdone"
+                done_staff = None
+                scheduled_date = None
+
+                for svc in services:
+
+                    svc_date = svc["scheduled_at"]
+
+                    if svc_date and start_window <= svc_date <= end_window:
+
+                        status = "done"
+                        scheduled_date = svc_date.isoformat()
+
+                        done_staff = {
+                            "staff_id": svc["assigned_to_id"],
+                            "staff_name": svc["assigned_to__name"],
+                        }
+
+                        break
+
+                results.append({
+
+                    "card_id": amc.card.id,
+                    "card_model": amc.card.model,
+
+                    "customer_id": amc.card.customer.id,
+                    "customer_name": amc.card.customer.name,
+                    "customer_phone": amc.card.customer.phone,
+
+                    "address": amc.card.address,
+                    "city": amc.card.city,
+
+                    "interval_months": amc.interval_months,
+
+                    "milestone": m.isoformat(),
+                    "status": status,
+                    "staff": done_staff,
+                    "scheduled_date": scheduled_date,
+
+                    "allmilestones": [d.isoformat() for d in milestones]
+                })
+
+        return Response(results)
+

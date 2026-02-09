@@ -14,6 +14,7 @@ import Warranty from './pages/warranty';
 import Reminder from "./pages/reminder";
 import FollowUp from "./pages/followup";
 import AMC from "./pages/amc";
+import IndustrialAMC from "./pages/industrial_amc";
 
 const HeadLayout = () => {
   const location = useLocation();
@@ -43,6 +44,7 @@ const App = () => {
           <Route path="service" element={<Service />} />
           <Route path="warranty" element={<Warranty />} />
           <Route path="amc" element={<AMC />} />
+          <Route path="industrialamc" element={<IndustrialAMC />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="reminder" element={<Reminder />} />
           <Route path="followup" element={<FollowUp />} />

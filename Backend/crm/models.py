@@ -3,6 +3,7 @@ from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 try:
     from django.db.models import JSONField
@@ -201,3 +202,41 @@ class JobCard(models.Model):
     reinstalled_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class IndustrialAMC(models.Model):
+    card = models.OneToOneField(
+        Card,
+        on_delete=models.CASCADE,
+        related_name="industrial_amc"
+    )
+
+    interval_months = models.PositiveIntegerField(
+        help_text="Service interval in months (ex: 4, 5, 6)"
+    )
+
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="industrial_amc_created"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        if not self.card.customer.is_industrial:
+            raise ValidationError("Industrial AMC allowed only for industrial customers")
+
+        if self.interval_months < 1:
+            raise ValidationError("Interval must be at least 1 month")
+
+        if self.end_date <= self.start_date:
+            raise ValidationError("End date must be after start date")
+
+
+    def __str__(self):
+        return f"Industrial AMC Card {self.card.id} ({self.interval_months} months)"

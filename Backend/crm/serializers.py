@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from django.conf import settings
-from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard
+from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard, IndustrialAMC
 from user.models import User  # your User model
 from .utils import generate_otp, hash_otp, otp_expiry_time,booking_is_eligible_for_free
 from datetime import timedelta
@@ -426,3 +426,28 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
         return service
 
 
+class IndustrialAMCSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = IndustrialAMC
+        fields = "__all__"
+        read_only_fields = ("id", "created_by", "created_at")
+
+    def validate_card(self, card):
+
+        if not card.customer.is_industrial:
+            raise serializers.ValidationError(
+                "Selected card does not belong to industrial customer"
+            )
+
+        return card
+
+    def create(self, validated_data):
+
+        request = self.context.get("request")
+        admin = request.user if request else None
+
+        return IndustrialAMC.objects.create(
+            created_by=admin,
+            **validated_data
+        )
