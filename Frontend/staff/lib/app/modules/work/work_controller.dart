@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 
 import '../../data/models/service_model.dart';
@@ -24,6 +26,8 @@ class WorkController extends GetxController {
   final partsReplaced = <String>[].obs;
 
   final phone = ''.obs;
+
+  var jobCards = <Map<String, dynamic>>[].obs;
 
   final devOtp = ''.obs; // ⚠️ DEV ONLY
 
@@ -131,25 +135,79 @@ class WorkController extends GetxController {
   }) async {
     try {
       otpLoading.value = true;
-      print(payload);
-      await _provider.verifyOtpAndComplete(
-        serviceId: serviceId,
-        otp: otp,
-        payload: payload,
+
+      /// ======================
+      /// Create Multipart Form
+      /// ======================
+
+      dio.FormData formData = dio.FormData.fromMap({});
+
+      formData.fields.add(MapEntry("otp", otp));
+
+      formData.fields.add(
+        MapEntry("work_detail", payload["work_detail"]),
       );
 
-      /// ✅ Reset local state
+      formData.fields.add(
+        MapEntry(
+          "amount_charged",
+          payload["amount_charged"].toString(),
+        ),
+      );
+
+      /// PARTS REPLACED
+      for (var part in partsReplaced) {
+        formData.fields.add(
+          MapEntry("parts_replaced[]", part),
+        );
+      }
+
+      /// JOB CARDS
+      for (int i = 0; i < jobCards.length; i++) {
+        final jc = jobCards[i];
+
+        formData.fields.add(
+          MapEntry("job_cards[$i][part_name]", jc["part_name"] ?? ""),
+        );
+
+        formData.fields.add(
+          MapEntry("job_cards[$i][details]", jc["details"] ?? ""),
+        );
+
+        /// IMAGE UPLOAD
+        if (jc["image"] != null && jc["image"] is File) {
+          formData.files.add(
+            MapEntry(
+              "job_cards[$i][image]",
+              await dio.MultipartFile.fromFile(
+                jc["image"].path,
+                filename: jc["image"].path.split('/').last,
+              ),
+            ),
+          );
+        }
+      }
+
+      /// ======================
+      /// API CALL
+      /// ======================
+
+      await _provider.verifyOtpAndCompleteMultipart(
+        serviceId: serviceId,
+        formData: formData,
+      );
+
+      /// RESET STATE
       selectedService.value = null;
       workDetail.value = '';
       amountCharged.value = '';
       devOtp.value = '';
-      otp = '';
+      this.otp.value = '';
       partsReplaced.clear();
+      jobCards.clear();
 
-      /// ✅ Refresh data
-      await loadAll(); // fetchAssigned + fetchCompleted
+      await loadAll();
 
-      /// ✅ Close ONLY the completion page
       Get.back();
       Get.back();
 
@@ -157,6 +215,7 @@ class WorkController extends GetxController {
         title: "Completed",
         message: "Service completed successfully",
       );
+
     } catch (e) {
       AppSnackbar.error(
         title: "Completion Failed",
@@ -166,6 +225,8 @@ class WorkController extends GetxController {
       otpLoading.value = false;
     }
   }
+
+
 
   int get assignedCount => assignedServices.length;
 

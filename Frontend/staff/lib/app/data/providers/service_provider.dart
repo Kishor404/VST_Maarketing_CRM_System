@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
 import '../models/service_model.dart';
@@ -98,6 +99,18 @@ class ServiceProvider {
         "otp": otp,
         ...payload,
       },
+    );
+  }
+
+  Future<void> verifyOtpAndCompleteMultipart({
+    required int serviceId,
+    required FormData formData,
+  }) async {
+
+    await _apiClient.post(
+      ApiEndpoints.verifyOtp(serviceId),
+      data: formData,
+      isMultipart: true,
     );
   }
 }

@@ -25,9 +25,6 @@ class ApiClient {
             Duration(seconds: AppConstants.connectTimeout),
         receiveTimeout:
             Duration(seconds: AppConstants.receiveTimeout),
-        headers: const {
-          'Content-Type': 'application/json',
-        },
       ),
     );
 
@@ -147,26 +144,46 @@ class ApiClient {
   Future<dynamic> post(
     String path, {
     dynamic data,
+    bool isMultipart = false,
   }) async {
     try {
-      final res = await _dio.post(path, data: data);
+      final res = await _dio.post(
+        path,
+        data: data,
+        options: Options(
+          contentType: isMultipart
+              ? 'multipart/form-data'
+              : 'application/json',
+        ),
+      );
       return res.data;
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
   }
 
+
   Future<dynamic> patch(
     String path, {
     dynamic data,
+    bool isMultipart = false,
   }) async {
     try {
-      final res = await _dio.patch(path, data: data);
+      final res = await _dio.patch(
+        path,
+        data: data,
+        options: Options(
+          contentType: isMultipart
+              ? 'multipart/form-data'
+              : 'application/json',
+        ),
+      );
       return res.data;
     } on DioException catch (e) {
       throw ApiException.fromDio(e);
     }
   }
+
 
   Future<void> delete(String path) async {
     try {

@@ -1,9 +1,26 @@
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'work_controller.dart';
 
 class WorkCompletionPage extends GetView<WorkController> {
   const WorkCompletionPage({super.key});
+
+  Future<void> pickJobCardImage(int index) async {
+    final picker = ImagePicker();
+
+    final picked = await picker.pickImage(
+      source: ImageSource.camera, // or gallery
+      imageQuality: 70,
+    );
+
+    if (picked != null) {
+      controller.jobCards[index]["image"] = File(picked.path);
+      controller.jobCards.refresh();
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -156,6 +173,145 @@ class WorkCompletionPage extends GetView<WorkController> {
 
 
             const SizedBox(height: 32),
+
+            /// ============================
+            /// Job Card Section
+            /// ============================
+
+            Text(
+              'Create Job Cards (If Part Taken to Workshop)',
+              style: theme.textTheme.headlineMedium?.copyWith(fontSize: 18),
+            ),
+
+            const SizedBox(height: 12),
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.secondary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+
+                  /// Add New Job Card Button
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.build),
+                    label: const Text("Add Job Card"),
+                    onPressed: () {
+                      controller.jobCards.add({
+                        "part_name": "",
+                        "details": "",
+                        "image": null,
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  /// Job Card List
+                  Obx(() {
+                    if (controller.jobCards.isEmpty) {
+                      return const Text(
+                        "No Job Cards Created",
+                        style: TextStyle(color: Colors.grey),
+                      );
+                    }
+
+                    return Column(
+                      children: List.generate(controller.jobCards.length, (index) {
+                        final jc = controller.jobCards[index];
+
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Column(
+                              children: [
+
+                                /// PART NAME
+                                TextField(
+                                  decoration: const InputDecoration(
+                                    labelText: "Part Name",
+                                  ),
+                                  onChanged: (v) {
+                                    controller.jobCards[index]["part_name"] = v;
+                                  },
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                /// DETAILS
+                                TextField(
+                                  maxLines: 2,
+                                  decoration: const InputDecoration(
+                                    labelText: "Problem Details",
+                                  ),
+                                  onChanged: (v) {
+                                    controller.jobCards[index]["details"] = v;
+                                  },
+                                ),
+
+                                const SizedBox(height: 12),
+
+                                /// IMAGE PREVIEW
+                                Obx(() {
+                                  final image = controller.jobCards[index]["image"];
+
+                                  if (image == null) return const SizedBox();
+
+                                  return Column(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: Image.file(
+                                          image,
+                                          height: 120,
+                                          width: double.infinity,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                    ],
+                                  );
+                                }),
+
+                                /// IMAGE BUTTON
+                                Row(
+                                  children: [
+                                    ElevatedButton.icon(
+                                      icon: const Icon(Icons.camera_alt),
+                                      label: const Text("Capture Image"),
+                                      onPressed: () => pickJobCardImage(index),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                /// REMOVE BUTTON
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton.icon(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    label: const Text("Remove"),
+                                    onPressed: () {
+                                      controller.jobCards.removeAt(index);
+                                    },
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+
+                      }),
+                    );
+                  })
+                ],
+              ),
+            ),
+
 
             /// ============================
             /// 2. OTP Verification Section
@@ -348,7 +504,16 @@ class WorkCompletionPage extends GetView<WorkController> {
                           "amount_charged":
                               double.tryParse(controller.amountCharged.value) ?? 0,
                           "parts_replaced": controller.partsReplaced.toList(),
+
+                          /// 🔥 JOB CARDS
+                          "job_cards": controller.jobCards.map((jc) {
+                            return {
+                              "part_name": jc["part_name"],
+                              "details": jc["details"],
+                            };
+                          }).toList(),
                         },
+
                       );
                     },
               icon: controller.otpLoading.value
