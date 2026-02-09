@@ -515,7 +515,25 @@ class ServiceViewSet(viewsets.ModelViewSet):
             parsed_next_date = parse_date(next_service_date)
 
         # 🔒 ATOMIC BLOCK
-        job_cards_data = request.data.get("job_cards", [])
+        job_cards_data = []
+
+        index = 0
+        while True:
+            part_name = request.data.get(f"job_cards[{index}][part_name]")
+            details = request.data.get(f"job_cards[{index}][details]")
+            image = request.FILES.get(f"job_cards[{index}][image]")
+
+            if part_name is None and details is None and image is None:
+                break
+
+            job_cards_data.append({
+                "part_name": part_name,
+                "details": details,
+                "image": image,
+            })
+
+            index += 1
+
 
         with transaction.atomic():
 
