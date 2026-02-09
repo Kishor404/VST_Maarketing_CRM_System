@@ -251,7 +251,7 @@ const CreateCard = () => {
 
                             {/* SEARCH MODE SELECT */}
                             <select
-                                className="createcard-card-input"
+                                className="createcard-card-input-io"
                                 value={searchMode}
                                 onChange={(e) => {
                                     setSearchMode(e.target.value);

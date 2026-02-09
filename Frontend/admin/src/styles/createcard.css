@@ -39,6 +39,14 @@
     border: none;
     padding: 20px;
 }
+.createcard-card-input-io{
+    width: 100%;
+    background-color: #e2e2e2;
+    border-radius: 10px;
+    border: none;
+    padding: 20px;
+    margin-bottom: 20px;
+}
 .createcard-card-button{
     background-color: #3763ae;
     border: none;

@@ -1,0 +1,294 @@
+.iamc-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(0, 0, 0, 0.6);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+.iamc-modal-content{
+    width: 40%;
+}
+.iamc-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+
+  border: none;
+  background: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iamc-createcard-card{
+    background-color: white;
+    width: 100%;
+    height: 75%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 20px;
+    padding: 20px 0px;
+}
+.iamc-createcard-inputs{
+    width: 100%;
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+.iamc-createcard-card-input{
+    width: calc(100% - 40px);
+    background-color: #e2e2e2;
+    border-radius: 10px;
+    border: none;
+    padding: 20px;
+}
+.iamc-createcard-card-input-io{
+    width: 100%;
+    background-color: #e2e2e2;
+    border-radius: 10px;
+    border: none;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.iamc-createcard-card-button{
+    background-color: #3763ae;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    color: white;
+    margin: 20px;
+    font-size: 14pt;
+}
+.iamc-createcard-title{
+    color: #3763ae;
+    font-size: 18pt;
+}
+.iamc-createcard-input-cont{
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    flex-direction: column;
+    margin: 15px 0px;
+}
+.iamc-createcard-input-cont p{
+    margin: 0;
+    color: #444444;
+    margin: 5px 0px;
+}
+
+
+
+.iamc-container {
+  padding: 4%;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #3762ae;
+  width: 92%;
+  height: 92%;
+}
+
+.iamc-title {
+  margin-bottom: 16px;
+  font-size: 24px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  border-left: 5px solid white;
+  padding-left: 20px;
+  
+}
+
+.iamc-alert {
+  padding: 10px 14px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.iamc-alert-success {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #c8e6c9;
+}
+
+.iamc-alert-error {
+  background-color: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ffcdd2;
+}
+
+.iamc-controls-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.iamc-form-control {
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  align-items: center;
+  justify-content: center;
+}
+
+.iamc-form-form{
+    width: 50%;
+    display: flex;
+    justify-content: end;
+    align-items: center;
+}
+
+.iamc-form-select {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  background-color: #fff;
+  padding: 15px 30px;
+}
+
+.iamc-btn {
+  padding: 15px 30px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.iamc-btn-primary {
+  background-color: #14a728;
+  color: #ffffff;
+  font-size: 12pt;
+  text-transform: uppercase;
+}
+
+.iamc-btn-secondary {
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 12pt;
+  margin-left: 10px;
+}
+.iamc-btn-primary:disabled {
+  background-color: #90caf9;
+  cursor: not-allowed;
+}
+
+/* Loader */
+.iamc-loader-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.iamc-loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1976d2;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Table */
+.iamc-table-wrapper {
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  overflow-x: scroll;
+  height: 70%;
+  background-color: white;
+}
+
+.iamc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.iamc-table th,
+.iamc-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.iamc-table thead {
+  background-color: #3762ae;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  color: white;
+}
+
+.iamc-empty-row {
+  text-align: center;
+  padding: 16px;
+}
+
+/* Row background by status */
+.iamc-row-done {
+  background-color: #e8f5e9;
+}
+
+.iamc-row-notdone {
+  background-color: #fffde7;
+}
+
+/* Inputs */
+.iamc-date-input {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+}
+
+/* Attendance text */
+.iamc-attendance {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.iamc-attendance-present {
+  color: green;
+}
+
+.iamc-attendance-absent {
+  color: red;
+}
+
+.iamc-attendance-none {
+  color: #888;
+}

@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import api from "../api/axiosInstance";
 import "../styles/amc.css";
+import "../styles/industrial_amc.css";
 import "../styles/createcard.css";
-import CreateCardimg from "../assets/createcard.jpg";
 
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -17,6 +17,7 @@ const IndustrialAMC = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchMode, setSearchMode] = useState("phone");
 
   const [cards, setCards] = useState([]);
   const [staffList, setStaffList] = useState([]);
@@ -77,6 +78,11 @@ const IndustrialAMC = () => {
   };
 
   const monthOptions = generateMonthOptions();
+
+  useEffect(() => {
+    document.body.style.overflow = showCreateAMC ? "hidden" : "auto";
+  }, [showCreateAMC]);
+
 
   /* ---------------- FETCH INDUSTRIAL AMC ---------------- */
 
@@ -271,40 +277,58 @@ const IndustrialAMC = () => {
 
   /* ---------------- CREATE INDUSTRIAL AMC ---------------- */
 
-  const getUserByPhone = async (phone) => {
+  const getCustomer = async (value) => {
 
-    if (phone.length !== 10) {
+    if (!value) {
       setCustomer(null);
       return;
     }
 
     try {
 
-      const res = await api.get(
-        `/auth/admin/users/?phone=${phone}&role=customer`
-      );
+      let url = "";
+
+      if (searchMode === "phone") {
+
+        if (value.length !== 10) {
+          setCustomer(null);
+          return;
+        }
+
+        url = `/auth/admin/users/?phone=${value}&role=customer`;
+      }
+
+      if (searchMode === "customer_code") {
+        url = `/auth/admin/users/?customer_code=${value}`;
+      }
+
+      const res = await api.get(url);
 
       if (res.data.length > 0) {
 
         const user = res.data[0];
 
+        // ⭐ Industrial validation
         if (!user.is_industrial) {
           alert("Customer is NOT Industrial");
+          setCustomer(null);
           return;
         }
 
         setCustomer(user);
-
         fetchCustomerCards(user.id);
 
       } else {
         setCustomer(null);
+        setCustomerCards([]);
       }
 
     } catch (error) {
       console.error(error);
+      setCustomer(null);
     }
   };
+
 
   const fetchCustomerCards = async (customerId) => {
     try {
@@ -344,23 +368,28 @@ const IndustrialAMC = () => {
     }
   };
 
+  const getRowBgClass = (status) => {
+    if (status === "done") return "iamc-row-done";
+    return "iamc-row-notdone";
+  };
+
   /* ---------------- UI ---------------- */
 
   return (
-    <div className="amc-container">
+    <div className="iamc-container">
 
       {error && <div className="alert alert-error">{error}</div>}
 
       {/* ================= CONTROLS ================= */}
 
-      <div className="controls-row">
+      <div className="iamc-controls-row">
 
-        <h2 className="amc-title">Industrial AMC Services</h2>
+        <h2 className="iamc-title">Industrial AMC Services</h2>
 
-        <div className="form-form">
+        <div className="iamc-form-form">
 
           <select
-            className="form-select"
+            className="iamc-form-select"
             value={selectedMonth}
             onChange={handleMonthChange}
           >
@@ -372,21 +401,21 @@ const IndustrialAMC = () => {
           </select>
 
           <button
-            className="btn btn-warning"
+            className="iamc-btn btn-warning"
             onClick={() => setShowCreateAMC(!showCreateAMC)}
           >
             {showCreateAMC ? "Close Create AMC" : "Create Industrial AMC"}
           </button>
 
           <button
-            className="btn btn-primary"
+            className="iamc-btn btn-primary"
             onClick={handleBulkBook}
             disabled={bulkBooking}
           >
             {bulkBooking ? "Booking..." : "Bulk Book"}
           </button>
 
-          <button className="btn btn-secondary" onClick={exportExcel}>
+          <button className="iamc-btn btn-secondary" onClick={exportExcel}>
             Export Excel
           </button>
 
@@ -396,34 +425,64 @@ const IndustrialAMC = () => {
       {/* ================= CREATE AMC PANEL ================= */}
 
       {showCreateAMC && (
-        <div className="createcard-cont">
+        <div className="iamc-modal-overlay" onClick={() => setShowCreateAMC(false)}>
 
-          <div className="createcard-l">
-            <div className="createcard-card">
+          <div className="iamc-modal-content" onClick={(e) => e.stopPropagation()}>
 
-              <p className="createcard-title">Create Industrial AMC</p>
+            <button
+              className="iamc-modal-close"
+              onClick={() => setShowCreateAMC(false)}
+            >
+              ✕
+            </button>
 
-              <div className="createcard-inputs">
+            <div className="iamc-createcard-card">
 
-                <div className="createcard-input-cont">
+              <p className="iamc-createcard-title">Create Industrial AMC</p>
+
+              <div className="iamc-createcard-inputs">
+
+                <div className="iamc-createcard-input-cont">
                   <p>
                     Customer :
-                    {customer ? ` ${customer.name}` : " Not Found"}
+                      {customer
+                        ? ` ${customer.name} (${customer.customer_code})`
+                        : " Not Found"
+                      }
+
                   </p>
 
+                  <select
+                    className="iamc-createcard-card-input-io"
+                    value={searchMode}
+                    onChange={(e) => {
+                      setSearchMode(e.target.value);
+                      setCustomer(null);
+                      setCustomerCards([]);
+                    }}
+                  >
+                    <option value="phone">Search By Phone</option>
+                    <option value="customer_code">Search By Customer Code</option>
+                  </select>
+
                   <input
-                    className="createcard-card-input"
-                    placeholder="Customer Phone"
-                    onChange={(e) => getUserByPhone(e.target.value)}
+                    className="iamc-createcard-card-input"
+                    placeholder={
+                      searchMode === "phone"
+                        ? "Enter Customer Phone"
+                        : "Enter Customer Code"
+                    }
+                    onChange={(e) => getCustomer(e.target.value)}
                   />
+
                 </div>
 
                 {customer && (
-                  <div className="createcard-input-cont">
+                  <div className="iamc-createcard-input-cont">
                     <p>Select Card *</p>
 
                     <select
-                      className="createcard-card-input"
+                      className="iamc-createcard-card-input"
                       value={selectedCard}
                       onChange={(e) => setSelectedCard(e.target.value)}
                     >
@@ -438,30 +497,30 @@ const IndustrialAMC = () => {
                   </div>
                 )}
 
-                <div className="createcard-input-cont">
+                <div className="iamc-createcard-input-cont">
                   <p>AMC Start Date *</p>
                   <input
                     type="date"
-                    className="createcard-card-input"
+                    className="iamc-createcard-card-input"
                     onChange={(e) => setStartDate(e.target.value)}
                   />
                 </div>
 
-                <div className="createcard-input-cont">
+                <div className="iamc-createcard-input-cont">
                   <p>AMC End Date *</p>
                   <input
                     type="date"
-                    className="createcard-card-input"
+                    className="iamc-createcard-card-input"
                     onChange={(e) => setEndDate(e.target.value)}
                   />
                 </div>
 
-                <div className="createcard-input-cont">
+                <div className="iamc-createcard-input-cont">
                   <p>Interval Months *</p>
                   <input
                     type="number"
                     min="1"
-                    className="createcard-card-input"
+                    className="iamc-createcard-card-input"
                     value={intervalMonths}
                     onChange={(e) => setIntervalMonths(e.target.value)}
                   />
@@ -470,7 +529,7 @@ const IndustrialAMC = () => {
               </div>
 
               <button
-                className="createcard-card-button"
+                className="iamc-createcard-card-button"
                 onClick={createAMC}
               >
                 Create Industrial AMC
@@ -478,32 +537,23 @@ const IndustrialAMC = () => {
 
             </div>
           </div>
-
-          <div className="createcard-r">
-            <div className="createcard-img-cont">
-              <img src={CreateCardimg} alt="" />
-              <p>
-                Industrial AMC supports custom service intervals.
-              </p>
-            </div>
           </div>
-
-        </div>
       )}
 
       {/* ================= TABLE ================= */}
 
       {loading ? (
-        <div className="loader-wrapper">
-          <div className="loader" />
+        <div className="iamc-loader-wrapper">
+          <div className="iamc-loader" />
         </div>
       ) : (
-        <div className="table-wrapper">
-          <table className="amc-table">
+        <div className="iamc-table-wrapper">
+          <table className="iamc-table">
 
             <thead>
               <tr>
                 <th>Milestone</th>
+                <th>All Milestones</th>
                 <th>Customer</th>
                 <th>Phone</th>
                 <th>City</th>
@@ -516,10 +566,28 @@ const IndustrialAMC = () => {
 
             <tbody>
               {cards.map((card) => (
-                <tr key={card.card_id}>
+                <tr
+                  key={card.card_id}
+                  className={getRowBgClass(card.status)}
+                >
+
 
                   <td>{formatDate(card.milestone)}</td>
+
+                  <td>
+                    {card.allmilestones?.length ? (
+                      <ul className="milestone-list">
+                        {card.allmilestones.map((m, i) => (
+                          <li key={i}>{formatDate(m)}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <span>—</span>
+                    )}
+                  </td>
+
                   <td>{card.customer_name}</td>
+
                   <td>{card.customer_phone}</td>
                   <td>{card.city}</td>
                   <td>{card.status}</td>
@@ -560,11 +628,11 @@ const IndustrialAMC = () => {
                   <td>
                     {selectedStaff[card.card_id] ? (
                       attendanceMap[selectedStaff[card.card_id]] === "present" ? (
-                        <span className="attendance attendance-present">
+                        <span className="iamc-attendance attendance-present">
                           Present
                         </span>
                       ) : (
-                        <span className="attendance attendance-absent">
+                        <span className="iamc-attendance attendance-absent">
                           Absent
                         </span>
                       )
