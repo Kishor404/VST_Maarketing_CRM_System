@@ -19,6 +19,7 @@ const CreateCard = () => {
 
     /* ---------------- STATE ---------------- */
     const [customer, setCustomer] = useState(null);
+    const [searchMode, setSearchMode] = useState("phone");
 
     const [model, setModel] = useState("");
     const [cardType, setCardType] = useState("normal");
@@ -68,8 +69,9 @@ const CreateCard = () => {
     };
 
     /* ---------------- GET CUSTOMER BY PHONE ---------------- */
-    const getUserByPhone = async (phone) => {
-        if (phone.length !== 10) {
+    const getCustomer = async (value) => {
+
+        if (!value) {
             setCustomer(null);
             return;
         }
@@ -78,25 +80,45 @@ const CreateCard = () => {
         if (!accessToken) return;
 
         try {
-            const res = await axios.get(
-                `${BASEURL}/api/auth/admin/users/?phone=${phone}&role=customer`,
-                { headers: { Authorization: `Bearer ${accessToken}` } }
-            );
+
+            let url = "";
+
+            if (searchMode === "phone") {
+                if (value.length !== 10) {
+                    setCustomer(null);
+                    return;
+                }
+
+                url = `${BASEURL}/api/auth/admin/users/?phone=${value}&role=customer`;
+            }
+
+            if (searchMode === "customer_code") {
+                url = `${BASEURL}/api/auth/admin/users/?customer_code=${value}`;
+            }
+
+            const res = await axios.get(url, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
 
             if (res.data.length > 0) {
                 const user = res.data[0];
-                console.log(user)
+
                 setCustomer(user);
                 setAddress(user.address || "");
                 setCity(user.city || "");
             } else {
                 setCustomer(null);
+                setAddress("");
+                setCity("");
+
             }
+
         } catch (error) {
             console.error("Customer fetch error:", error);
             setCustomer(null);
         }
     };
+
 
     /* ---------------- WARRANTY AUTO CALC ---------------- */
     const handleWarrantyStart = (date) => {
@@ -218,16 +240,41 @@ const CreateCard = () => {
                         </div>
 
                         <div className='createcard-input-cont'>
+
                             <p>
                                 Customer :
-                                {customer ? ` ${customer.name} (ID: ${customer.id})` : " Not Found"}
+                                {customer
+                                    ? ` ${customer.name} (${customer.customer_code})`
+                                    : " Not Found"
+                                }
                             </p>
+
+                            {/* SEARCH MODE SELECT */}
+                            <select
+                                className="createcard-card-input"
+                                value={searchMode}
+                                onChange={(e) => {
+                                    setSearchMode(e.target.value);
+                                    setCustomer(null);
+                                }}
+                            >
+                                <option value="phone">Search By Phone</option>
+                                <option value="customer_code">Search By Customer Code</option>
+                            </select>
+
+                            {/* INPUT FIELD */}
                             <input
                                 className="createcard-card-input"
-                                placeholder="Customer Phone"
-                                onChange={(e) => getUserByPhone(e.target.value)}
+                                placeholder={
+                                    searchMode === "phone"
+                                        ? "Enter Customer Phone"
+                                        : "Enter Customer Code"
+                                }
+                                onChange={(e) => getCustomer(e.target.value)}
                             />
+
                         </div>
+
 
                         <div className='createcard-input-cont'>
                             <p>Card Type *</p>

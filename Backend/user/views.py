@@ -120,11 +120,14 @@ class AdminUserListView(generics.ListAPIView):
 
         phone = self.request.query_params.get("phone")
         role = self.request.query_params.get("role")
+        customer_code = self.request.query_params.get("customer_code")
 
         if phone:
             queryset = queryset.filter(phone__icontains=phone)
         if role:
             queryset = queryset.filter(role__iexact=role)
+        if customer_code:
+            queryset = queryset.filter(customer_code__iexact=customer_code)
 
         return queryset
 

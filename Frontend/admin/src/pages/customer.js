@@ -22,6 +22,7 @@ const Customer = () => {
         postal_code: "",
         region: Cookies.get("region") || "",
         role: "customer",
+        is_industrial: false,
         password: "",
     });
 
@@ -111,10 +112,6 @@ const Customer = () => {
             alert("Enter Customer Name");
             return;
         }
-        if(fetchData.phone.length!=13){
-            alert("Enter 10 Digit Phone Number of Customer");
-            return;
-        }
         if(fetchData.address==""){
             alert("Enter Customer Address");
             return;
@@ -165,10 +162,6 @@ const Customer = () => {
         
         if(newCustomer.name==""){
             alert("Enter Customer Name");
-            return;
-        }
-        if(newCustomer.phone.length!=13){
-            alert("Enter 10 Digit Phone Number of Customer");
             return;
         }
         if(newCustomer.address==""){
@@ -223,6 +216,7 @@ const Customer = () => {
             region: headRegion,
             role: "customer",
             password: "",
+            is_industrial: false
             });
 
             setIsCreating(false);
@@ -307,7 +301,7 @@ const Customer = () => {
                         >
                             <option value="name">Search by Name</option>
                             <option value="phone">Search by Phone</option>
-                            <option value="id">Search by ID</option>
+                            <option value="customer_code">Search by Customer Code</option>
                         </select>
 
                         <input
@@ -341,7 +335,7 @@ const Customer = () => {
                         <table className="customer-list" style={{ width: "100%" }}>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>Code</th>
                                     <th>Name</th>
                                     <th>Phone</th>
                                 </tr>
@@ -361,7 +355,7 @@ const Customer = () => {
                                             onClick={() => selectCustomer(customer)}
                                             className={fetchData?.id === customer.id ? "selected-row" : ""}
                                         >
-                                            <td>{customer.id}</td>
+                                            <td>{customer.customer_code}</td>
                                             <td>{customer.name}</td>
                                             <td>{customer.phone}</td>
                                         </tr>
@@ -403,11 +397,28 @@ const Customer = () => {
                                     <DetailBox label="Address" value={newCustomer.address} field="address" setFetchData={setNewCustomer} />
                                     <DetailBox label="City" value={newCustomer.city} field="city" setFetchData={setNewCustomer} />
                                     <DetailBox label="Postal Code" value={newCustomer.postal_code} field="postal_code" setFetchData={setNewCustomer} />
+                                    <ToggleSwitch
+                                        label="Industrial Customer"
+                                        value={newCustomer.is_industrial}
+                                        onChange={(val) =>
+                                            setNewCustomer(prev => ({ ...prev, is_industrial: val }))
+                                        }
+                                    />
+
                                     <DetailBox label="Password" value={newCustomer.password} field="password" setFetchData={setNewCustomer} />
 
                                 </>
                             ) : fetchData ? (
                                 <>
+                                    <div className="customer-details-box">
+                                        <p className="customer-details-key">Customer Code</p>
+                                        <input
+                                            className="customer-details-value"
+                                            value={fetchData?.customer_code || "Auto Generated"}
+                                            disabled
+                                        />
+                                    </div>
+
                                     <DetailBox label="Name" value={fetchData.name} field="name" setFetchData={setFetchData} />
                                     <div className="customer-details-box">
                                         <p className="customer-details-key">Phone</p>
@@ -439,6 +450,15 @@ const Customer = () => {
                                         <option value="chennai">Chennai</option>
                                     </select>
                                     </div>
+
+                                    <ToggleSwitch
+                                        label="Industrial Customer"
+                                        value={fetchData.is_industrial}
+                                        onChange={(val) =>
+                                            setFetchData(prev => ({ ...prev, is_industrial: val }))
+                                        }
+                                    />
+
 
                                     <DetailBox label="Address" value={fetchData.address} field="address" setFetchData={setFetchData} />
                                     <DetailBox label="City" value={fetchData.city} field="city" setFetchData={setFetchData} />
@@ -536,3 +556,18 @@ const PhoneInput = ({ value, onChange }) => {
     </div>
   );
 };
+
+const ToggleSwitch = ({ label, value, onChange }) => (
+    <div className="customer-details-box">
+        <p className="customer-details-key">{label}</p>
+        <label className="switch">
+            <input
+                type="checkbox"
+                checked={value}
+                onChange={(e) => onChange(e.target.checked)}
+            />
+            <span className="slider round"></span>
+        </label>
+    </div>
+);
+
