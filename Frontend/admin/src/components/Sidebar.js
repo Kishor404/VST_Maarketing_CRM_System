@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaUsers, FaIdBadge, FaEdit, FaInfo, FaAddressCard, FaPlus, FaTicketAlt, FaStickyNote, FaAdversal, FaBook, FaArrowsAltH, FaLocationArrow } from "react-icons/fa";
+import { FaUsers, FaIdBadge, FaEdit, FaInfo, FaAddressCard, FaPlus, FaTicketAlt, FaStickyNote, FaAdversal, FaBook, FaArrowsAltH, FaLocationArrow, FaNetworkWired, FaReceipt } from "react-icons/fa";
 import { MdAccountCircle, MdFactCheck, MdFactory, MdRoomPreferences, MdRoomService, MdTag, MdTagFaces } from "react-icons/md";
 import { MdHotelClass } from "react-icons/md";
 import '../styles/sidebar.css';
@@ -69,6 +69,12 @@ return (
                     <Link to="/head/showcard" className="sidebar-link">
                         <FaAddressCard className="sidebar-item-icon" size={20}/>
                         Customer Card
+                    </Link>
+                </div>
+                <div className="sidebar-item">
+                    <Link to="/head/jobcard" className="sidebar-link">
+                        <FaReceipt className="sidebar-item-icon" size={20}/>
+                        Job Card
                     </Link>
                 </div>
                 <div className="sidebar-item">

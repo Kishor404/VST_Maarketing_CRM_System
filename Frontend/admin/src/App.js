@@ -15,6 +15,7 @@ import Reminder from "./pages/reminder";
 import FollowUp from "./pages/followup";
 import AMC from "./pages/amc";
 import IndustrialAMC from "./pages/industrial_amc";
+import JobCard from "./pages/jobcard";
 
 const HeadLayout = () => {
   const location = useLocation();
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="createcard" element={<CreateCard />} />
           <Route path="showcard" element={<ShowCard />} />
           <Route path="service" element={<Service />} />
+          <Route path="jobcard" element={<JobCard />} />
           <Route path="warranty" element={<Warranty />} />
           <Route path="amc" element={<AMC />} />
           <Route path="industrialamc" element={<IndustrialAMC />} />
