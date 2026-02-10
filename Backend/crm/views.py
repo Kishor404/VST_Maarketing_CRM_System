@@ -1382,45 +1382,63 @@ def Send_SMS(phone, message):
         print("Message : "+message)
         print("-----------------------")
 
-class JobCardViewSet(viewsets.ReadOnlyModelViewSet):
+from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
 
+class JobCardViewSet(viewsets.ModelViewSet):
     serializer_class = JobCardSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdmin]
 
     def get_queryset(self):
-
-        user = self.request.user
-        qs = JobCard.objects.select_related(
+        return JobCard.objects.select_related(
             "service",
             "staff",
             "reinstall_staff",
             "customer"
+        ).order_by("-created_at")
+
+    def partial_update(self, request, *args, **kwargs):
+        job_card = self.get_object()
+
+        status_val = request.data.get("status")
+        reinstall_staff = request.data.get("reinstall_staff")
+
+        # ---- STATUS VALIDATION ----
+        allowed = [
+            "get_from_customer",
+            "received_office",
+            "repair_completed",
+            "reinstalled",
+        ]
+
+        if status_val and status_val not in allowed:
+            return Response(
+                {"detail": "Invalid status"},
+                status=400
+            )
+
+        # ---- SET TIMESTAMPS ----
+        if status_val == "received_office":
+            job_card.received_office_at = timezone.now()
+        elif status_val == "repair_completed":
+            job_card.repair_completed_at = timezone.now()
+        elif status_val == "reinstalled":
+            job_card.reinstalled_at = timezone.now()
+
+        if reinstall_staff:
+            job_card.reinstall_staff_id = reinstall_staff
+
+        if status_val:
+            job_card.status = status_val
+
+        job_card.save()
+
+        serializer = self.get_serializer(
+            job_card,
+            context={"request": request}
         )
 
-        tab = self.request.query_params.get("tab")
-
-        # -------------------------
-        # My Created Job Cards
-        # -------------------------
-        if tab == "created":
-            return qs.filter(staff=user).order_by("-created_at")
-
-        # -------------------------
-        # My Reinstall Job Cards
-        # -------------------------
-        if tab == "reinstall":
-            return qs.filter(
-                reinstall_staff=user,
-                status="repair_completed"
-            ).order_by("-created_at")
-
-        # -------------------------
-        # Default → show both
-        # -------------------------
-        return qs.filter(
-            models.Q(staff=user) |
-            models.Q(reinstall_staff=user)
-        ).distinct()
+        return Response(serializer.data)
 
 
 

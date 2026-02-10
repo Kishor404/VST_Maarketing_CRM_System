@@ -62,27 +62,38 @@ class CardCreateSerializer(serializers.ModelSerializer):
     
 
 class JobCardSerializer(serializers.ModelSerializer):
-
-    staff_name = serializers.CharField(source="staff.name", read_only=True)
-    reinstall_staff_name = serializers.CharField(source="reinstall_staff.name", read_only=True)
-
     service_id = serializers.IntegerField(source="service.id", read_only=True)
-
+    service_status = serializers.CharField(source="service.status", read_only=True)
+    staff_name = serializers.CharField(source="staff.name", read_only=True)
+    reinstall_staff_name = serializers.CharField(
+        source="reinstall_staff.name",
+        read_only=True
+    )
     image_url = serializers.SerializerMethodField()
-
-    customer_name = serializers.CharField(source="customer.name", read_only=True)
-    machine_model = serializers.CharField(source="service.card.model", read_only=True)
-
 
     class Meta:
         model = JobCard
         fields = "__all__"
+
+        read_only_fields = (
+            "id",
+            "staff",
+            "customer",
+            "service",
+            "service_entry",
+            "created_at",
+            "get_from_customer_at",
+            "received_office_at",
+            "repair_completed_at",
+            "reinstalled_at",
+        )
 
     def get_image_url(self, obj):
         request = self.context.get("request")
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
         return None
+
 
 
 
