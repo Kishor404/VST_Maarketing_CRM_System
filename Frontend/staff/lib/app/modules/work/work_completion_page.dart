@@ -175,142 +175,183 @@ class WorkCompletionPage extends GetView<WorkController> {
             const SizedBox(height: 32),
 
             /// ============================
-            /// Job Card Section
+            /// Job Card Section (UPDATED)
             /// ============================
-
-            Text(
-              'Create Job Cards (If Part Taken to Workshop)',
-              style: theme.textTheme.headlineMedium?.copyWith(fontSize: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Job Cards',
+                  style: theme.textTheme.headlineMedium?.copyWith(fontSize: 18),
+                ),
+                TextButton.icon(
+                  onPressed: () {
+                    controller.jobCards.add({
+                      "part_name": "",
+                      "details": "",
+                      "image": null,
+                    });
+                  },
+                  icon: const Icon(Icons.add, size: 20),
+                  label: const Text("Add Card"),
+                ),
+              ],
             ),
-
+            const SizedBox(height: 8),
+            Text(
+              "(If parts are taken to the workshop)",
+              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+            ),
             const SizedBox(height: 12),
 
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.secondary,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-
-                  /// Add New Job Card Button
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.build),
-                    label: const Text("Add Job Card"),
-                    onPressed: () {
-                      controller.jobCards.add({
-                        "part_name": "",
-                        "details": "",
-                        "image": null,
-                      });
-                    },
+            Obx(() {
+              if (controller.jobCards.isEmpty) {
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.secondary.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: theme.dividerColor),
                   ),
+                  child: Column(
+                    children: const [
+                      Icon(Icons.assignment_outlined, color: Colors.grey, size: 40),
+                      SizedBox(height: 8),
+                      Text("No Workshop Job Cards Created",
+                          style: TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                );
+              }
 
-                  const SizedBox(height: 12),
+              return Column(
+                children: List.generate(controller.jobCards.length, (index) {
+                  final jc = controller.jobCards[index];
 
-                  /// Job Card List
-                  Obx(() {
-                    if (controller.jobCards.isEmpty) {
-                      return const Text(
-                        "No Job Cards Created",
-                        style: TextStyle(color: Colors.grey),
-                      );
-                    }
-
-                    return Column(
-                      children: List.generate(controller.jobCards.length, (index) {
-                        final jc = controller.jobCards[index];
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              children: [
-
-                                /// PART NAME
-                                TextField(
-                                  decoration: const InputDecoration(
-                                    labelText: "Part Name",
-                                  ),
-                                  onChanged: (v) {
-                                    controller.jobCards[index]["part_name"] = v;
-                                  },
-                                ),
-
-                                const SizedBox(height: 10),
-
-                                /// DETAILS
-                                TextField(
-                                  maxLines: 2,
-                                  decoration: const InputDecoration(
-                                    labelText: "Problem Details",
-                                  ),
-                                  onChanged: (v) {
-                                    controller.jobCards[index]["details"] = v;
-                                  },
-                                ),
-
-                                const SizedBox(height: 12),
-
-                                /// IMAGE PREVIEW
-                                Obx(() {
-                                  final image = controller.jobCards[index]["image"];
-
-                                  if (image == null) return const SizedBox();
-
-                                  return Column(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: Image.file(
-                                          image,
-                                          height: 120,
-                                          width: double.infinity,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                    ],
-                                  );
-                                }),
-
-                                /// IMAGE BUTTON
-                                Row(
-                                  children: [
-                                    ElevatedButton.icon(
-                                      icon: const Icon(Icons.camera_alt),
-                                      label: const Text("Capture Image"),
-                                      onPressed: () => pickJobCardImage(index),
-                                    ),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 10),
-
-                                /// REMOVE BUTTON
-                                Align(
-                                  alignment: Alignment.centerRight,
-                                  child: TextButton.icon(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    label: const Text("Remove"),
-                                    onPressed: () {
-                                      controller.jobCards.removeAt(index);
-                                    },
-                                  ),
-                                )
-                              ],
-                            ),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: theme.dividerColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // --- Card Header ---
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.05),
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           ),
-                        );
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 12,
+                                backgroundColor: theme.colorScheme.primary,
+                                child: Text("${index + 1}", 
+                                  style: const TextStyle(fontSize: 12, color: Colors.white)),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text("Workshop Item", 
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                              const Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.delete_sweep_outlined, color: Colors.redAccent),
+                                onPressed: () => controller.jobCards.removeAt(index),
+                              ),
+                            ],
+                          ),
+                        ),
 
-                      }),
-                    );
-                  })
-                ],
-              ),
-            ),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              TextField(
+                                decoration: const InputDecoration(
+                                  labelText: "Part Name",
+                                  prefixIcon: Icon(Icons.settings_suggest_outlined),
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (v) => controller.jobCards[index]["part_name"] = v,
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                maxLines: 2,
+                                decoration: const InputDecoration(
+                                  labelText: "Problem Details",
+                                  alignLabelWithHint: true,
+                                  prefixIcon: Icon(Icons.edit_note),
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (v) => controller.jobCards[index]["details"] = v,
+                              ),
+                              const SizedBox(height: 16),
+                              
+                              // --- Image Preview Area ---
+                              Obx(() {
+                                final image = controller.jobCards[index]["image"];
+                                return GestureDetector(
+                                  onTap: () => pickJobCardImage(index),
+                                  child: Container(
+                                    width: double.infinity,
+                                    height: 140,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                                    ),
+                                    child: image != null
+                                        ? Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(12),
+                                                child: Image.file(image, fit: BoxFit.cover),
+                                              ),
+                                              Positioned(
+                                                right: 8,
+                                                top: 8,
+                                                child: CircleAvatar(
+                                                  backgroundColor: Colors.black54,
+                                                  child: IconButton(
+                                                    icon: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                                                    onPressed: () => pickJobCardImage(index),
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          )
+                                        : Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: const [
+                                              Icon(Icons.add_a_photo_outlined, color: Colors.grey),
+                                              SizedBox(height: 4),
+                                              Text("Tap to capture item image", 
+                                                style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                            ],
+                                          ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              );
+            }),
 
 
             /// ============================

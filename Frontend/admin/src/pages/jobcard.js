@@ -247,6 +247,8 @@ const JobCard = () => {
                         </select>
 
                         {/* REINSTALL STAFF */}
+                        {selectedCard.status!="reinstalled"?
+                        <>
                         <label>Assign Reinstall Staff</label>
                         <input
                             placeholder="Enter Phone"
@@ -262,6 +264,8 @@ const JobCard = () => {
                                 {reinstallStaff.name} (ID {reinstallStaff.id})
                             </p>
                         )}
+                        </>
+                        :<></>}
 
                         <button onClick={handleUpdate}>
                             Update Job Card
