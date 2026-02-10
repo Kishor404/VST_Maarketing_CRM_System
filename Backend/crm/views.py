@@ -1406,9 +1406,6 @@ class JobCardViewSet(viewsets.ModelViewSet):
 
         user = self.request.user
 
-        mine = self.request.query_params.get("mine") == "true"
-        reinstall = self.request.query_params.get("reinstall") == "true"
-
         qs = JobCard.objects.select_related(
             "service",
             "staff",
@@ -1416,19 +1413,32 @@ class JobCardViewSet(viewsets.ModelViewSet):
             "customer"
         ).order_by("-created_at")
 
+        # 👑 ADMIN
         if user.role == "admin":
             return qs
 
-        if mine:
-            return qs.filter(staff=user)
+        mine = self.request.query_params.get("mine") == "true"
+        reinstall = self.request.query_params.get("reinstall") == "true"
 
-        if reinstall:
-            return qs.filter(
-                reinstall_staff=user,
-                status="repair_completed"
-            )
+        # LIST FILTERS
+        if self.action == "list":
+            if mine:
+                return qs.filter(staff=user)
 
-        return qs.none()
+            if reinstall:
+                return qs.filter(
+                    reinstall_staff=user,
+                    status="repair_completed"
+                )
+
+            return qs.none()
+
+        # ⭐ DETAIL ACCESS (VERY IMPORTANT)
+        return qs.filter(
+            Q(staff=user) |
+            Q(reinstall_staff=user)
+        )
+
 
 
     # ======================================================
