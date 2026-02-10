@@ -1382,63 +1382,148 @@ def Send_SMS(phone, message):
         print("Message : "+message)
         print("-----------------------")
 
-from rest_framework.permissions import IsAuthenticated
+
 from django.utils import timezone
+from django.db.models import Q
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .models import JobCard, Service
+from .serializers import JobCardSerializer
+from .utils import verify_otp_hash
+
 
 class JobCardViewSet(viewsets.ModelViewSet):
     serializer_class = JobCardSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated]
 
+    # ======================================================
+    # 1️⃣ GET JOB CARDS (ADMIN / STAFF / REINSTALL STAFF)
+    # ======================================================
     def get_queryset(self):
-        return JobCard.objects.select_related(
+        user = self.request.user
+
+        qs = JobCard.objects.select_related(
             "service",
             "staff",
             "reinstall_staff",
             "customer"
         ).order_by("-created_at")
 
+        # 👑 ADMIN → ALL
+        if user.role == "admin":
+            return qs
+
+        # 👷 STAFF → CREATED BY THEM OR ASSIGNED FOR REINSTALL
+        return qs.filter(
+            Q(staff=user) |
+            Q(reinstall_staff=user)
+        ).distinct()
+
+    # ======================================================
+    # 4️⃣ ADMIN UPDATE STATUS + ASSIGN REINSTALL STAFF
+    # ======================================================
     def partial_update(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.role != "admin":
+            return Response(
+                {"detail": "Only admin can update job cards"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         job_card = self.get_object()
 
         status_val = request.data.get("status")
-        reinstall_staff = request.data.get("reinstall_staff")
+        reinstall_staff_id = request.data.get("reinstall_staff")
 
-        # ---- STATUS VALIDATION ----
-        allowed = [
+        allowed_status = [
             "get_from_customer",
             "received_office",
             "repair_completed",
             "reinstalled",
         ]
 
-        if status_val and status_val not in allowed:
-            return Response(
-                {"detail": "Invalid status"},
-                status=400
-            )
+        if status_val and status_val not in allowed_status:
+            return Response({"detail": "Invalid status"}, status=400)
 
-        # ---- SET TIMESTAMPS ----
+        # ---- STATUS TIMESTAMPS ----
         if status_val == "received_office":
             job_card.received_office_at = timezone.now()
+
         elif status_val == "repair_completed":
             job_card.repair_completed_at = timezone.now()
+
         elif status_val == "reinstalled":
             job_card.reinstalled_at = timezone.now()
 
-        if reinstall_staff:
-            job_card.reinstall_staff_id = reinstall_staff
+        if reinstall_staff_id:
+            job_card.reinstall_staff_id = reinstall_staff_id
 
         if status_val:
             job_card.status = status_val
 
         job_card.save()
 
-        serializer = self.get_serializer(
-            job_card,
-            context={"request": request}
+        return Response(
+            self.get_serializer(job_card, context={"request": request}).data
         )
 
-        return Response(serializer.data)
+    # ======================================================
+    # 6️⃣ REINSTALL COMPLETE (STAFF + OTP)
+    # ======================================================
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated],
+        url_path="complete-reinstall"
+    )
+    def complete_reinstall(self, request, pk=None):
+        job_card = self.get_object()
+        user = request.user
+
+        # 🔐 Permission
+        if job_card.reinstall_staff_id != user.id:
+            return Response(
+                {"detail": "You are not assigned to reinstall this part"},
+                status=403
+            )
+
+        service = job_card.service
+        otp = request.data.get("otp")
+
+        if not otp:
+            return Response({"detail": "OTP required"}, status=400)
+
+        # OTP validation
+        if not service.otp_hash or not service.otp_expires_at:
+            return Response({"detail": "OTP not requested"}, status=400)
+
+        if timezone.now() > service.otp_expires_at:
+            return Response({"detail": "OTP expired"}, status=400)
+
+        if not verify_otp_hash(otp, service.otp_hash):
+            return Response({"detail": "Invalid OTP"}, status=400)
+
+        # ✅ Mark job card reinstalled
+        job_card.status = "reinstalled"
+        job_card.reinstalled_at = timezone.now()
+        job_card.save()
+
+        # ✅ Check if all job cards are reinstalled
+        pending = JobCard.objects.filter(
+            service=service
+        ).exclude(status="reinstalled").exists()
+
+        if not pending:
+            service.status = "completed"
+            service.otp_hash = None
+            service.otp_expires_at = None
+            service.save()
+
+        return Response({"detail": "Reinstallation completed"})
 
 
 

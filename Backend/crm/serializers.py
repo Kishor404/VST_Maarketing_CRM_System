@@ -62,21 +62,55 @@ class CardCreateSerializer(serializers.ModelSerializer):
     
 
 class JobCardSerializer(serializers.ModelSerializer):
-    service_id = serializers.IntegerField(source="service.id", read_only=True)
-    service_status = serializers.CharField(source="service.status", read_only=True)
-    staff_name = serializers.CharField(source="staff.name", read_only=True)
-    reinstall_staff_name = serializers.CharField(
-        source="reinstall_staff.name",
+
+    service_id = serializers.IntegerField(
+        source="service.id",
         read_only=True
     )
+
+    service_status = serializers.CharField(
+        source="service.status",
+        read_only=True
+    )
+
+    staff_name = serializers.SerializerMethodField()
+    reinstall_staff_name = serializers.SerializerMethodField()
+
     image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = JobCard
-        fields = "__all__"
+
+        fields = [
+            "id",
+            "service",
+            "service_id",
+            "service_status",
+
+            "staff",
+            "staff_name",
+
+            "reinstall_staff",
+            "reinstall_staff_name",
+
+            "customer",
+
+            "part_name",
+            "details",
+            "image",
+            "image_url",
+
+            "status",
+
+            "get_from_customer_at",
+            "received_office_at",
+            "repair_completed_at",
+            "reinstalled_at",
+
+            "created_at",
+        ]
 
         read_only_fields = (
-            "id",
             "staff",
             "customer",
             "service",
@@ -88,10 +122,22 @@ class JobCardSerializer(serializers.ModelSerializer):
             "reinstalled_at",
         )
 
+    # ---------------- STAFF SAFE ----------------
+
+    def get_staff_name(self, obj):
+        return getattr(obj.staff, "name", None)
+
+    def get_reinstall_staff_name(self, obj):
+        return getattr(obj.reinstall_staff, "name", None)
+
+    # ---------------- IMAGE URL ----------------
+
     def get_image_url(self, obj):
         request = self.context.get("request")
+
         if obj.image and request:
             return request.build_absolute_uri(obj.image.url)
+
         return None
 
 

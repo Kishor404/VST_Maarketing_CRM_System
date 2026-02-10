@@ -17,10 +17,13 @@ const JobCard = () => {
 
     const [selectedCard, setSelectedCard] = useState(null);
     const [editStatus, setEditStatus] = useState("");
+
     const [reinstallStaffPhone, setReinstallStaffPhone] = useState("");
     const [reinstallStaff, setReinstallStaff] = useState(null);
 
-    // ---------------- TOKEN ----------------
+    const [loading, setLoading] = useState(false);
+
+    // ================= TOKEN =================
 
     const refresh_token = async () => {
         const rToken = Cookies.get("refresh_token");
@@ -37,13 +40,15 @@ const JobCard = () => {
         }
     };
 
-    // ---------------- API ----------------
+    // ================= FETCH =================
 
     const fetchJobCards = async () => {
         const token = await refresh_token();
         if (!token) return navigate("/head/");
 
         try {
+            setLoading(true);
+
             const res = await axios.get(
                 `${BASEURL}/api/crm/job-cards/`,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -52,9 +57,13 @@ const JobCard = () => {
             setJobCards(res.data);
             setFilteredCards(res.data);
         } catch (err) {
-            console.error("Error fetching job cards", err);
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
+
+    // ================= PATCH =================
 
     const patchJobCard = async (id, data) => {
         const token = await refresh_token();
@@ -67,12 +76,14 @@ const JobCard = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            alert("Job Card Updated");
+            alert("Updated Successfully");
             fetchJobCards();
         } catch {
             alert("Update Failed");
         }
     };
+
+    // ================= STAFF SEARCH =================
 
     const getUserByPhone = async (phone) => {
         const token = await refresh_token();
@@ -83,14 +94,13 @@ const JobCard = () => {
                 `${BASEURL}/api/auth/admin/users/?phone=${phone}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
-
             return res.data[0];
         } catch {
             return null;
         }
     };
 
-    // ---------------- HANDLERS ----------------
+    // ================= HANDLERS =================
 
     const handleSelectCard = (card) => {
         setSelectedCard(card);
@@ -115,7 +125,7 @@ const JobCard = () => {
         if (user) setReinstallStaff(user);
     };
 
-    // ---------------- FILTER ----------------
+    // ================= FILTER =================
 
     useEffect(() => {
         let list = jobCards;
@@ -133,23 +143,24 @@ const JobCard = () => {
         }
 
         setFilteredCards(list);
+
     }, [searchQuery, statusFilter, jobCards]);
 
     useEffect(() => {
         fetchJobCards();
     }, []);
 
-    // ---------------- UI ----------------
+    // ================= UI =================
 
     return (
         <div className="jobcard-main">
 
-            {/* LEFT LIST */}
+            {/* ================= LEFT LIST ================= */}
             <div className="jobcard-left">
 
                 <div className="jobcard-search">
                     <input
-                        placeholder="Search by ID or Part"
+                        placeholder="Search ID / Part"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -158,7 +169,7 @@ const JobCard = () => {
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
-                        <option value="">All Status</option>
+                        <option value="">All</option>
                         <option value="get_from_customer">Get From Customer</option>
                         <option value="received_office">Received Office</option>
                         <option value="repair_completed">Repair Completed</option>
@@ -166,32 +177,35 @@ const JobCard = () => {
                     </select>
                 </div>
 
-                <table className="jobcard-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Service</th>
-                            <th>Part</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {filteredCards.map(card => (
-                            <tr key={card.id}
-                                onClick={() => handleSelectCard(card)}>
-                                <td>{card.id}</td>
-                                <td>{card.service}</td>
-                                <td>{card.part_name}</td>
-                                <td>{card.status}</td>
+                {loading ? (
+                    <p>Loading...</p>
+                ) : (
+                    <table className="jobcard-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Part</th>
+                                <th>Status</th>
+                                <th>Staff</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
 
+                        <tbody>
+                            {filteredCards.map(card => (
+                                <tr key={card.id}
+                                    onClick={() => handleSelectCard(card)}>
+                                    <td>{card.id}</td>
+                                    <td>{card.part_name}</td>
+                                    <td>{card.status}</td>
+                                    <td>{card.staff_name || "-"}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
 
-            {/* RIGHT EDIT PANEL */}
+            {/* ================= RIGHT PANEL ================= */}
             <div className="jobcard-right">
 
                 {selectedCard ? (
@@ -199,10 +213,28 @@ const JobCard = () => {
 
                         <h3>Job Card #{selectedCard.id}</h3>
 
-                        <p><b>Service:</b> {selectedCard.service}</p>
+                        <p><b>Service:</b> {selectedCard.service_id}</p>
+                        <p><b>Service Status:</b> {selectedCard.service_status}</p>
                         <p><b>Part:</b> {selectedCard.part_name}</p>
                         <p><b>Details:</b> {selectedCard.details}</p>
 
+                        {/* IMAGE */}
+                        {selectedCard.image_url && (
+                            <img
+                                src={selectedCard.image_url}
+                                alt="job"
+                                className="jobcard-image"
+                            />
+                        )}
+
+                        {/* TIMELINE */}
+                        <div className="jobcard-timeline">
+                            <p>Received: {selectedCard.received_office_at || "-"}</p>
+                            <p>Repair Done: {selectedCard.repair_completed_at || "-"}</p>
+                            <p>Reinstalled: {selectedCard.reinstalled_at || "-"}</p>
+                        </div>
+
+                        {/* STATUS */}
                         <label>Status</label>
                         <select
                             value={editStatus}
@@ -214,9 +246,10 @@ const JobCard = () => {
                             <option value="reinstalled">Reinstalled</option>
                         </select>
 
-                        <label>Reinstall Staff</label>
+                        {/* REINSTALL STAFF */}
+                        <label>Assign Reinstall Staff</label>
                         <input
-                            placeholder="Enter Staff Phone"
+                            placeholder="Enter Phone"
                             value={reinstallStaffPhone}
                             onChange={(e) => {
                                 setReinstallStaffPhone(e.target.value);
