@@ -15,4 +15,6 @@ abstract class AppRoutes {
   // Work flow
   static const workDetail = '/work/detail';
   static const workComplete = '/work/complete';
+
+  static const jobCards = '/job-cards';
 }

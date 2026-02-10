@@ -61,7 +61,10 @@ class MainPage extends GetView<MainController> {
                   )),
               label: 'Work',
             ),
-
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.build),
+              label: 'Job Cards',
+            ),
             const BottomNavigationBarItem(
               icon: Icon(Icons.star),
               label: 'Feedback',

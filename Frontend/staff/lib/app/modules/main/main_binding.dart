@@ -5,6 +5,7 @@ import '../home/home_controller.dart';
 import '../work/work_controller.dart';
 import '../feedback/feedback_controller.dart';
 import '../profile/profile_controller.dart';
+import '../job_card/job_card_controller.dart';
 
 class MainBinding extends Bindings {
   @override
@@ -17,5 +18,6 @@ class MainBinding extends Bindings {
     Get.lazyPut<WorkController>(() => WorkController());
     Get.lazyPut<FeedbackController>(() => FeedbackController());
     Get.lazyPut<ProfileController>(() => ProfileController());
+    Get.lazyPut<JobCardController>(() => JobCardController());
   }
 }

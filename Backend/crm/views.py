@@ -16,6 +16,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db import models
 
 from user.models import User  # your custom user model
 
@@ -449,8 +450,10 @@ class ServiceViewSet(viewsets.ModelViewSet):
         # Fetch job cards
         job_cards = JobCard.objects.filter(
             id__in=job_card_ids,
-            service=service
+            service=service,
+            reinstall_staff=request.user
         )
+
 
         if not job_cards.exists():
             return Response({"detail": "Invalid job cards"}, status=400)
@@ -1379,10 +1382,46 @@ def Send_SMS(phone, message):
         print("Message : "+message)
         print("-----------------------")
 
-class JobCardViewSet(viewsets.ModelViewSet):
-    queryset = JobCard.objects.select_related("service", "staff", "customer")
+class JobCardViewSet(viewsets.ReadOnlyModelViewSet):
+
     serializer_class = JobCardSerializer
-    permission_classes = [IsAuthenticated, IsAdmin]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+
+        user = self.request.user
+        qs = JobCard.objects.select_related(
+            "service",
+            "staff",
+            "reinstall_staff",
+            "customer"
+        )
+
+        tab = self.request.query_params.get("tab")
+
+        # -------------------------
+        # My Created Job Cards
+        # -------------------------
+        if tab == "created":
+            return qs.filter(staff=user).order_by("-created_at")
+
+        # -------------------------
+        # My Reinstall Job Cards
+        # -------------------------
+        if tab == "reinstall":
+            return qs.filter(
+                reinstall_staff=user,
+                status="repair_completed"
+            ).order_by("-created_at")
+
+        # -------------------------
+        # Default → show both
+        # -------------------------
+        return qs.filter(
+            models.Q(staff=user) |
+            models.Q(reinstall_staff=user)
+        ).distinct()
+
 
 
 from dateutil.relativedelta import relativedelta

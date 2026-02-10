@@ -10,6 +10,9 @@ import '../modules/auth/auth_binding.dart';
 import '../modules/main/main_binding.dart';
 import '../modules/work/work_binding.dart';
 
+import '../modules/job_card/job_card_page.dart';
+import '../modules/job_card/job_card_binding.dart';
+
 import 'app_routes.dart';
 
 class AppPages {
@@ -40,5 +43,12 @@ class AppPages {
       page: () => const WorkCompletionPage(),
       binding: WorkBinding(), // ✅ IMPORTANT
     ),
+
+    GetPage(
+      name: AppRoutes.jobCards,
+      page: () => const JobCardPage(),
+      binding: JobCardBinding(),
+    ),
+
   ];
 }

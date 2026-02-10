@@ -23,4 +23,10 @@ class ApiEndpoints {
   static const String feedbacks = '/api/crm/feedbacks/';
   static const String myAttendance =
       '/api/crm/attendance/me/';
+
+  static const String jobCards = '/api/crm/job-cards/';
+
+  static String reinstallService(int serviceId) =>
+      '/api/crm/services/$serviceId/reinstall/';
+      
 }
