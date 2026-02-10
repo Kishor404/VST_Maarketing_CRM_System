@@ -16,7 +16,11 @@ router.register(r"services", ServiceViewSet, basename="service")
 router.register(r"service-entries", ServiceEntryViewSet, basename="service-entry")
 router.register(r"feedbacks", FeedbackViewSet, basename="feedback")
 router.register(r"attendance", AttendanceViewSet, basename="attendance")
-router.register(r"job-cards", JobCardViewSet)
+router.register(
+    r"job-cards",
+    JobCardViewSet,
+    basename="job-card"
+)
 router.register(r"industrial-amc", IndustrialAMCViewSet)
 
 
