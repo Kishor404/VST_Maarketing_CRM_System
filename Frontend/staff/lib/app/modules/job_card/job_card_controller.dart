@@ -8,13 +8,10 @@ class JobCardController extends GetxController {
 
   final loading = false.obs;
   final reinstallLoading = false.obs;
+  final devOtp = ''.obs;
 
   final myJobCards = <JobCardModel>[].obs;
   final reinstallJobCards = <JobCardModel>[].obs;
-
-  final selectedJobCard = Rxn<JobCardModel>();
-
-  final otp = ''.obs;
 
   @override
   void onInit() {
@@ -22,9 +19,12 @@ class JobCardController extends GetxController {
     loadJobCards();
   }
 
-  /// ==============================
-  /// LOAD STAFF JOB CARDS
-  /// ==============================
+  @override
+  void onClose() {
+    devOtp.value = '';
+    super.onClose();
+  }
+
   Future<void> loadJobCards() async {
     try {
       loading.value = true;
@@ -47,36 +47,26 @@ class JobCardController extends GetxController {
     }
   }
 
-  /// ==============================
-  /// LOAD DETAIL
-  /// ==============================
-  Future<void> loadDetail(int jobCardId) async {
-    try {
-      selectedJobCard.value =
-          await _provider.getJobCardDetail(jobCardId);
-    } catch (e) {
-      AppSnackbar.error(
-        title: "Error",
-        message: e.toString(),
-      );
-    }
-  }
-
-  /// ==============================
-  /// SINGLE REINSTALL
-  /// ==============================
   Future<void> reinstallSingle({
     required JobCardModel jobCard,
     required String otp,
   }) async {
+
     try {
       reinstallLoading.value = true;
 
-      await _provider.reinstallPart(
+      final response = await _provider.reinstallPart(
         serviceId: jobCard.serviceId,
         jobCardIds: [jobCard.id],
         otp: otp,
       );
+
+      /// ⭐ DEV OTP SUPPORT
+      if (response["otp"] != null) {
+        devOtp.value = response["otp"].toString();
+      } else {
+        devOtp.value = '';
+      }
 
       await loadJobCards();
 
@@ -95,44 +85,60 @@ class JobCardController extends GetxController {
     }
   }
 
-  /// ==============================
-  /// BULK REINSTALL
-  /// ==============================
-  Future<void> reinstallMultiple({
-    required int serviceId,
-    required List<int> jobCardIds,
-    required String otp,
-  }) async {
+  /// -----------------------------
+  /// REQUEST OTP
+  /// -----------------------------
+  Future<void> requestReinstallOtp(int jobCardId) async {
     try {
       reinstallLoading.value = true;
 
-      await _provider.reinstallPart(
-        serviceId: serviceId,
-        jobCardIds: jobCardIds,
-        otp: otp,
-      );
+      final otp = await _provider.requestReinstallOtp(jobCardId);
 
-      await loadJobCards();
+      if (otp != null) {
+        devOtp.value = otp; // DEV ONLY
+      }
 
       AppSnackbar.success(
-        title: "Success",
-        message: "Selected parts reinstalled",
+        title: "OTP Sent",
+        message: "OTP sent to customer",
       );
-
     } catch (e) {
-      AppSnackbar.error(
-        title: "Reinstall Failed",
-        message: e.toString(),
-      );
+      AppSnackbar.error(title: "OTP Error", message: e.toString());
     } finally {
       reinstallLoading.value = false;
     }
   }
 
-  /// ==============================
-  /// COUNTERS (NAV BAR)
-  /// ==============================
-  int get myCount => myJobCards.length;
+  /// -----------------------------
+  /// VERIFY OTP
+  /// -----------------------------
+  Future<void> verifyReinstallOtp({
+    required JobCardModel jobCard,
+    required String otp,
+  }) async {
+    try {
+      reinstallLoading.value = true;
+
+      await _provider.verifyReinstallOtp(
+        jobCardId: jobCard.id,
+        otp: otp,
+      );
+
+      devOtp.value = '';
+      await loadJobCards();
+
+      AppSnackbar.success(
+        title: "Success",
+        message: "Part reinstalled successfully",
+      );
+    } catch (e) {
+      AppSnackbar.error(title: "Failed", message: e.toString());
+    } finally {
+      reinstallLoading.value = false;
+    }
+  }
+
+
   int get reinstallCount =>
       reinstallJobCards.where((e) => e.isRepairCompleted).length;
 }

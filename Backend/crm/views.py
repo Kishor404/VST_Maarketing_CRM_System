@@ -1479,6 +1479,115 @@ class JobCardViewSet(viewsets.ModelViewSet):
         return Response(
             self.get_serializer(job_card, context={"request": request}).data
         )
+    
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated],
+        url_path="verify_reinstall_otp"
+    )
+    def verify_reinstall_otp(self, request, pk=None):
+
+        job_card = self.get_object()
+        user = request.user
+        service = job_card.service
+
+        # 🔐 Permission
+        if job_card.reinstall_staff_id != user.id and user.role != "admin":
+            return Response(
+                {"detail": "Not assigned reinstall staff"},
+                status=403
+            )
+
+        otp = request.data.get("otp")
+
+        if not otp:
+            return Response({"detail": "OTP required"}, status=400)
+
+        # 🔍 OTP Validation
+        if not service.otp_hash or not service.otp_expires_at:
+            return Response({"detail": "OTP not requested"}, status=400)
+
+        if timezone.now() > service.otp_expires_at:
+            return Response({"detail": "OTP expired"}, status=400)
+
+        if not verify_otp_hash(otp, service.otp_hash):
+            return Response({"detail": "Invalid OTP"}, status=400)
+
+        # ✅ Mark JobCard Reinstalled
+        job_card.status = "reinstalled"
+        job_card.reinstalled_at = timezone.now()
+        job_card.save()
+
+        # ✅ If All JobCards Done → Complete Service
+        pending = JobCard.objects.filter(
+            service=service
+        ).exclude(status="reinstalled").exists()
+
+        if not pending:
+            service.status = "completed"
+            service.otp_hash = None
+            service.otp_expires_at = None
+            service.save()
+
+        return Response({
+            "detail": "Reinstallation completed"
+        })
+
+    
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated],
+        url_path="request_reinstall_otp"
+    )
+    def request_reinstall_otp(self, request, pk=None):
+
+        job_card = self.get_object()
+        user = request.user
+
+        # 🔐 Permission
+        if job_card.reinstall_staff_id != user.id and user.role != "admin":
+            return Response(
+                {"detail": "Not assigned reinstall staff"},
+                status=403
+            )
+
+        service = job_card.service
+
+        phone = request.data.get("phone") or service.otp_phone
+
+        if not phone:
+            return Response(
+                {"detail": "phone required"},
+                status=400
+            )
+
+        # ✅ Generate OTP
+        otp = generate_otp(4)
+
+        service.otp_hash = hash_otp(otp)
+        service.otp_expires_at = otp_expiry_time()
+        service.otp_phone = phone
+        service.save()
+
+        # ✅ Send SMS
+        message = (
+            f"{otp} is your OTP for reinstall verification "
+            f"Service {service.id}"
+        )
+
+        Send_SMS(phone, message)
+
+        # ⭐ DEV MODE RETURN OTP
+        if getattr(settings, "CRM_DEV_RETURN_OTP", False):
+            return Response({
+                "detail": "otp-generated",
+                "otp": otp
+            })
+
+        return Response({"detail": "otp-sent"})
+
 
     # ======================================================
     # 6️⃣ REINSTALL COMPLETE (STAFF + OTP)

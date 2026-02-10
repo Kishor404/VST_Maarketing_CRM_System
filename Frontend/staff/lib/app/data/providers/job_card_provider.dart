@@ -70,18 +70,49 @@ class JobCardProvider {
   /// Calls:
   /// /services/{id}/reinstall/
   /// =====================================================
-  Future<void> reinstallPart({
+  Future<Map<String, dynamic>> reinstallPart({
     required int serviceId,
     required List<int> jobCardIds,
     required String otp,
   }) async {
-    await _apiClient.post(
+
+    final data = await _apiClient.post(
       '/api/crm/services/$serviceId/reinstall/',
       data: {
         "otp": otp,
         "job_cards": jobCardIds,
       },
     );
+
+    return data ?? {};
   }
+
+  /// -----------------------------
+  /// REQUEST REINSTALL OTP
+  /// -----------------------------
+  Future<String?> requestReinstallOtp(int jobCardId) async {
+    final data = await _apiClient.post(
+      '/api/crm/job-cards/$jobCardId/request_reinstall_otp/',
+    );
+
+    if (data is Map<String, dynamic>) {
+      return data['otp']?.toString(); // DEV ONLY
+    }
+    return null;
+  }
+
+  /// -----------------------------
+  /// VERIFY REINSTALL OTP
+  /// -----------------------------
+  Future<void> verifyReinstallOtp({
+    required int jobCardId,
+    required String otp,
+  }) async {
+    await _apiClient.post(
+      '/api/crm/job-cards/$jobCardId/verify_reinstall_otp/',
+      data: {"otp": otp},
+    );
+  }
+
 
 }
