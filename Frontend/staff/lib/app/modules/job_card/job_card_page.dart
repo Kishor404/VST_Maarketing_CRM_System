@@ -8,15 +8,11 @@ class JobCardPage extends GetView<JobCardController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Job Cards"),
-          backgroundColor: theme.colorScheme.primary,
-          foregroundColor: Colors.white,
           bottom: const TabBar(
             tabs: [
               Tab(text: "My Job Cards"),
@@ -24,7 +20,6 @@ class JobCardPage extends GetView<JobCardController> {
             ],
           ),
         ),
-
         body: Obx(() {
           if (controller.loading.value) {
             return const Center(child: CircularProgressIndicator());
@@ -32,17 +27,8 @@ class JobCardPage extends GetView<JobCardController> {
 
           return TabBarView(
             children: [
-              _buildList(
-                context,
-                controller.myJobCards,
-                emptyText: "No Job Cards Created",
-              ),
-              _buildList(
-                context,
-                controller.reinstallJobCards,
-                emptyText: "No Reinstall Jobs",
-                reinstallMode: true,
-              ),
+              _buildList(controller.myJobCards, false),
+              _buildList(controller.reinstallJobCards, true),
             ],
           );
         }),
@@ -50,31 +36,17 @@ class JobCardPage extends GetView<JobCardController> {
     );
   }
 
-  /// =====================================================
-  /// Job Card List Builder
-  /// =====================================================
-  Widget _buildList(
-    BuildContext context,
-    List<JobCardModel> items, {
-    required String emptyText,
-    bool reinstallMode = false,
-  }) {
-    if (items.isEmpty) {
-      return Center(
-        child: Text(
-          emptyText,
-          style: const TextStyle(color: Colors.grey),
-        ),
-      );
+  Widget _buildList(List<JobCardModel> list, bool reinstallMode) {
+    if (list.isEmpty) {
+      return const Center(child: Text("No Job Cards"));
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(12),
-      itemCount: items.length,
-      itemBuilder: (_, index) {
-        final jc = items[index];
+      itemCount: list.length,
+      itemBuilder: (_, i) {
         return _JobCardTile(
-          jobCard: jc,
+          jobCard: list[i],
           reinstallMode: reinstallMode,
         );
       },
@@ -82,38 +54,18 @@ class JobCardPage extends GetView<JobCardController> {
   }
 }
 
-/// =====================================================
-/// Job Card Tile
-/// =====================================================
 class _JobCardTile extends StatelessWidget {
   final JobCardModel jobCard;
   final bool reinstallMode;
 
   const _JobCardTile({
     required this.jobCard,
-    this.reinstallMode = false,
+    required this.reinstallMode,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    Color statusColor;
-    String statusLabel;
-
-    switch (jobCard.status) {
-      case "repair_completed":
-        statusColor = Colors.orange;
-        statusLabel = "Repair Completed";
-        break;
-      case "reinstalled":
-        statusColor = Colors.green;
-        statusLabel = "Reinstalled";
-        break;
-      default:
-        statusColor = Colors.grey;
-        statusLabel = "Pending";
-    }
+    final controller = Get.find<JobCardController>();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -129,80 +81,105 @@ class _JobCardTile extends StatelessWidget {
               children: [
                 Text(
                   jobCard.partName,
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    statusLabel,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )
+                _statusChip(jobCard.status),
               ],
             ),
 
             const SizedBox(height: 8),
-
-            /// Details
-            Text(
-              jobCard.details,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(jobCard.details),
 
             const SizedBox(height: 8),
-
-            /// Meta
             if (jobCard.staffName != null)
-              Text(
-                "Created by: ${jobCard.staffName}",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              Text("Created by: ${jobCard.staffName}",
+                  style: const TextStyle(fontSize: 12)),
 
             if (jobCard.reinstallStaffName != null)
-              Text(
-                "Reinstall Staff: ${jobCard.reinstallStaffName}",
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              Text("Reinstall: ${jobCard.reinstallStaffName}",
+                  style: const TextStyle(fontSize: 12)),
 
-            const SizedBox(height: 10),
-
-            /// Image
-            if (jobCard.imageUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  jobCard.fullImageUrl!,
-                  height: 140,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+            if (jobCard.fullImageUrl != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    jobCard.fullImageUrl!,
+                    height: 150,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
 
-            /// Reinstall CTA
+            /// Reinstall button
             if (reinstallMode && jobCard.isRepairCompleted)
               Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.build),
-                  label: const Text("Reinstall Part"),
-                  onPressed: () {
-                    // 🔜 navigate to reinstall flow
+                padding: const EdgeInsets.only(top: 12),
+                child: ElevatedButton(
+                  child: const Text("Reinstall (OTP)"),
+                  onPressed: () async {
+                    final otp = await _askOtp(context);
+                    if (otp == null) return;
+
+                    controller.reinstallSingle(
+                      jobCard: jobCard,
+                      otp: otp,
+                    );
                   },
                 ),
               )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _statusChip(String status) {
+    Color color;
+    switch (status) {
+      case "repair_completed":
+        color = Colors.orange;
+        break;
+      case "reinstalled":
+        color = Colors.green;
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return Chip(
+      label: Text(status.replaceAll("_", " ")),
+      backgroundColor: color.withOpacity(0.15),
+      labelStyle: TextStyle(color: color),
+    );
+  }
+
+  Future<String?> _askOtp(BuildContext context) async {
+    final controller = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Enter OTP"),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () => Get.back(result: controller.text),
+            child: const Text("Confirm"),
+          ),
+        ],
       ),
     );
   }

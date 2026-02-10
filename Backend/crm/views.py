@@ -1403,7 +1403,11 @@ class JobCardViewSet(viewsets.ModelViewSet):
     # 1️⃣ GET JOB CARDS (ADMIN / STAFF / REINSTALL STAFF)
     # ======================================================
     def get_queryset(self):
+
         user = self.request.user
+
+        mine = self.request.query_params.get("mine") == "true"
+        reinstall = self.request.query_params.get("reinstall") == "true"
 
         qs = JobCard.objects.select_related(
             "service",
@@ -1412,15 +1416,20 @@ class JobCardViewSet(viewsets.ModelViewSet):
             "customer"
         ).order_by("-created_at")
 
-        # 👑 ADMIN → ALL
         if user.role == "admin":
             return qs
 
-        # 👷 STAFF → CREATED BY THEM OR ASSIGNED FOR REINSTALL
-        return qs.filter(
-            Q(staff=user) |
-            Q(reinstall_staff=user)
-        ).distinct()
+        if mine:
+            return qs.filter(staff=user)
+
+        if reinstall:
+            return qs.filter(
+                reinstall_staff=user,
+                status="repair_completed"
+            )
+
+        return qs.none()
+
 
     # ======================================================
     # 4️⃣ ADMIN UPDATE STATUS + ASSIGN REINSTALL STAFF
