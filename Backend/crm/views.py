@@ -1675,7 +1675,6 @@ class IndustrialAMCViewSet(viewsets.ModelViewSet):
     serializer_class = IndustrialAMCSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
-
 class IndustrialAMCReportView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -1688,41 +1687,64 @@ class IndustrialAMCReportView(APIView):
             today = timezone.localdate()
             month = f"{today.year}-{today.month:02d}"
 
-        year, mon = map(int, month.split("-"))
+        # ✅ Validate month input
+        try:
+            year, mon = map(int, month.split("-"))
+        except Exception:
+            return Response(
+                {"error": "Invalid month format. Use YYYY-MM"},
+                status=400
+            )
 
         first_day = datetime(year, mon, 1).date()
         last_day = datetime(year, mon, monthrange(year, mon)[1]).date()
 
         results = []
 
+        # ✅ Fetch all AMCs
         amcs = IndustrialAMC.objects.select_related(
             "card",
             "card__customer"
         )
 
+        # ✅ Fetch all services ONCE
+        all_services = Service.objects.filter(
+            service_type="free"
+        ).values(
+            "card_id",
+            "scheduled_at",
+            "assigned_to_id",
+            "assigned_to__name"
+        )
+
+        # ✅ Build service map
+        service_map = {}
+
+        for svc in all_services:
+            service_map.setdefault(svc["card_id"], []).append(svc)
+
+        # =========================
+        # Main AMC Loop
+        # =========================
         for amc in amcs:
+
+            # Skip invalid interval
+            if not amc.interval_days:
+                continue
 
             milestones = []
 
-            current = amc.start_date + relativedelta(
-                months=amc.interval_months
-            )
+            current = amc.start_date + timedelta(days=amc.interval_days)
 
             while current <= amc.end_date:
                 milestones.append(current)
-                current += relativedelta(months=amc.interval_months)
+                current += timedelta(days=amc.interval_days)
 
-            # 🔹 fetch free services
-            services = (
-                Service.objects
-                .filter(card=amc.card, service_type="free")
-                .values(
-                    "scheduled_at",
-                    "assigned_to_id",
-                    "assigned_to__name"
-                )
-            )
+            services = service_map.get(amc.card.id, [])
 
+            # =====================
+            # Milestone Loop
+            # =====================
             for m in milestones:
 
                 if not (first_day <= m <= last_day):
@@ -1735,9 +1757,20 @@ class IndustrialAMCReportView(APIView):
                 done_staff = None
                 scheduled_date = None
 
+                # =====================
+                # Service Matching
+                # =====================
                 for svc in services:
 
                     svc_date = svc["scheduled_at"]
+
+                    # Normalize datetime → date
+                    if svc_date:
+                        svc_date = (
+                            svc_date.date()
+                            if hasattr(svc_date, "date")
+                            else svc_date
+                        )
 
                     if svc_date and start_window <= svc_date <= end_window:
 
@@ -1763,7 +1796,7 @@ class IndustrialAMCReportView(APIView):
                     "address": amc.card.address,
                     "city": amc.card.city,
 
-                    "interval_months": amc.interval_months,
+                    "interval_days": amc.interval_days,
 
                     "milestone": m.isoformat(),
                     "status": status,
@@ -1774,4 +1807,3 @@ class IndustrialAMCReportView(APIView):
                 })
 
         return Response(results)
-

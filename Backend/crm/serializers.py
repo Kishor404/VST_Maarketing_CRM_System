@@ -5,7 +5,6 @@ from django.conf import settings
 from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard, IndustrialAMC
 from user.models import User  # your User model
 from .utils import generate_otp, hash_otp, otp_expiry_time,booking_is_eligible_for_free
-from datetime import timedelta
 
 BOOKING_WINDOW_DAYS = getattr(settings, "CRM_BOOKING_WINDOW_DAYS", 30)
     
@@ -496,14 +495,22 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ("id", "created_by", "created_at")
 
-    def validate_card(self, card):
+    def validate_interval_days(self, value):
+        if value < 1:
+            raise serializers.ValidationError("Interval must be at least 1 day")
+        return value
 
+    def validate_card(self, card):
         if not card.customer.is_industrial:
             raise serializers.ValidationError(
                 "Selected card does not belong to industrial customer"
             )
-
         return card
+
+    def validate(self, data):
+        if not data.get("interval_days"):
+            raise serializers.ValidationError("interval_days is required")
+        return data
 
     def create(self, validated_data):
 

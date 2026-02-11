@@ -211,10 +211,6 @@ class IndustrialAMC(models.Model):
         related_name="industrial_amc"
     )
 
-    interval_months = models.PositiveIntegerField(
-        help_text="Service interval in months (ex: 4, 5, 6)"
-    )
-
     interval_days = models.PositiveIntegerField(
         null=True,
         blank=True
@@ -233,15 +229,17 @@ class IndustrialAMC(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
+
         if not self.card.customer.is_industrial:
             raise ValidationError("Industrial AMC allowed only for industrial customers")
 
-        if self.interval_months < 1:
-            raise ValidationError("Interval must be at least 1 month")
+        if not self.interval_days or self.interval_days < 1:
+            raise ValidationError("Interval must be at least 1 day")
 
         if self.end_date <= self.start_date:
             raise ValidationError("End date must be after start date")
 
 
+
     def __str__(self):
-        return f"Industrial AMC Card {self.card.id} ({self.interval_months} months)"
+        return f"Industrial AMC Card {self.card.id} ({self.interval_days} days)"
