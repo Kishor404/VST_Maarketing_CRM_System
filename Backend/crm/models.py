@@ -215,6 +215,11 @@ class IndustrialAMC(models.Model):
         help_text="Service interval in months (ex: 4, 5, 6)"
     )
 
+    interval_days = models.PositiveIntegerField(
+        null=True,
+        blank=True
+    )
+
     start_date = models.DateField()
     end_date = models.DateField()
 

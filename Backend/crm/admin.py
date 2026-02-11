@@ -10,13 +10,14 @@ import io
 
 from django.conf import settings
 
-from .models import Card, Service, ServiceEntry, Feedback, Attendance, AuditLog, JobCard
+from .models import Card, Service, ServiceEntry, Feedback, Attendance, AuditLog, JobCard, IndustrialAMC
 from .utils import generate_otp, hash_otp, otp_expiry_time
 
 
 admin.site.register(Card)
 admin.site.register(JobCard)
 admin.site.register(Service)
+admin.site.register(IndustrialAMC)
 admin.site.register(ServiceEntry)
 admin.site.register(Feedback)
 admin.site.register(Attendance)
