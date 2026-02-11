@@ -1,4 +1,6 @@
 # crm/serializers.py
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 from django.utils import timezone
 from django.conf import settings
@@ -486,8 +488,6 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
         )
 
         return service
-
-
 class IndustrialAMCSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -501,23 +501,11 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
         return value
 
     def validate_card(self, card):
-
         if not card.customer.is_industrial:
             raise serializers.ValidationError(
                 "Selected card does not belong to industrial customer"
             )
-
-        if IndustrialAMC.objects.filter(card=card).exists():
-            raise serializers.ValidationError(
-                "AMC already exists for this card"
-            )
-
         return card
-
-    def validate(self, data):
-        if not data.get("interval_days"):
-            raise serializers.ValidationError("interval_days is required")
-        return data
 
     def create(self, validated_data):
 
@@ -529,7 +517,10 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
             **validated_data
         )
 
-        instance.full_clean()
-        instance.save()
+        try:
+            instance.full_clean()
+            instance.save()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
 
         return instance

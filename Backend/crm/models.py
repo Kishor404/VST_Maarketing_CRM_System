@@ -1,4 +1,5 @@
 # crm/models.py
+from django.db.models import Q
 from django.db import models
 from django.utils import timezone
 from django.core.validators import MinValueValidator
@@ -203,18 +204,15 @@ class JobCard(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-
 class IndustrialAMC(models.Model):
-    card = models.OneToOneField(
+
+    card = models.ForeignKey(
         Card,
         on_delete=models.CASCADE,
-        related_name="industrial_amc"
+        related_name="industrial_amcs"
     )
 
-    interval_days = models.PositiveIntegerField(
-        null=True,
-        blank=True
-    )
+    interval_days = models.PositiveIntegerField()
 
     start_date = models.DateField()
     end_date = models.DateField()
@@ -233,13 +231,11 @@ class IndustrialAMC(models.Model):
         if not self.card.customer.is_industrial:
             raise ValidationError("Industrial AMC allowed only for industrial customers")
 
-        if not self.interval_days or self.interval_days < 1:
+        if self.interval_days < 1:
             raise ValidationError("Interval must be at least 1 day")
 
         if self.end_date <= self.start_date:
             raise ValidationError("End date must be after start date")
-
-
 
     def __str__(self):
         return f"Industrial AMC Card {self.card.id} ({self.interval_days} days)"
