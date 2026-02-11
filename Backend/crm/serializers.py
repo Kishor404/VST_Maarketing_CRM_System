@@ -501,10 +501,17 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
         return value
 
     def validate_card(self, card):
+
         if not card.customer.is_industrial:
             raise serializers.ValidationError(
                 "Selected card does not belong to industrial customer"
             )
+
+        if IndustrialAMC.objects.filter(card=card).exists():
+            raise serializers.ValidationError(
+                "AMC already exists for this card"
+            )
+
         return card
 
     def validate(self, data):
@@ -517,7 +524,12 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         admin = request.user if request else None
 
-        return IndustrialAMC.objects.create(
+        instance = IndustrialAMC(
             created_by=admin,
             **validated_data
         )
+
+        instance.full_clean()
+        instance.save()
+
+        return instance

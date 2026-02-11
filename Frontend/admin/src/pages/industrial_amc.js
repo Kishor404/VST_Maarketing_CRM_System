@@ -40,7 +40,7 @@ const IndustrialAMC = () => {
   const [selectedCard, setSelectedCard] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [intervalMonths, setIntervalMonths] = useState(4);
+  const [intervalDays, setIntervalDays] = useState(120);
 
   /* ---------------- UTIL ---------------- */
 
@@ -259,7 +259,7 @@ const IndustrialAMC = () => {
       Phone: card.customer_phone,
       City: card.city,
       Status: card.status,
-      Interval: card.interval_months + " months",
+      Interval: card.interval_days + " days",
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -341,7 +341,7 @@ const IndustrialAMC = () => {
 
   const createAMC = async () => {
 
-    if (!selectedCard || !startDate || !endDate || !intervalMonths) {
+    if (!selectedCard || !startDate || !endDate || !intervalDays){
       alert("Fill all fields");
       return;
     }
@@ -354,8 +354,9 @@ const IndustrialAMC = () => {
         card: selectedCard,
         start_date: startDate,
         end_date: endDate,
-        interval_months: Number(intervalMonths),
+        interval_days: Number(intervalDays),
       });
+
 
       alert("Industrial AMC Created");
 
@@ -516,14 +517,15 @@ const IndustrialAMC = () => {
                 </div>
 
                 <div className="iamc-createcard-input-cont">
-                  <p>Interval Months *</p>
+                  <p>Interval Days *</p>
                   <input
                     type="number"
                     min="1"
                     className="iamc-createcard-card-input"
-                    value={intervalMonths}
-                    onChange={(e) => setIntervalMonths(e.target.value)}
+                    value={intervalDays}
+                    onChange={(e) => setIntervalDays(e.target.value)}
                   />
+
                 </div>
 
               </div>
