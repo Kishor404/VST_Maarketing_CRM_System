@@ -529,6 +529,7 @@ class FollowUpCardSerializer(serializers.ModelSerializer):
 
     customer_name = serializers.CharField(source="customer.name", read_only=True)
     customer_phone = serializers.CharField(source="customer.phone", read_only=True)
+    customer_code = serializers.CharField(source="customer.customer_code", read_only=True)
 
     last_service_date = serializers.DateField(read_only=True)
     days_since_service = serializers.IntegerField(read_only=True)
@@ -537,6 +538,7 @@ class FollowUpCardSerializer(serializers.ModelSerializer):
         model = Card
         fields = [
             "id",
+            "customer_code",
             "model",
             "city",
             "address",

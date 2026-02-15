@@ -1,12 +1,12 @@
 .followup-main {
     padding: 25px;
-    background: #f7f9fc;
+    background: #3763ae;
     min-height: 100vh;
 }
 
 .followup-main h2 {
     margin-bottom: 20px;
-    color: #1f2937;
+    color: #ffffff;
 }
 
 /* Filter */
@@ -15,6 +15,7 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 20px;
+    color: white;
 }
 
 .followup-filter input {
@@ -23,7 +24,7 @@
 }
 
 .followup-filter button {
-    background: #2563eb;
+    background: #096b00;
     color: white;
     border: none;
     padding: 7px 14px;
@@ -32,14 +33,22 @@
 }
 
 .followup-filter button:hover {
-    background: #1e40af;
+    background: #00910c;
 }
 
+.followup-table-cont{
+    
+    border-radius: 20px;
+    height: 70vh;
+    overflow: auto;
+}
 /* Table */
 .followup-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
     background: white;
+    border-radius: 20px;
+    border-spacing: 0;
 }
 
 .followup-table th,
@@ -51,6 +60,14 @@
 
 .followup-table th {
     background: #f1f5f9;
+
+}
+
+.followup-table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.05);
 }
 
 .followup-table tr:hover {
@@ -80,7 +97,7 @@
 /* Info */
 .info {
     margin-top: 20px;
-    color: #6b7280;
+    color: #ffffff;
 }
 
 .error {
