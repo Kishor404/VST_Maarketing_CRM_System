@@ -524,3 +524,24 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(e.message_dict)
 
         return instance
+    
+class FollowUpCardSerializer(serializers.ModelSerializer):
+
+    customer_name = serializers.CharField(source="customer.name", read_only=True)
+    customer_phone = serializers.CharField(source="customer.phone", read_only=True)
+
+    last_service_date = serializers.DateField(read_only=True)
+    days_since_service = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Card
+        fields = [
+            "id",
+            "model",
+            "city",
+            "address",
+            "customer_name",
+            "customer_phone",
+            "last_service_date",
+            "days_since_service",
+        ]

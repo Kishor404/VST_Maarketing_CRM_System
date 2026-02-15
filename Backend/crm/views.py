@@ -1807,3 +1807,48 @@ class IndustrialAMCReportView(APIView):
                 })
 
         return Response(results)
+
+
+from django.db.models import Max, F, ExpressionWrapper, DurationField
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .serializers import FollowUpCardSerializer
+from datetime import timedelta
+
+class FollowUpCardsView(APIView):
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+
+        try:
+            n_days = int(request.query_params.get("days", 30))
+        except ValueError:
+            return Response({"detail": "Invalid days parameter"}, status=400)
+
+        today = timezone.localdate()
+
+        cards = (
+            Card.objects
+            .annotate(
+                last_service_date=Max(
+                    "services__scheduled_at",
+                    filter=models.Q(services__status="completed")
+                )
+            )
+            .filter(last_service_date__isnull=False)
+        )
+
+        results = []
+
+        for card in cards:
+            days_since = (today - card.last_service_date).days
+
+            if days_since > n_days:
+                card.days_since_service = days_since
+                results.append(card)
+
+        serializer = FollowUpCardSerializer(results, many=True)
+        return Response(serializer.data)
