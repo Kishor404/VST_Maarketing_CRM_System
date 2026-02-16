@@ -227,7 +227,7 @@ class WorkCompletionPage extends GetView<WorkController> {
 
               return Column(
                 children: List.generate(controller.jobCards.length, (index) {
-                  final jc = controller.jobCards[index];
+                  //final jc = controller.jobCards[index];
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 20),

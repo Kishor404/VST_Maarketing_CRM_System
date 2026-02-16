@@ -328,7 +328,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
             if scheduled_at:
                 try:
-                    service.scheduled_at = parse_iso_datetime(scheduled_at)
+                    parsed = parse_iso_datetime(scheduled_at)
+                    service.scheduled_at = parsed.date()
+
                 except Exception:
                     return Response(
                         {"detail": "invalid scheduled_at format (YYYY-MM-DD)"},
@@ -364,7 +366,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
             return Response({"detail": "scheduled_at required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            service.scheduled_at = parse_iso_datetime(scheduled_at)
+            parsed = parse_iso_datetime(scheduled_at)
+            service.scheduled_at = parsed.date()
+
         except Exception:
             return Response({"detail": "invalid datetime format"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -574,12 +578,20 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
             else:
                 # Normal completion
-                Service.objects.filter(pk=service.pk).update(
-                    status="completed",
-                    otp_hash=None,
-                    otp_expires_at=None,
-                    next_service_date=parsed_next_date,
-                )
+                service.status = "completed"
+                service.otp_hash = None
+                service.otp_expires_at = None
+                service.next_service_date = parsed_next_date
+
+                service.scheduled_at = timezone.localdate()
+
+                service.save(update_fields=[
+                    "status",
+                    "otp_hash",
+                    "otp_expires_at",
+                    "next_service_date",
+                    "scheduled_at",
+                ])
 
 
         final_status = "job_card_pending" if job_cards_data else "completed"
