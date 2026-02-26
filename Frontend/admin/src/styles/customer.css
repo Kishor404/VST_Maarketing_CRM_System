@@ -26,7 +26,7 @@
     padding: 0px 30px;
     border-radius: 20px;
     height: 100px;
-    width: 200px;
+    width: 35%;
     margin-bottom: 25px;
 }
 .customer-count-icon{
@@ -325,4 +325,25 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(26px);
+}
+
+
+.customer-right-top{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+.customer-right-filter{
+    background-color: white;
+    width: 50%;
+    height: 80px;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.customer-right-filter select{
+    border: none;
+    width: 90%;
+    padding: 20px;
 }

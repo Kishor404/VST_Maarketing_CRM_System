@@ -26,6 +26,9 @@ const Customer = () => {
         password: "",
     });
 
+    const [regionFilter, setRegionFilter] = useState("all");
+    const [industrialFilter, setIndustrialFilter] = useState("all");
+
 
     const refreshToken = Cookies.get('refresh_token');
     const headRegion = Cookies.get('region');
@@ -58,6 +61,39 @@ const Customer = () => {
             return null;
         }
     };
+
+    useEffect(() => {
+        let filtered = [...customerList];
+
+        // Search filter
+        if (searchQuery.trim()) {
+            filtered = filtered.filter((customer) => {
+                const fieldValue = (customer[searchMode] || "")
+                    .toString()
+                    .toLowerCase();
+
+                return fieldValue.includes(searchQuery.toLowerCase());
+            });
+        }
+
+        // Region filter
+        if (regionFilter !== "all") {
+            filtered = filtered.filter(
+                (customer) => customer.region === regionFilter
+            );
+        }
+
+        // Industrial filter
+        if (industrialFilter !== "all") {
+            const isIndustrial = industrialFilter === "industrial";
+            filtered = filtered.filter(
+                (customer) => customer.is_industrial === isIndustrial
+            );
+        }
+
+        setFilteredList(filtered);
+
+    }, [searchQuery, searchMode, customerList, regionFilter, industrialFilter]);
 
 
     useEffect(() => {
@@ -282,6 +318,8 @@ const Customer = () => {
     const handleShowAll = () => {
         setFilteredList(customerList);
         setSearchQuery("");
+        setRegionFilter("all");
+        setIndustrialFilter("all");
         setIsCreating(false);
         setFetchData(null);
     };
@@ -293,24 +331,31 @@ const Customer = () => {
                 <div className="customer-left">
                     {/* Search dropdown, input, and buttons in one row */}
                     <div style={{ display: "flex", marginBottom: "10px", gap: "10px", alignItems: "center" }} className='customer-search-bar'>
+
+                        {/* Existing search dropdown */}
                         <select
                             value={searchMode}
                             onChange={(e) => setSearchMode(e.target.value)}
                             className="customer-search-mode"
-                            style={{ padding: "5px", minWidth: "140px" }}
                         >
                             <option value="name">Search by Name</option>
                             <option value="phone">Search by Phone</option>
-                            <option value="customer_code">Search by Customer Code</option>
+                            <option value="customer_code">Search by Code</option>
                         </select>
 
+
+                        {/* Search input */}
                         <input
                             type="text"
-                            placeholder={`Search by ${searchMode.charAt(0).toUpperCase() + searchMode.slice(1)}`}
+                            placeholder={`Search by ${searchMode}`}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="customer-name-search-input"
                         />
+
+
+                        
+
 
                         <button
                             className="customer-edit-button"
@@ -328,6 +373,7 @@ const Customer = () => {
                         >
                             Show All
                         </button>
+
                     </div>
 
                     {/* CUSTOMER LIST */}
@@ -368,13 +414,31 @@ const Customer = () => {
 
                 {/* CUSTOMER RIGHT */}
                 <div className="customer-right">
-                    <div className="customer-count-cont">
-                        <div className="customer-count-box">
-                            <p className="customer-count-value">{filteredList.length}</p>
-                            <p className="customer-count-title">Customers</p>
+
+                    <div className="customer-right-top">
+                        <div className="customer-right-filter">
+                                <select
+                                    value={industrialFilter}
+                                    onChange={(e) => setIndustrialFilter(e.target.value)}
+                                    className="customer-search-mode"
+                                >
+                                    <option value="all">All Types</option>
+                                    <option value="industrial">Industrial</option>
+                                    <option value="nonindustrial">Non-Industrial</option>
+                                </select>
                         </div>
-                        <FaUsers className="customer-count-icon" size={50} color="green" />
+                        
+                    
+                        <div className="customer-count-cont">
+                            <div className="customer-count-box">
+                                <p className="customer-count-value">{filteredList.length}</p>
+                                <p className="customer-count-title">Customers</p>
+                            </div>
+                            <FaUsers className="customer-count-icon" size={50} color="green" />
+                        </div>
                     </div>
+
+                        
                     <div className="customer-details-cont">
                         <p className="customer-details-title">
                             {isCreating ? "Add New Customer" : fetchData ? "Customer Details" : "No Customer Selected"}
