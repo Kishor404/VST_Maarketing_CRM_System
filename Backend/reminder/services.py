@@ -17,10 +17,16 @@ def notify_admin(reminder, trigger_time):
 
     formatted_time = trigger_time_ist.strftime("%d-%m-%Y %I:%M %p")
 
+    # NEW fallback logic
+    contact_name = reminder.get_contact_name()
+    contact_phone = reminder.get_contact_phone()
+
     print("✨ REMINDER", reminder.message, trigger_time)
 
     url = "https://web.chatinfy.in/api/sendmediamessage.php"
-    msg = f"{reminder.message} for {reminder.customer.name} ( {reminder.customer_id} )."
+
+    msg = f"{reminder.message} for {contact_name} ({contact_phone})."
+
     params = {
         "LicenseNumber": settings.CHATINFY_LICENSE_NUMBER,
         "APIKey": settings.CHATINFY_API_KEY,
@@ -38,7 +44,6 @@ def notify_admin(reminder, trigger_time):
         response.raise_for_status()
 
         logger.info("Reminder notification sent successfully")
-        logger.debug("API Response: %s", response.text)
 
     except requests.exceptions.RequestException as e:
         logger.error("Failed to send reminder notification: %s", e)

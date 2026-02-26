@@ -20,6 +20,9 @@ const Reminder = () => {
     const [reminderCustomer, setReminderCustomer] = useState(null);
     const [selectedReminders, setSelectedReminders] = useState([]);
 
+    const [reminderCustomerName, setReminderCustomerName] = useState("");
+    const [isManualCustomer, setIsManualCustomer] = useState(false);
+
 
     // ============= API FUNCTIONS ================
 
@@ -93,16 +96,31 @@ const Reminder = () => {
     };
 
     const assignPhoneToCustomer = async (phone) => {
+
         if (phone.length === 10) {
+
             const user = await getUserByPhone(phone);
 
             if (user && user.role === "customer") {
+
+                // Existing customer found
                 setReminderCustomer(user);
+                setReminderCustomerName(user.name);
+                setIsManualCustomer(false);
+
             } else {
+
+                // Manual entry mode
                 setReminderCustomer(null);
+                setReminderCustomerName("");
+                setIsManualCustomer(true);
             }
+
         } else {
+
             setReminderCustomer(null);
+            setReminderCustomerName("");
+            setIsManualCustomer(false);
         }
     };
 
@@ -132,29 +150,49 @@ const Reminder = () => {
     }
 
     const handleCreateReminder = async () => {
-        if (!reminderCustomer || reminderDates.length === 0 || !message) {
-            alert("All fields are required");
+
+        if (reminderDates.length === 0 || !message) {
+            alert("Reminder date and message required");
             return;
         }
 
-        const data = {
-            customer_id: reminderCustomer.id,
-            reminder_dates: reminderDates.map(d => d+"+05:30"),
+        let data = {
+            reminder_dates: reminderDates.map(d => d + "+05:30"),
             message: message,
             is_active: true
         };
+
+        // If customer exists → use customer_id
+        if (reminderCustomer) {
+
+            data.customer_id = reminderCustomer.id;
+
+        }
+        // Else use name and phone
+        else {
+
+            if (!reminderCustomerName || !reminderCustomerPhone) {
+                alert("Enter customer name and phone");
+                return;
+            }
+
+            data.name = reminderCustomerName;
+            data.phone = reminderCustomerPhone;
+        }
 
         const confirmCreate = window.confirm("Create reminder?");
         if (!confirmCreate) return;
 
         await postReminder(data);
 
-        // reset
+        // Reset
         setShowCreatePopup(false);
         setReminderCustomerPhone("");
+        setReminderCustomerName("");
         setReminderCustomer(null);
         setReminderDates([]);
         setMessage("");
+        setIsManualCustomer(false);
 
         getAllReminders();
     };
@@ -239,9 +277,12 @@ const Reminder = () => {
                         <h3>Create Reminder</h3>
 
                         <p className='service-bottom-right-bottom-create-info-title'>
-                            Customer : {reminderCustomer
-                                ? `${reminderCustomer.name} ( ${reminderCustomer.id} )`
-                                : "Not Found"}
+                            Customer :
+                            {reminderCustomer
+                                ? `${reminderCustomer.name} (${reminderCustomer.id})`
+                                : isManualCustomer
+                                    ? "Manual entry"
+                                    : "Enter phone"}
                         </p>
 
                         <input
@@ -255,8 +296,19 @@ const Reminder = () => {
                                 assignPhoneToCustomer(phone);
                             }}
                             maxLength={10}
-                            required
                         />
+
+
+                        {/* Show name input if manual mode */}
+                        {isManualCustomer && (
+                            <input
+                                type="text"
+                                placeholder="Enter Customer Name"
+                                className="service-bottom-right-bottom-create-info-input"
+                                value={reminderCustomerName}
+                                onChange={(e) => setReminderCustomerName(e.target.value)}
+                            />
+                        )}
 
 
 
@@ -294,7 +346,15 @@ const Reminder = () => {
                         <div className="popup-actions">
                             <button
                                 onClick={handleCreateReminder}
-                                disabled={!reminderCustomer || loadingCustomer}
+                                disabled={
+                                    loadingCustomer ||
+                                    reminderDates.length === 0 ||
+                                    !message ||
+                                    (
+                                        !reminderCustomer &&
+                                        (!reminderCustomerName || !reminderCustomerPhone)
+                                    )
+                                }
                             >
                                 Create
                             </button>
@@ -307,7 +367,7 @@ const Reminder = () => {
             <div className='reminder-topbar'>
                 <p className='reminder-topbar-title'>REMINDERS</p>
                 <div className='reminder-topbar-buttons'>
-                    <button onClick={() => setShowCreatePopup(true)}>CREATE</button>
+                    <button onClick={() => setShowCreatePopup(true)} >CREATE</button>
                     <button
                         onClick={handleDeleteReminders}
                         disabled={selectedReminders.length === 0}
@@ -351,9 +411,11 @@ const Reminder = () => {
                                         />
                                     </td>
                                     <td>{item.id}</td>
-                                    <td>{item.customer?.name}</td>
-                                    <td>{item.customer?.id}</td>
-                                    <td>{item.customer?.phone}</td>
+                                    <td>{item.name || item.customer?.name || "—"}</td>
+
+                                    <td>{item.customer?.id || "—"}</td>
+
+                                    <td>{item.phone || item.customer?.phone || "—"}</td>
                                     <td>{item.message}</td>
                                     <td>
                                         {item.reminder_dates?.[0]
