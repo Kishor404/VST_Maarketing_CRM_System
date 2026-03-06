@@ -92,6 +92,8 @@ const Service = () => {
 
     const [serviceAddress, setServiceAddress]=useState("");
 
+    const [showServiceEntries, setShowServiceEntries] = useState(false);
+
     // ~~~~~~~~~~~~~~~~ CREATE SERVICE DATA ~~~~~~~~~~~~~~~~~~
 
     // ============= API FUNCTIONS ================
@@ -370,6 +372,7 @@ const Service = () => {
             setServiceVisitType(data.visit_type);
             setServiceNextServiceDate(data.next_service_date);
             setServiceEntries(data.entries);
+            setShowServiceEntries(false);
             setServiceHasFeedback(data.feedback!=null);
             setServiceFeedback(data.feedback==null?"":data.feedback["comments"]);
             setServiceRating(data.feedback==null?"":data.feedback["rating"]);
@@ -1246,6 +1249,7 @@ const Service = () => {
                                                 <p className='service-bottom-right-bottom-edit-info-title'>Customer Booked Date</p>
                                                 <input className='service-bottom-right-bottom-edit-info-input' value={formatDate(serviceBookedDate)} disabled/>
                                             </div>
+
                                             
                                             {
                                                 serviceOtpPhone!=null?
@@ -1272,6 +1276,78 @@ const Service = () => {
                                                     </div>
                                                 ):<div></div>
                                             }
+                                            <hr/>
+                                            {showServiceEntries && serviceEntries.map((entry) => (
+                                                <div key={entry.id} className='service-serviceentry'>
+
+                                                    <p className='service-entry-head'>SERVICE ENTRY {entry.id}</p>
+
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>Actual Complaint</p>
+                                                        <input
+                                                            className='service-bottom-right-bottom-edit-info-input'
+                                                            value={entry.actual_complaint || ""}
+                                                            disabled
+                                                        />
+                                                    </div>
+
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>Work Detail</p>
+                                                        <input
+                                                            className='service-bottom-right-bottom-edit-info-input'
+                                                            value={entry.work_detail || ""}
+                                                            disabled
+                                                        />
+                                                    </div>
+
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>Visit Type</p>
+                                                        <input
+                                                            className='service-bottom-right-bottom-edit-info-input'
+                                                            value={entry.visit_type || ""}
+                                                            disabled
+                                                        />
+                                                    </div>
+
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>Performed By</p>
+                                                        <input
+                                                            className='service-bottom-right-bottom-edit-info-input'
+                                                            value={entry.performed_by || ""}
+                                                            disabled
+                                                        />
+                                                    </div>
+
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>Amount Charged</p>
+                                                        <input
+                                                            className='service-bottom-right-bottom-edit-info-input'
+                                                            value={`₹ ${entry.amount_charged}`}
+                                                            disabled
+                                                        />
+                                                    </div>
+
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>Created At</p>
+                                                        <input
+                                                            className='service-bottom-right-bottom-edit-info-input'
+                                                            value={formatDate(entry.created_at)}
+                                                            disabled
+                                                        />
+                                                    </div>
+
+                                                    <hr/>
+
+                                                </div>
+                                            ))}
+                                            {serviceFetch && (
+                                                <button
+                                                    className="service-bottom-right-bottom-edit-submit-entry"
+                                                    onClick={() => setShowServiceEntries(!showServiceEntries)}
+                                                >
+                                                    Show Service Entries ({serviceEntries.length})
+                                                </button>
+                                            )}
                                         </div>
                                         ):
                                         (
@@ -1279,8 +1355,10 @@ const Service = () => {
                                                 <p>Enter ID and Fetch the data</p>
                                             </div>
                                         )}
+                                        
                                         <hr/>
                                         <div className='service-bottom-right-bottom-edit-button-cont'>
+                                            
                                             <button className='service-bottom-right-bottom-edit-submit' onClick={editServiceForm}>Edit Service</button>
                                             {serviceStatus=="pending"?
                                                 <button className='service-bottom-right-bottom-edit-submit-as' onClick={()=>{setShowAssignStaffForm(true)}}>Assign Staff</button>:<></>
