@@ -247,7 +247,7 @@ const Warranty = () => {
 
           const payload = {
             card: card.card_id,
-            description: 'Free service under warranty',
+            description: 'Warranty Service - '+card.warranty_note,
             service_type: 'free',
             preferred_date: scheduledDates[card.card_id] || null,
             scheduled_at: scheduledDates[card.card_id] || null,
