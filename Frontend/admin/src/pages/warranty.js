@@ -241,7 +241,7 @@ const Warranty = () => {
 
     try {
       const bookingPromises = cards
-        .filter((card) => selectedStaff[card.card_id])
+        .filter((card) => selectedStaff[card.card_id] && card.status !== "done")
         .map(async (card) => {
           const staffId = selectedStaff[card.card_id];
 
