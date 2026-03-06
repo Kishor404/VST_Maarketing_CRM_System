@@ -125,6 +125,21 @@ const JobCard = () => {
         if (user) setReinstallStaff(user);
     };
 
+    const formatDateTime = (dateStr) => {
+        if (!dateStr) return "-";
+
+        const date = new Date(dateStr);
+
+        return date.toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true
+        });
+    };
+
     // ================= FILTER =================
 
     useEffect(() => {
@@ -220,18 +235,25 @@ const JobCard = () => {
 
                         {/* IMAGE */}
                         {selectedCard.image_url && (
-                            <img
-                                src={selectedCard.image_url}
-                                alt="job"
-                                className="jobcard-image"
-                            />
+                            <a
+                                href={selectedCard.image_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <img
+                                    src={selectedCard.image_url}
+                                    alt="job"
+                                    className="jobcard-image"
+                                    style={{ cursor: "pointer" }}
+                                />
+                            </a>
                         )}
 
                         {/* TIMELINE */}
                         <div className="jobcard-timeline">
-                            <p>Received: {selectedCard.received_office_at || "-"}</p>
-                            <p>Repair Done: {selectedCard.repair_completed_at || "-"}</p>
-                            <p>Reinstalled: {selectedCard.reinstalled_at || "-"}</p>
+                            <p>Received: {formatDateTime(selectedCard.received_office_at)}</p>
+                            <p>Repair Done: {formatDateTime(selectedCard.repair_completed_at)}</p>
+                            <p>Reinstalled: {formatDateTime(selectedCard.reinstalled_at)}</p>
                         </div>
 
                         {/* STATUS */}
