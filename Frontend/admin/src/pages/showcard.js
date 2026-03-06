@@ -28,6 +28,8 @@ const ShowCard = () => {
     const [cardList, setCardList] = useState([]);
     const [selectedCard, setSelectedCard] = useState(null);
 
+    const [statusFilter, setStatusFilter] = useState("all"); // all | warranty | amc
+
     /* ---------------- REFRESH TOKEN ---------------- */
     const refresh_token = async () => {
         const rToken = Cookies.get('refresh_token');
@@ -194,13 +196,38 @@ const ShowCard = () => {
     };
 
     /* ---------------- FILTER + SORT ---------------- */
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
     const filteredCards = [...cardList]
         .filter(card => {
-            if (!search) return true;
-            if (searchBy === "phone") {
-                return card.customer_phone?.includes(search);
+
+            /* SEARCH FILTER */
+            if (search) {
+                if (searchBy === "phone") {
+                    if (!card.customer_phone?.includes(search)) return false;
+                } else {
+                    if (!card.customer_name?.toLowerCase().includes(search.toLowerCase())) return false;
+                }
             }
-            return card.customer_name?.toLowerCase().includes(search.toLowerCase());
+
+            /* WARRANTY FILTER */
+            if (statusFilter === "warranty") {
+                const ws = new Date(card.warranty_start_date);
+                const we = new Date(card.warranty_end_date);
+
+                if (!(ws <= today && we >= today)) return false;
+            }
+
+            /* AMC FILTER */
+            if (statusFilter === "amc") {
+                const as = new Date(card.amc_start_date);
+                const ae = new Date(card.amc_end_date);
+
+                if (!(as <= today && ae >= today)) return false;
+            }
+
+            return true;
         })
         .sort((a, b) => {
             switch (sortBy) {
@@ -210,7 +237,7 @@ const ShowCard = () => {
                     return a.customer_name.localeCompare(b.customer_name);
                 case "install":
                     return new Date(b.date_of_installation) - new Date(a.date_of_installation);
-                default: // latest
+                default:
                     return b.id - a.id;
             }
         });
@@ -262,6 +289,15 @@ const ShowCard = () => {
                             <option value="oldest">Oldest First</option>
                             <option value="name">Customer Name (A-Z)</option>
                             <option value="install">Installation Date</option>
+                        </select>
+                        <select
+                            className='showcard-edit-select'
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="all">All Cards</option>
+                            <option value="warranty">Under Warranty</option>
+                            <option value="amc">Under AMC</option>
                         </select>
                         <button
                             className="showcard-details-but"
