@@ -876,24 +876,17 @@ class WarrantyReportView(APIView):
 
         results = []
 
-        # ----------------------------------
-        # 1. Fetch cards
-        # ----------------------------------
         cards = Card.objects.select_related("customer").filter(
             warranty_start_date__isnull=False,
             warranty_end_date__isnull=False,
         )
 
-        # ----------------------------------
-        # 2. Fetch ALL free services once
-        # ----------------------------------
         free_services = (
             Service.objects
             .filter(service_type="free")
             .values("card_id", "scheduled_at", "assigned_to_id", "assigned_to__name")
         )
 
-        # Group services by card_id
         services_by_card = {}
         for s in free_services:
             services_by_card.setdefault(s["card_id"], []).append({
@@ -902,9 +895,6 @@ class WarrantyReportView(APIView):
                 "staff_name": s["assigned_to__name"]
             })
 
-        # ----------------------------------
-        # 3. Process milestones
-        # ----------------------------------
         for c in cards:
             if c.card_type == "om":
                 continue
@@ -924,9 +914,26 @@ class WarrantyReportView(APIView):
 
             card_services = services_by_card.get(c.id, [])
 
-            for m in milestones:
+            for idx, m in enumerate(milestones, start=1):
+
                 if not (first_day <= m <= last_day):
                     continue
+
+                # ---------------------------
+                # WARRANTY NOTE LOGIC
+                # ---------------------------
+                warranty_note = None
+
+                if idx == 1:
+                    warranty_note = "Regular Filter Change"
+                elif idx == 2:
+                    warranty_note = "Filter, Pre Carbon and Sediments Filters"
+                elif idx == 3:
+                    warranty_note = "Regular Filter Change"
+                elif idx == 4:
+                    warranty_note = "Post Carbon filter"
+
+                # after 1 year -> None
 
                 start_window = m - timedelta(days=30)
                 end_window = m + timedelta(days=30)
@@ -958,7 +965,8 @@ class WarrantyReportView(APIView):
                     "milestone": m.isoformat(),
                     "status": status,
                     "staff": done_staff,
-                    "scheduled_date": scheduled_date,  # ✅ NEW
+                    "scheduled_date": scheduled_date,
+                    "warranty_note": warranty_note,  # ✅ NEW FIELD
                     "allmilestones": [m.isoformat() for m in milestones],
                 })
 

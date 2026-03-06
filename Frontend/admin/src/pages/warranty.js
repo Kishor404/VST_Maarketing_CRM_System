@@ -144,6 +144,7 @@ const Warranty = () => {
     const data = cards.map((card, index) => ({
       'S.No': index + 1,
       Milestone: formatDate(card.milestone) || '',
+      Note:card.warranty_note || '',
       customer_id: card.customer_id || '',
       Customer: card.customer_name || '',
       Phone: card.customer_phone || '',
@@ -357,6 +358,7 @@ const Warranty = () => {
             <thead>
               <tr>
                 <th>Milestone</th>
+                <th>Note</th>
                 <th>All Milestone</th>
                 <th>Customer ID</th>
                 <th>Customer</th>
@@ -383,6 +385,7 @@ const Warranty = () => {
                     className={getRowBgClass(card.status)}
                   >
                     <td>{formatDate(card.milestone)}</td>
+                    <td>{card.warranty_note?card.warranty_note:"None"}</td>
                     <td>
                       {card.allmilestones?.length ? (
                         <ul className="milestone-list">
