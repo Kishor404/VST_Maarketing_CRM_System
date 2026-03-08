@@ -321,6 +321,11 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
         staff = get_object_or_404(User, pk=assigned_to_id)
 
+        msg="New Service Assigned To You At "+scheduled_at+". The Service Of "+service.description+"."
+
+        notify_admin(msg, staff.phone)
+
+        from reminder.services import notify_admin
         # 🔒 ATOMIC + UPDATE_FIELDS (THIS IS THE FIX)
         with transaction.atomic():
             service.assigned_to = staff
