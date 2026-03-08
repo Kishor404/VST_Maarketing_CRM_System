@@ -19,7 +19,6 @@ from rest_framework.views import APIView
 from django.db import models
 
 from user.models import User  # your custom user model
-from reminder.services import notify_admin
 
 from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard, IndustrialAMC
 from .serializers import (
@@ -322,9 +321,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
         staff = get_object_or_404(User, pk=assigned_to_id)
 
-        msg="New Service Assigned To You At "+scheduled_at+". The Service Of "+service.description+"."
+        # msg="New Service Assigned To You At "+scheduled_at+". The Service Of "+service.description+"."
 
-        notify_admin(msg, staff.phone)
+        # notify_admin(msg, staff.phone)
 
         
         # 🔒 ATOMIC + UPDATE_FIELDS (THIS IS THE FIX)
