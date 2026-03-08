@@ -19,6 +19,7 @@ from rest_framework.views import APIView
 from django.db import models
 
 from user.models import User  # your custom user model
+from reminder.services import notify_admin
 
 from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard, IndustrialAMC
 from .serializers import (
@@ -325,7 +326,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
 
         notify_admin(msg, staff.phone)
 
-        from reminder.services import notify_admin
+        
         # 🔒 ATOMIC + UPDATE_FIELDS (THIS IS THE FIX)
         with transaction.atomic():
             service.assigned_to = staff
