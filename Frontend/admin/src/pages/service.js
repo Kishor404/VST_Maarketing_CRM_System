@@ -1300,6 +1300,34 @@ const Service = () => {
                                                         />
                                                     </div>
 
+                                                    {entry.parts_replaced && entry.parts_replaced.length > 0 && (
+                                                        <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                            <p className='service-bottom-right-bottom-edit-info-title'>
+                                                                Parts Replaced
+                                                            </p>
+
+                                                            <div style={{display:"flex", flexWrap:"wrap", gap:"6px"}}>
+                                                                {entry.parts_replaced.map((part, idx) => (
+                                                                    <span
+                                                                        key={idx}
+                                                                        style={{
+                                                                            padding: "6px 10px",
+                                                                            background: "#f1f5ff",
+                                                                            borderRadius: "6px",
+                                                                            fontSize: "12px",
+                                                                            border: "1px solid #d0d7ff"
+                                                                        }}
+                                                                    >
+                                                                        {part.name}
+                                                                        {part.serial_number
+                                                                            ? ` (SN: ${part.serial_number})`
+                                                                            : ""}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     <div className='service-bottom-right-bottom-edit-info-cont'>
                                                         <p className='service-bottom-right-bottom-edit-info-title'>Visit Type</p>
                                                         <input
