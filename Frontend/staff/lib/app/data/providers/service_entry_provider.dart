@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../core/api/api_client.dart';
 import '../../core/api/api_endpoints.dart';
@@ -11,11 +12,8 @@ class ServiceEntryProvider {
   ServiceEntryProvider(this._apiClient);
 
   /// ============================
-  /// List Service Entries
+  /// Get entries for a service
   /// ============================
-
-  /// Get service entries for a given service
-  /// GET /api/crm/service-entries/?service=<service_id>
   Future<List<ServiceEntryModel>> getEntriesByService(
     int serviceId,
   ) async {
@@ -27,7 +25,10 @@ class ServiceEntryProvider {
         },
       );
 
-      final List data = response.data as List;
+      final List data = response.data is List
+          ? response.data
+          : response.data['results'];
+
       return data
           .map((e) => ServiceEntryModel.fromJson(e))
           .toList();
@@ -37,20 +38,14 @@ class ServiceEntryProvider {
   }
 
   /// ============================
-  /// Create Service Entry (Optional)
+  /// Create Service Entry
   /// ============================
-
-  /// This is OPTIONAL.
-  /// Normally service entry is created during OTP verification.
-  /// Use this only if backend allows manual entry creation.
-  ///
-  /// POST /api/crm/service-entries/
   Future<ServiceEntryModel> createServiceEntry({
     required int serviceId,
     required String workDetail,
     required String visitType,
     String? actualComplaint,
-    List<Map<String, dynamic>>? partsReplaced,
+    List<PartReplacedModel>? partsReplaced,
     double amountCharged = 0,
     String? nextServiceDate,
   }) async {
@@ -62,12 +57,13 @@ class ServiceEntryProvider {
           "work_detail": workDetail,
           "visit_type": visitType,
           "actual_complaint": actualComplaint,
-          "parts_replaced": partsReplaced ?? [],
+          "parts_replaced":
+              partsReplaced?.map((p) => p.toJson()).toList() ?? [],
           "amount_charged": amountCharged,
           "next_service_date": nextServiceDate,
         },
       );
-
+      debugPrint(response.data);
       return ServiceEntryModel.fromJson(response.data);
     } on DioException catch (e) {
       throw ApiException.fromDio(e);

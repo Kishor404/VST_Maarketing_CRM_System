@@ -7,6 +7,7 @@ from django.conf import settings
 from .models import Card, Service, ServiceEntry, Feedback, Attendance, JobCard, IndustrialAMC
 from user.models import User  # your User model
 from .utils import generate_otp, hash_otp, otp_expiry_time,booking_is_eligible_for_free
+import json
 
 BOOKING_WINDOW_DAYS = getattr(settings, "CRM_BOOKING_WINDOW_DAYS", 30)
     
@@ -154,6 +155,14 @@ class ServiceEntrySerializer(serializers.ModelSerializer):
         model = ServiceEntry
         fields = "__all__"
         read_only_fields = ("id", "performed_by", "created_at")
+    
+    def validate_parts_replaced(self, value):
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except Exception:
+                raise serializers.ValidationError("Invalid JSON for parts_replaced")
+        return value
 
 
 # crm/serializers.py — replace FeedbackSerializer with this

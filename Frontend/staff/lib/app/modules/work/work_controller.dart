@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart' as dio;
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'dart:convert';
 
 import '../../data/models/service_model.dart';
 import '../../data/providers/service_provider.dart';
@@ -23,7 +25,7 @@ class WorkController extends GetxController {
   final workDetail = ''.obs;
   final amountCharged = ''.obs;
   final otp = ''.obs;
-  final partsReplaced = <String>[].obs;
+  final partsReplaced = <Map<String, String>>[].obs;
 
   final phone = ''.obs;
 
@@ -156,11 +158,19 @@ class WorkController extends GetxController {
       );
 
       /// PARTS REPLACED
-      for (var part in partsReplaced) {
-        formData.fields.add(
-          MapEntry("parts_replaced[]", part),
-        );
-      }
+      formData.fields.add(
+        MapEntry(
+          "parts_replaced",
+          jsonEncode(
+            partsReplaced.map((part) {
+              return {
+                "name": part["name"] ?? "",
+                "serial_number": part["serial"] ?? "",
+              };
+            }).toList(),
+          ),
+        ),
+      );
 
       /// JOB CARDS
       for (int i = 0; i < jobCards.length; i++) {
@@ -191,6 +201,10 @@ class WorkController extends GetxController {
       /// ======================
       /// API CALL
       /// ======================
+      /// 
+      for (var field in formData.fields) {
+        debugPrint("${field.key} : ${field.value}");
+      }
 
       await _provider.verifyOtpAndCompleteMultipart(
         serviceId: serviceId,

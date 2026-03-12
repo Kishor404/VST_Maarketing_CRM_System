@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import 'work_controller.dart';
 import '../../data/models/service_model.dart';
+import '../../data/models/service_entry_model.dart';
 import '../../routes/app_routes.dart';
 
 class WorkDetailPage extends GetView<WorkController> {
@@ -426,7 +427,7 @@ class _TimelineRow extends StatelessWidget {
   final String amount;
   final DateTime date;
   final bool isLast;
-  final List<String>? partsReplaced;
+  final List<PartReplacedModel>? partsReplaced;
 
   const _TimelineRow({
     required this.complaint,
@@ -523,7 +524,22 @@ class _TimelineRow extends StatelessWidget {
                         children: partsReplaced!
                             .map(
                               (part) => Chip(
-                                label: Text(part),
+                                label: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(part.name),
+                                    if (part.serialNumber != null &&
+                                        part.serialNumber!.isNotEmpty)
+                                      Text(
+                                        "SN: ${part.serialNumber}",
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                  ],
+                                ),
                                 backgroundColor:
                                     theme.primaryColor.withOpacity(0.1),
                                 labelStyle: TextStyle(

@@ -1,10 +1,34 @@
+class PartReplacedModel {
+  final String name;
+  final String? serialNumber;
+
+  PartReplacedModel({
+    required this.name,
+    this.serialNumber,
+  });
+
+  factory PartReplacedModel.fromJson(Map<String, dynamic> json) {
+    return PartReplacedModel(
+      name: json['name'] ?? '',
+      serialNumber: json['serial_number'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      "serial_number": serialNumber,
+    };
+  }
+}
+
 class ServiceEntryModel {
   final int id;
   final int? performedBy;
   final String actualComplaint;
   final String visitType;
   final String workDetail;
-  final List<String>? partsReplaced;
+  final List<PartReplacedModel>? partsReplaced;
   final String amountCharged;
   final DateTime createdAt;
   final int service;
@@ -28,12 +52,11 @@ class ServiceEntryModel {
       actualComplaint: json['actual_complaint'] ?? '',
       visitType: json['visit_type'] ?? '',
       workDetail: json['work_detail'] ?? '',
-      partsReplaced:
-          json['parts_replaced'] is List
-          ? (json['parts_replaced'] as List)
-              .map((e) => e.toString())
-              .toList()
-          : null,
+      partsReplaced: json['parts_replaced'] is List
+        ? (json['parts_replaced'] as List)
+            .map((e) => PartReplacedModel.fromJson(e))
+            .toList()
+        : null,
       amountCharged: json['amount_charged'] ?? '0.00',
       createdAt: DateTime.parse(json['created_at']),
       service: json['service'],

@@ -27,6 +27,7 @@ class WorkCompletionPage extends GetView<WorkController> {
     final theme = Theme.of(context);
     final service = controller.selectedService.value!;
     final partCtrl = TextEditingController();
+    final serialCtrl = TextEditingController();
 
     // final otpCtrl = TextEditingController();
     // final workCtrl = TextEditingController();
@@ -34,18 +35,27 @@ class WorkCompletionPage extends GetView<WorkController> {
 
     void _addPart(
       TextEditingController partCtrl,
+      TextEditingController serialCtrl,
       WorkController controller,
     ) {
       final part = partCtrl.text.trim();
+      final serial = serialCtrl.text.trim();
 
       if (part.isEmpty) return;
 
-      // 🔥 PREVENT DUPLICATES (HERE)
-      if (!controller.partsReplaced.contains(part)) {
-        controller.partsReplaced.add(part);
+      /// prevent duplicate part + serial
+      final exists = controller.partsReplaced.any((p) =>
+          p["name"] == part && (p["serial"] ?? "") == serial);
+
+      if (!exists) {
+        controller.partsReplaced.add({
+          "name": part,
+          "serial": serial,
+        });
       }
 
       partCtrl.clear();
+      serialCtrl.clear();
     }
 
 
@@ -119,26 +129,38 @@ class WorkCompletionPage extends GetView<WorkController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  Column(
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: partCtrl,
-                          decoration: const InputDecoration(
-                            hintText: 'Enter part name (e.g. Filter)',
-                          ),
-                          onSubmitted: (_) {
-                            _addPart(partCtrl, controller);
-                          },
+                      TextField(
+                        controller: partCtrl,
+                        decoration: const InputDecoration(
+                          hintText: 'Enter part name (e.g. Filter)',
+                        ),
+                        onSubmitted: (_) {
+                          _addPart(partCtrl, serialCtrl, controller);
+                        },
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      TextField(
+                        controller: serialCtrl,
+                        decoration: const InputDecoration(
+                          hintText: 'Serial number (optional)',
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle),
-                        color: theme.primaryColor,
-                        onPressed: () {
-                          _addPart(partCtrl, controller);
-                        },
+
+                      const SizedBox(height: 8),
+
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          icon: const Icon(Icons.add_circle),
+                          color: theme.primaryColor,
+                          onPressed: () {
+                            _addPart(partCtrl, serialCtrl, controller);
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -159,7 +181,21 @@ class WorkCompletionPage extends GetView<WorkController> {
                       children: controller.partsReplaced
                           .map(
                             (part) => Chip(
-                              label: Text(part),
+                              label: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(part["name"] ?? ""),
+                                  if ((part["serial"] ?? "").isNotEmpty)
+                                    Text(
+                                      "SN: ${part["serial"]}",
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                ],
+                              ),
                               deleteIcon: const Icon(Icons.close, size: 18),
                               onDeleted: () => controller.partsReplaced.remove(part),
                             ),
@@ -352,6 +388,8 @@ class WorkCompletionPage extends GetView<WorkController> {
                 }),
               );
             }),
+
+            SizedBox(height: 20,),
 
 
             /// ============================
