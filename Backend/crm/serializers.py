@@ -155,14 +155,19 @@ class ServiceEntrySerializer(serializers.ModelSerializer):
         model = ServiceEntry
         fields = "__all__"
         read_only_fields = ("id", "performed_by", "created_at")
-    
-    def validate_parts_replaced(self, value):
-        if isinstance(value, str):
+
+    def to_internal_value(self, data):
+        parts = data.get("parts_replaced")
+
+        if isinstance(parts, str):
             try:
-                return json.loads(value)
+                data["parts_replaced"] = json.loads(parts)
             except Exception:
-                raise serializers.ValidationError("Invalid JSON for parts_replaced")
-        return value
+                raise serializers.ValidationError({
+                    "parts_replaced": "Invalid JSON format"
+                })
+
+        return super().to_internal_value(data)
 
 
 # crm/serializers.py — replace FeedbackSerializer with this
