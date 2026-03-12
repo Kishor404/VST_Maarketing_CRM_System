@@ -518,9 +518,15 @@ class ServiceViewSet(viewsets.ModelViewSet):
             return Response({"detail": "invalid otp"}, status=status.HTTP_400_BAD_REQUEST)
 
         work_detail = request.data.get("work_detail", "")
-        parts_replaced = request.data.get("parts_replaced")
+        parts_replaced = request.data.get("parts_replaced","[]")
         amount_charged = request.data.get("amount_charged")
         next_service_date = request.data.get("next_service_date")
+
+        if isinstance(parts_replaced, str):
+            try:
+                parts_replaced = json.loads(parts_replaced)
+            except json.JSONDecodeError:
+                parts_replaced = []
 
         parsed_next_date = None
         if next_service_date:
