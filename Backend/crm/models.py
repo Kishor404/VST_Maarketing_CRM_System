@@ -192,11 +192,11 @@ class JobCard(models.Model):
 
     part_name = models.CharField(max_length=255)
     details = models.TextField(blank=True)
-    serial_number = models.CharField(max_length=100, blank=True)
+    serial_number = models.CharField(max_length=100, unique=True, blank=True, default="None")
 
     image = models.ImageField(upload_to="job_cards/", null=True, blank=True)
 
-    status = models.CharField(max_length=30, choices=JOB_CARD_STATUS, default="No Serial Number")
+    status = models.CharField(max_length=30, choices=JOB_CARD_STATUS, default="get_from_customer")
 
     get_from_customer_at = models.DateTimeField(auto_now_add=True)
     received_office_at = models.DateTimeField(null=True, blank=True)
