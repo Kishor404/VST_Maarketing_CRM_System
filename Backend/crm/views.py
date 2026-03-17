@@ -1167,9 +1167,20 @@ class AMCReportView(APIView):
 
             card_services = services_by_card.get(c.id, [])
 
-            for m in milestones:
+            for idx,m in enumerate(milestones, start=1):
                 if not (first_day <= m <= last_day):
                     continue
+
+                amc_note = None
+
+                if idx == 1:
+                    amc_note = "Regular Filter Change"
+                elif idx == 2:
+                    amc_note = "Filter, Pre Carbon and Sediments Filters"
+                elif idx == 3:
+                    amc_note = "Regular Filter Change"
+                elif idx == 4:
+                    amc_note = "Post Carbon filter"
 
                 start_window = m - timedelta(days=30)
                 end_window = m + timedelta(days=30)
@@ -1201,6 +1212,7 @@ class AMCReportView(APIView):
                     "milestone": m.isoformat(),
                     "status": status,
                     "staff": done_staff,
+                    "amc_note": amc_note,
                     "scheduled_date": scheduled_date,
                     "allmilestones": [m.isoformat() for m in milestones],
                 })

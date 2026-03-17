@@ -148,6 +148,7 @@ const AMC = () => {
     const data = cards.map((card, index) => ({
       'S.No': index + 1,
       Milestone: formatDate(card.milestone) || '',
+      Note: card.amc_note || '',
       customer_id: card.customer_id || '',
       Customer: card.customer_name || '',
       Phone: card.customer_phone || '',
@@ -250,7 +251,7 @@ const AMC = () => {
 
           const payload = {
             card: card.card_id,
-            description: 'Free service under AMC',
+            description: 'AMC Service - ' + (card.amc_note || ''),
             service_type: 'free',
             preferred_date: scheduledDates[card.card_id] || null,
             scheduled_at: scheduledDates[card.card_id] || null,
@@ -361,6 +362,7 @@ const AMC = () => {
             <thead>
               <tr>
                 <th>Milestone</th>
+                <th>Note</th>
                 <th>All Milestone</th>
                 <th>Customer ID</th>
                 <th>Customer</th>
@@ -376,7 +378,7 @@ const AMC = () => {
             <tbody>
               {cards.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="empty-row">
+                  <td colSpan={11} className="empty-row">
                     No AMC customers found for this month.
                   </td>
                 </tr>
@@ -387,6 +389,7 @@ const AMC = () => {
                     className={getRowBgClass(card.status)}
                   >
                     <td>{formatDate(card.milestone)}</td>
+                    <td>{card.amc_note ? card.amc_note : "None"}</td>
                     <td>
                       {card.allmilestones?.length ? (
                         <ul className="milestone-list">
