@@ -1,25 +1,22 @@
 import logging
 import requests
-from datetime import timezone, timedelta
 from django.conf import settings
-
 
 logger = logging.getLogger(__name__)
 
-IST = timezone(timedelta(hours=5, minutes=30))
 
-def notify_admin(msg, staff_phone):
+def notify_admin(phone, message):
+    """Send WhatsApp notification using Chatinfy API"""
 
-    print("✨ MESSAGE SENT", msg)
+    contact_phone = str(phone)
 
     url = "https://web.chatinfy.in/api/sendmediamessage.php"
-
 
     params = {
         "LicenseNumber": settings.CHATINFY_LICENSE_NUMBER,
         "APIKey": settings.CHATINFY_API_KEY,
-        "Contact": staff_phone,
-        "Message": msg,
+        "Contact": contact_phone,
+        "Message": message,
         "Type": "text",
         "HeaderType": "text",
         "HeaderText": "Reminder Alert",
@@ -27,10 +24,16 @@ def notify_admin(msg, staff_phone):
     }
 
     try:
+        logger.info("Sending notification to %s", contact_phone)
+
         response = requests.get(url, params=params, timeout=10)
+
         response.raise_for_status()
 
-        logger.info("Reminder notification sent successfully")
+        logger.info("Notification sent successfully: %s", response.text)
+
+        return response.json() if response.headers.get("Content-Type") == "application/json" else response.text
 
     except requests.exceptions.RequestException as e:
-        logger.error("Failed to send reminder notification: %s", e)
+        logger.error("Failed to send notification: %s", str(e))
+        return None

@@ -99,6 +99,7 @@ class JobCardSerializer(serializers.ModelSerializer):
 
             "part_name",
             "details",
+            "serial_number",
             "image",
             "image_url",
 

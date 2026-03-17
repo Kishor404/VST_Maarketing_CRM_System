@@ -184,6 +184,10 @@ class WorkController extends GetxController {
           MapEntry("job_cards[$i][details]", jc["details"] ?? ""),
         );
 
+        formData.fields.add(
+          MapEntry("job_cards[$i][serial_number]", jc["serial_number"] ?? ""),
+        );
+
         /// IMAGE UPLOAD
         if (jc["image"] != null && jc["image"] is File) {
           formData.files.add(

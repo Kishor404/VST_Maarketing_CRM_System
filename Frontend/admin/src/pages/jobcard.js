@@ -149,7 +149,8 @@ const JobCard = () => {
             list = list.filter(
                 c =>
                     c.id.toString().includes(searchQuery) ||
-                    c.part_name.toLowerCase().includes(searchQuery.toLowerCase())
+                    c.part_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (c.serial_number || "").toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
@@ -231,6 +232,7 @@ const JobCard = () => {
                         <p><b>Service:</b> {selectedCard.service_id}</p>
                         <p><b>Service Status:</b> {selectedCard.service_status}</p>
                         <p><b>Part:</b> {selectedCard.part_name}</p>
+                        <p><b>Serial Number:</b> {selectedCard.serial_number || "-"}</p>
                         <p><b>Details:</b> {selectedCard.details}</p>
 
                         {/* IMAGE */}

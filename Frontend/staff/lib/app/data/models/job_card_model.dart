@@ -6,6 +6,7 @@ class JobCardModel {
 
   final String partName;
   final String details;
+  final String? serialNumber;
   final String? imageUrl;
   final String status;
 
@@ -17,6 +18,7 @@ class JobCardModel {
     required this.serviceId,
     required this.partName,
     required this.details,
+    this.serialNumber,
     this.imageUrl,
     required this.status,
     this.staffName,
@@ -30,6 +32,7 @@ class JobCardModel {
 
       partName: json['part_name'] ?? '',
       details: json['details'] ?? '',
+      serialNumber: json['serial_number'],
       imageUrl: json['image'],
       status: json['status'] ?? '',
 

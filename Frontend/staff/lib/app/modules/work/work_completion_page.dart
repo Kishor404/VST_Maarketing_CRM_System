@@ -224,6 +224,7 @@ class WorkCompletionPage extends GetView<WorkController> {
                   onPressed: () {
                     controller.jobCards.add({
                       "part_name": "",
+                      "serial_number": "",
                       "details": "",
                       "image": null,
                     });
@@ -330,6 +331,15 @@ class WorkCompletionPage extends GetView<WorkController> {
                                   border: OutlineInputBorder(),
                                 ),
                                 onChanged: (v) => controller.jobCards[index]["details"] = v,
+                              ),
+                              const SizedBox(height: 16),
+                              TextField(
+                                decoration: const InputDecoration(
+                                  labelText: "Serial Number",
+                                  prefixIcon: Icon(Icons.qr_code),
+                                  border: OutlineInputBorder(),
+                                ),
+                                onChanged: (v) => controller.jobCards[index]["serial_number"] = v,
                               ),
                               const SizedBox(height: 16),
                               

@@ -542,6 +542,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
             part_name = request.data.get(f"job_cards[{index}][part_name]")
             details = request.data.get(f"job_cards[{index}][details]")
             image = request.FILES.get(f"job_cards[{index}][image]")
+            serial_number = request.data.get(f"job_cards[{index}][serial_number]")
 
             if part_name is None and details is None and image is None:
                 break
@@ -549,6 +550,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
             job_cards_data.append({
                 "part_name": part_name,
                 "details": details,
+                "serial_number": serial_number,
                 "image": image,
             })
 
@@ -579,6 +581,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
                         customer=service.card.customer,
                         part_name=jc.get("part_name"),
                         details=jc.get("details"),
+                        serial_number=jc.get("serial_number"), 
                         image=jc.get("image"),
                     )
 
