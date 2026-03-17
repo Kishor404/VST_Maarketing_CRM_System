@@ -192,7 +192,7 @@ class JobCard(models.Model):
 
     part_name = models.CharField(max_length=255)
     details = models.TextField(blank=True)
-    serial_number = models.CharField(max_length=100, unique=True, blank=True)
+    serial_number = models.CharField(max_length=100, blank=True)
 
     image = models.ImageField(upload_to="job_cards/", null=True, blank=True)
 
