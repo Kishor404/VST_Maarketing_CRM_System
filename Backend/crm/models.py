@@ -137,6 +137,7 @@ class ServiceEntry(models.Model):
     work_detail = models.TextField()
     parts_replaced = JSONField(blank=True, null=True)
     amount_charged = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    image = models.ImageField(upload_to="service_entries/", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

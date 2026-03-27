@@ -152,10 +152,18 @@ class ServiceEntrySerializer(serializers.ModelSerializer):
     performed_by = serializers.PrimaryKeyRelatedField(read_only=True)
     job_cards = JobCardSerializer(many=True, read_only=True)
 
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ServiceEntry
         fields = "__all__"
         read_only_fields = ("id", "performed_by", "created_at")
+
+    def get_image_url(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None
 
     def to_internal_value(self, data):
         parts = data.get("parts_replaced")

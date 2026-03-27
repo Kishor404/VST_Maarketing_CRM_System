@@ -523,6 +523,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         parts_replaced = request.data.get("parts_replaced","[]")
         amount_charged = request.data.get("amount_charged")
         next_service_date = request.data.get("next_service_date")
+        image = request.FILES.get("image")
 
         if isinstance(parts_replaced, str):
             try:
@@ -567,6 +568,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
                 work_detail=work_detail,
                 parts_replaced=parts_replaced,
                 amount_charged=amount_charged,
+                image=image, 
             )
 
             # If job cards exist → create them

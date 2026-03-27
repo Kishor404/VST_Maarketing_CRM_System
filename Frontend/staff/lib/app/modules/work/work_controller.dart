@@ -31,6 +31,8 @@ class WorkController extends GetxController {
 
   var jobCards = <Map<String, dynamic>>[].obs;
 
+  final serviceImage = Rx<File?>(null);
+
   final devOtp = ''.obs; // ⚠️ DEV ONLY
 
 
@@ -65,6 +67,8 @@ class WorkController extends GetxController {
       loading.value = false;
     }
   }
+
+  
 
   /// ============================
   /// Service Detail
@@ -201,6 +205,18 @@ class WorkController extends GetxController {
           );
         }
       }
+      /// SERVICE IMAGE
+      if (serviceImage.value != null) {
+        formData.files.add(
+          MapEntry(
+            "image",  // 🔥 IMPORTANT: backend expects this key
+            await dio.MultipartFile.fromFile(
+              serviceImage.value!.path,
+              filename: serviceImage.value!.path.split('/').last,
+            ),
+          ),
+        );
+      } 
 
       /// ======================
       /// API CALL
@@ -223,6 +239,7 @@ class WorkController extends GetxController {
       this.otp.value = '';
       partsReplaced.clear();
       jobCards.clear();
+      serviceImage.value = null;
 
       await loadAll();
 

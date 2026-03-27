@@ -21,6 +21,19 @@ class WorkCompletionPage extends GetView<WorkController> {
     }
   }
 
+  Future<void> pickServiceImage() async {
+    final picker = ImagePicker();
+
+    final picked = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+    );
+
+    if (picked != null) {
+      controller.serviceImage.value = File(picked.path);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -401,6 +414,62 @@ class WorkCompletionPage extends GetView<WorkController> {
 
             SizedBox(height: 20,),
 
+            /// ============================
+            /// Service Image Upload
+            /// ============================
+            Text(
+              'Service Image',
+              style: theme.textTheme.headlineMedium?.copyWith(fontSize: 18),
+            ),
+            const SizedBox(height: 12),
+
+            Obx(() {
+              final image = controller.serviceImage.value;
+
+              return GestureDetector(
+                onTap: pickServiceImage,
+                child: Container(
+                  width: double.infinity,
+                  height: 160,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: image != null
+                      ? Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(image, fit: BoxFit.cover, width: double.infinity),
+                            ),
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.black54,
+                                child: IconButton(
+                                  icon: const Icon(Icons.camera_alt, color: Colors.white),
+                                  onPressed: pickServiceImage,
+                                ),
+                              ),
+                            )
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.add_a_photo_outlined, color: Colors.grey),
+                            SizedBox(height: 6),
+                            Text("Tap to capture service image",
+                                style: TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                ),
+              );
+            }),
+
+            SizedBox(height: 20,),
 
             /// ============================
             /// 2. OTP Verification Section
