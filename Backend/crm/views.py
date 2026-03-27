@@ -523,7 +523,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         parts_replaced = request.data.get("parts_replaced","[]")
         amount_charged = request.data.get("amount_charged")
         next_service_date = request.data.get("next_service_date")
-        image = request.FILES.get("image")
+        service_image = request.FILES.get("image")
 
         print("FILES:", request.FILES)
         print("DATA:", request.data)
@@ -571,7 +571,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
                 work_detail=work_detail,
                 parts_replaced=parts_replaced,
                 amount_charged=amount_charged,
-                image=image, 
+                image=service_image, 
             )
 
             # If job cards exist → create them
