@@ -18,6 +18,7 @@ const Service = () => {
 
     const [exportFromDate, setExportFromDate] = useState("");
     const [exportToDate, setExportToDate] = useState("");
+    const [exportVisitType, setExportVisitType] = useState("");
 
     const [exportStaffPhone, setExportStaffPhone] = useState("");
     const [exportStaff, setExportStaff] = useState(null);
@@ -32,6 +33,7 @@ const Service = () => {
 
     const [filteredList, setFilteredList] = useState([]);
     const [searchType, setSearchType] = useState("id");
+    const [filterVisitType, setFilterVisitType] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
     const [editService, setEditService]=useState(true);
@@ -669,6 +671,13 @@ const Service = () => {
             );
         }
 
+        // ---- Visit Type Filter ----
+        if (exportVisitType) {
+            filtered = filtered.filter(
+                s => s.visit_type === exportVisitType
+            );
+        }
+
         // Date filter
         if (exportFromDate && exportToDate) {
             const start = new Date(exportFromDate);
@@ -699,6 +708,13 @@ const Service = () => {
         if (exportStatus) {
             filtered = filtered.filter(
                 s => s.status === exportStatus
+            );
+        }
+
+        // ---- Visit Type Filter ----
+        if (exportVisitType) {
+            filtered = filtered.filter(
+                s => s.visit_type === exportVisitType
             );
         }
 
@@ -844,10 +860,16 @@ const Service = () => {
             );
         }
 
+        if (filterVisitType) {
+            list = list.filter(
+                service => service.visit_type === filterVisitType
+            );
+        }
+
         const sortedList = sortServices(list, sortBy);
         setFilteredList(sortedList);
 
-    }, [searchQuery, searchType, serviceList, sortBy]);
+    }, [searchQuery, searchType, serviceList, sortBy, filterVisitType]);
 
     useEffect(() => {
         const checkAssignAttendance = async () => {
@@ -997,6 +1019,17 @@ const Service = () => {
                                 <option value="status">Sort by Status</option>
                                 <option value="customer">Sort by Customer Name</option>
                             </select>
+                            <select
+                                value={filterVisitType}
+                                onChange={(e) => setFilterVisitType(e.target.value)}
+                            >
+                                <option value="">All Visit Types</option>
+                                <option value="I">Installation</option>
+                                <option value="C">Complaint</option>
+                                <option value="MS">Mandatory Service</option>
+                                <option value="CS">Contract Service</option>
+                                <option value="CC">Courtesy Call</option>
+                            </select>
                         </div>
 
                         <div className='service-bottom-table-cont'>
@@ -1099,6 +1132,18 @@ const Service = () => {
                                     <option value="awaiting_otp">Awaiting OTP</option>
                                     <option value="completed">Completed</option>
                                     <option value="cancelled">Cancelled</option>
+                                </select>
+                                <select
+                                    className="service-export-select"
+                                    value={exportVisitType}
+                                    onChange={(e) => setExportVisitType(e.target.value)}
+                                >
+                                    <option value="">All Visit Types</option>
+                                    <option value="I">Installation</option>
+                                    <option value="C">Complaint</option>
+                                    <option value="MS">Mandatory Service</option>
+                                    <option value="CS">Contract Service</option>
+                                    <option value="CC">Courtesy Call</option>
                                 </select>
                             </div>
                         </div>

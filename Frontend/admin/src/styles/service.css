@@ -580,10 +580,10 @@ hr{
 }
 
 .service-export-staff .service-export-select{
-    width: 85%;
-    height: 35%;
+    width: 90%;
+    height: 25%;
     border: none;
-    border-radius: 10px;
+    border-radius: 4px;
     background-color: white;
 }
 .service-export-staff button{
