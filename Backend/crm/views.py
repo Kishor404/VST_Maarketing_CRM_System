@@ -525,6 +525,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
         next_service_date = request.data.get("next_service_date")
         image = request.FILES.get("image")
 
+        print("FILES:", request.FILES)
+        print("DATA:", request.data)
+
         if isinstance(parts_replaced, str):
             try:
                 parts_replaced = json.loads(parts_replaced)

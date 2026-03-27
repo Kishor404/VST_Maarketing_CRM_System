@@ -1364,6 +1364,30 @@ const Service = () => {
                                                         />
                                                     </div>
 
+                                                    {/* ✅ SERVICE IMAGE */}
+                                                    {entry.image_url && (
+                                                        <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                            <p className='service-bottom-right-bottom-edit-info-title'>
+                                                                Service Image
+                                                            </p>
+
+                                                            <img
+                                                                src={entry.image_url}
+                                                                alt="Service"
+                                                                style={{
+                                                                    width: "100%",
+                                                                    maxWidth: "300px",
+                                                                    height: "auto",
+                                                                    borderRadius: "8px",
+                                                                    border: "1px solid #ddd",
+                                                                    marginTop: "8px",
+                                                                    cursor: "pointer"
+                                                                }}
+                                                                onClick={() => window.open(entry.image_url, "_blank")}
+                                                            />
+                                                        </div>
+                                                    )}
+
                                                     <hr/>
 
                                                 </div>

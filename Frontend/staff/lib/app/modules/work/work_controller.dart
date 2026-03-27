@@ -207,6 +207,7 @@ class WorkController extends GetxController {
       }
       /// SERVICE IMAGE
       if (serviceImage.value != null) {
+        debugPrint("SERVICE IMAGE: ${serviceImage.value}");
         formData.files.add(
           MapEntry(
             "image",  // 🔥 IMPORTANT: backend expects this key
@@ -217,6 +218,10 @@ class WorkController extends GetxController {
           ),
         );
       } 
+
+      for (var file in formData.files) {
+        debugPrint("FILE → ${file.key} : ${file.value.filename}");
+      }
 
       /// ======================
       /// API CALL

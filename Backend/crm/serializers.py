@@ -161,8 +161,14 @@ class ServiceEntrySerializer(serializers.ModelSerializer):
 
     def get_image_url(self, obj):
         request = self.context.get("request")
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
+        if obj.image:
+            # 🔥 Absolute URL
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+
+            # fallback (rare case)
+            return obj.image.url
+
         return None
 
     def to_internal_value(self, data):
