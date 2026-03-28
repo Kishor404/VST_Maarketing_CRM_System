@@ -613,30 +613,35 @@ const Service = () => {
         ];
 
         console.log(services)
-        const rows = services.map(s => [
-            s.id,
-            s.card,
+        const rows = services.map(s => {
+            // --- NEW LOGIC TO GET LATEST ENTRY AMOUNT ---
+            let latestAmount = "0.00";
+            if (s.entries && s.entries.length > 0) {
+                // Get the last entry in the array
+                const lastEntry = s.entries[s.entries.length - 1];
+                latestAmount = lastEntry.amount_charged || "0.00";
+            }
+            // --------------------------------------------
 
-            s.requested_by || "",
-            `="${s.customer_data?.name || ""}"`,
-            `="${s.customer_data?.phone || ""}"`,
-
-            s.service_type,
-            s.visit_type,
-            s.status,
-            `"${(s.description || "").replace(/"/g, '""')}"`,
-
-            `="${s.preferred_date || ""}"`,
-            `="${s.scheduled_at || ""}"`,
-
-            s.assigned_to || "",
-            `="${s.assigned_to_detail?.name || ""}"`,
-
-            s.amount_charged || "0.00",
-            `="${s.otp_phone || ""}"`,
-
-            `="${s.created_at}"`
-        ]);
+            return [
+                s.id,
+                s.card,
+                s.requested_by || "",
+                `="${s.customer_data?.name || ""}"`,
+                `="${s.customer_data?.phone || ""}"`,
+                s.service_type,
+                s.visit_type,
+                s.status,
+                `"${(s.description || "").replace(/"/g, '""')}"`,
+                `="${s.preferred_date || ""}"`,
+                `="${s.scheduled_at || ""}"`,
+                s.assigned_to || "",
+                `="${s.assigned_to_detail?.name || ""}"`,
+                latestAmount, // Using the extracted variable here
+                `="${s.otp_phone || ""}"`,
+                `="${s.created_at}"`
+            ];
+        });
 
 
         const csv =
