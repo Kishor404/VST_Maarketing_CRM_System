@@ -9,6 +9,7 @@ const Warranty = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cards, setCards] = useState([]);
+  const [totals, setTotals] = useState({});
   const [selectedMonth, setSelectedMonth] = useState('');
   const [staffList, setStaffList] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState({});
@@ -63,12 +64,15 @@ const Warranty = () => {
       const res = await api.get(`/crm/reports/warranty/`, {
         params: { month },
       });
+
+      const reportData = res.data.report_data || [];
+      const summaryTotals = res.data.summary_totals || {};
       console.log(res.data);
-      setCards(res.data);
-      console.log(res.data);
+      setCards(reportData);
+      setTotals(summaryTotals);
       const defaults = {};
       const staffDefaults = {};
-      res.data.forEach((card) => {
+      reportData.forEach((card) => {
         if (card.status === 'done' && card.scheduled_date) {
           // ✅ use actual service date
           defaults[card.card_id] = card.scheduled_date;
@@ -306,7 +310,7 @@ const Warranty = () => {
 
       <div className="controls-row">
         <h2 className="warranty-title">
-          Warranty Customers - Free Service Booking
+          Warranty Customers
         </h2>
 
         <div className='form-form'>
@@ -347,6 +351,17 @@ const Warranty = () => {
         </div>
         
       </div>
+
+      {/* --- NEW SUMMARY SECTION --- */}
+      {!loading && cards.length > 0 && (
+        <div className="summary-section">
+          <div className="summary-card"><strong>Spun:</strong> {totals.spun_filter}</div>
+          <div className="summary-card"><strong>Pre Carbon:</strong> {totals.pre_carbon}</div>
+          <div className="summary-card"><strong>Sediment:</strong> {totals.sediments}</div>
+          <div className="summary-card"><strong>Filter:</strong> {totals.filter}</div>
+          <div className="summary-card"><strong>Post Carbon:</strong> {totals.post_carbon}</div>
+        </div>
+      )}
 
       {loading ? (
         <div className="loader-wrapper">

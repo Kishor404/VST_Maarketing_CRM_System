@@ -9,6 +9,7 @@ const AMC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cards, setCards] = useState([]);
+  const [totals, setTotals] = useState({});
   const [selectedMonth, setSelectedMonth] = useState('');
   const [staffList, setStaffList] = useState([]);
   const [selectedStaff, setSelectedStaff] = useState({});
@@ -65,12 +66,16 @@ const AMC = () => {
         params: { month },
       });
 
-      setCards(res.data);
+      const reportData = res.data.report_data || [];
+      const summaryTotals = res.data.summary_totals || {};
+
+      setCards(reportData);
+      setTotals(summaryTotals);
 
       const defaults = {};
       const staffDefaults = {};
 
-      res.data.forEach((card) => {
+      reportData.forEach((card) => {
         // ✅ use actual visit date if already done
         if (card.status === 'done' && card.scheduled_date) {
           defaults[card.card_id] = card.scheduled_date;
@@ -351,6 +356,17 @@ const AMC = () => {
         </div>
         
       </div>
+
+      {/* --- INVENTORY SUMMARY SECTION --- */}
+      {!loading && cards.length > 0 && (
+        <div className="summary-section">
+          <div className="summary-card"><strong>Spun Filter:</strong> {totals.spun_filter}</div>
+          <div className="summary-card"><strong>Pre Carbon:</strong> {totals.pre_carbon}</div>
+          <div className="summary-card"><strong>Sediment:</strong> {totals.sediments}</div>
+          <div className="summary-card"><strong>Filter:</strong> {totals.filter}</div>
+          <div className="summary-card"><strong>Post Carbon:</strong> {totals.post_carbon}</div>
+        </div>
+      )}
 
       {loading ? (
         <div className="loader-wrapper">

@@ -191,3 +191,21 @@
 .attendance-none {
   color: #888;
 }
+
+
+.summary-section {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.summary-card {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 10px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.summary-card strong { color: #3762ae; text-transform: uppercase; }
