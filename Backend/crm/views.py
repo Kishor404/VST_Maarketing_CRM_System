@@ -880,6 +880,7 @@ from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from collections import Counter
 
 class WarrantyReportView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -896,6 +897,14 @@ class WarrantyReportView(APIView):
         last_day = datetime(year, mon, monthrange(year, mon)[1]).date()
 
         results = []
+
+        totals = Counter({
+            "spun_filter": 0,
+            "pre_carbon": 0,
+            "sediments": 0,
+            "post_carbon": 0,
+            "filter": 0
+        })
 
         cards = Card.objects.select_related("customer").filter(
             warranty_start_date__isnull=False,
@@ -946,13 +955,19 @@ class WarrantyReportView(APIView):
                 warranty_note = None
 
                 if idx == 1:
-                    warranty_note = "Regular Filter Change"
+                    warranty_note = "Spun Filter Change"
+                    totals["spun_filter"] += 1
                 elif idx == 2:
                     warranty_note = "Filter, Pre Carbon and Sediments Filters"
+                    totals["filter"] += 1
+                    totals["pre_carbon"] += 1
+                    totals["sediments"] += 1
                 elif idx == 3:
-                    warranty_note = "Regular Filter Change"
+                    warranty_note = "Spun Filter Change"
+                    totals["spun_filter"] += 1
                 elif idx == 4:
                     warranty_note = "Post Carbon filter"
+                    totals["post_carbon"] += 1
 
                 # after 1 year -> None
 
@@ -991,7 +1006,10 @@ class WarrantyReportView(APIView):
                     "allmilestones": [m.isoformat() for m in milestones],
                 })
 
-        return Response(results)
+        return Response({
+            "report_data": results,
+            "summary_totals": totals
+        })
 
     
 class WarrantyReportByCardView(APIView):
@@ -1118,6 +1136,14 @@ class AMCReportView(APIView):
 
         results = []
 
+        totals = Counter({
+            "spun_filter": 0,
+            "pre_carbon": 0,
+            "sediments": 0,
+            "post_carbon": 0,
+            "filter": 0
+        })
+
         # ----------------------------------
         # 1. Fetch cards
         # ----------------------------------
@@ -1179,13 +1205,19 @@ class AMCReportView(APIView):
                 amc_note = None
 
                 if idx == 1:
-                    amc_note = "Regular Filter Change"
+                    amc_note = "Spun Filter Change"
+                    totals["spun_filter"] += 1
                 elif idx == 2:
                     amc_note = "Filter, Pre Carbon and Sediments Filters"
+                    totals["filter"] += 1
+                    totals["pre_carbon"] += 1
+                    totals["sediments"] += 1
                 elif idx == 3:
-                    amc_note = "Regular Filter Change"
+                    amc_note = "Spun Filter Change"
+                    totals["spun_filter"] += 1
                 elif idx == 4:
                     amc_note = "Post Carbon filter"
+                    totals["post_carbon"] += 1
 
                 start_window = m - timedelta(days=30)
                 end_window = m + timedelta(days=30)
@@ -1222,7 +1254,10 @@ class AMCReportView(APIView):
                     "allmilestones": [m.isoformat() for m in milestones],
                 })
 
-        return Response(results)
+        return Response({
+            "report_data": results,
+            "summary_totals": totals
+        })
 
     
 class AMCReportByCardView(APIView):
