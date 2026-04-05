@@ -519,6 +519,8 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
         return service
 class IndustrialAMCSerializer(serializers.ModelSerializer):
 
+    is_with_spare = serializers.BooleanField(default=False, required=False)
+
     class Meta:
         model = IndustrialAMC
         fields = "__all__"
@@ -540,6 +542,8 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
 
         request = self.context.get("request")
         admin = request.user if request else None
+
+        validated_data.setdefault("is_with_spare", False)
 
         instance = IndustrialAMC(
             created_by=admin,

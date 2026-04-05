@@ -215,7 +215,7 @@ class IndustrialAMC(models.Model):
     )
 
     interval_days = models.PositiveIntegerField()
-
+    is_with_spare = models.BooleanField(default=False)
     start_date = models.DateField()
     end_date = models.DateField()
 

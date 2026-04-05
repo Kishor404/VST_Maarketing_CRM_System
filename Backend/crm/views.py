@@ -1885,6 +1885,8 @@ class IndustrialAMCReportView(APIView):
                     "city": amc.card.city,
 
                     "interval_days": amc.interval_days,
+                    
+                    "is_with_spare": amc.is_with_spare,
 
                     "milestone": m.isoformat(),
                     "status": status,
