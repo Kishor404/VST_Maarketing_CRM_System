@@ -16,6 +16,7 @@ import FollowUp from "./pages/followup";
 import AMC from "./pages/amc";
 import IndustrialAMC from "./pages/industrial_amc";
 import JobCard from "./pages/jobcard";
+import IndustrialAMCList from "./pages/IndustrialAMCList";
 
 const HeadLayout = () => {
   const location = useLocation();
@@ -50,6 +51,7 @@ const App = () => {
           <Route path="attendance" element={<Attendance />} />
           <Route path="reminder" element={<Reminder />} />
           <Route path="followup" element={<FollowUp />} />
+          <Route path="industrialamc/all" element={<IndustrialAMCList />} />
         </Route>
 
         {/* All OTHER ROUTES ➔ NotFound */}

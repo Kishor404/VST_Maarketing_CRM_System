@@ -157,9 +157,9 @@
 }
 
 .iamc-form-form{
-    width: 50%;
+    width: 60%;
     display: flex;
-    justify-content: end;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -178,6 +178,9 @@
   border: none;
   font-size: 14px;
   cursor: pointer;
+  
+  text-decoration: none;
+  
 }
 
 .iamc-btn-primary {
@@ -192,6 +195,10 @@
   color: #000000;
   font-size: 12pt;
   margin-left: 10px;
+}
+.btn-info{
+  background-color: white;
+  color: black;
 }
 .iamc-btn-primary:disabled {
   background-color: #90caf9;

@@ -9,6 +9,8 @@ import "../styles/createcard.css";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
+import { Link } from "react-router-dom";
+
 /* ---------------- PAGE ---------------- */
 
 const IndustrialAMC = () => {
@@ -408,6 +410,10 @@ const IndustrialAMC = () => {
             {showCreateAMC ? "Close Create AMC" : "Create Industrial AMC"}
           </button>
 
+          <Link to="/head/industrialamc/all" className="iamc-btn btn-info">
+            View All AMC
+          </Link>
+
           <button
             className="iamc-btn btn-primary"
             onClick={handleBulkBook}
@@ -556,6 +562,7 @@ const IndustrialAMC = () => {
               <tr>
                 <th>Milestone</th>
                 <th>All Milestones</th>
+                <th>Spare</th>
                 <th>Customer</th>
                 <th>Phone</th>
                 <th>City</th>
@@ -586,6 +593,10 @@ const IndustrialAMC = () => {
                     ) : (
                       <span>—</span>
                     )}
+                  </td>
+
+                  <td>
+                    {card.is_with_spare ? "With Spare" : "Without Spare"}
                   </td>
 
                   <td>{card.customer_name}</td>

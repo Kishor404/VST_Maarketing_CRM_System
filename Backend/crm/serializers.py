@@ -520,6 +520,9 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
 class IndustrialAMCSerializer(serializers.ModelSerializer):
 
     is_with_spare = serializers.BooleanField(default=False, required=False)
+    customer_name = serializers.CharField(source="card.customer.name", read_only=True)
+    customer_id = serializers.IntegerField(source="card.customer.id", read_only=True)
+    card_model = serializers.CharField(source="card.model", read_only=True)
 
     class Meta:
         model = IndustrialAMC
