@@ -5,13 +5,13 @@ from django.db import transaction
 
 from user.models import User
 from crm.models import Card
-
+from datetime import date
 
 class Command(BaseCommand):
-    help = "Import customers and cards from cleaned Excel file"
+    help = "Import industrial customers and cards from Excel"
 
     def add_arguments(self, parser):
-        parser.add_argument("file", type=str, help="Path to clean Excel file")
+        parser.add_argument("file", type=str, help="Path to Excel file")
 
     # -----------------------------
     # Helpers
@@ -24,15 +24,29 @@ class Command(BaseCommand):
     def normalize_phone(self, phone):
         phone = self.clean(phone)
 
+        if not phone:
+            return None  # ✅ phone optional
+
         phone = re.sub(r"\D", "", phone)
 
         if phone.startswith("91") and len(phone) > 10:
             phone = phone[-10:]
 
         if len(phone) != 10:
-            raise ValueError(f"Invalid phone number: {phone}")
+            return None  # ✅ ignore invalid instead of crash
 
         return "+91" + phone
+
+    def parse_date(self, date_val):
+        if pd.isna(date_val):
+            return date.today()  # ✅ fallback
+
+        parsed = pd.to_datetime(date_val, dayfirst=True, errors="coerce")
+
+        if pd.isna(parsed):
+            return date.today()  # ✅ fallback
+
+        return parsed.date()
 
     # -----------------------------
     # Main
@@ -40,7 +54,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
 
         file_path = kwargs["file"]
-
         df = pd.read_excel(file_path)
 
         created_users = 0
@@ -52,43 +65,36 @@ class Command(BaseCommand):
             try:
                 with transaction.atomic():
 
-                    phone = self.normalize_phone(row["phone"])
+                    # -----------------------------
+                    # COLUMN MAPPING
+                    # -----------------------------
+                    name = self.clean(row.get("CUSTOMER NAME"))
+                    city = self.clean(row.get("PLACE"))
+                    model = self.clean(row.get("MODEL"))
+                    phone_raw = row.get("CONTACT NO")
+                    installation = self.parse_date(row.get("DATE OF INSTALLATION"))
 
-                    name = self.clean(row["name"])
-                    address = self.clean(row["address"])
-                    city = self.clean(row["city"])
-                    model = self.clean(row["model"])
+                    # warranty same as installation
+                    warranty_start = installation
+                    warranty_end = installation
 
-                    warranty_start = pd.to_datetime(
-                        row["warranty_from"], errors="coerce"
-                    )
-
-                    warranty_end = pd.to_datetime(
-                        row["warranty_to"], errors="coerce"
-                    )
-
-                    warranty_start = (
-                        warranty_start.date() if not pd.isna(warranty_start) else None
-                    )
-
-                    warranty_end = (
-                        warranty_end.date() if not pd.isna(warranty_end) else None
-                    )
-
-                    installation = warranty_start
+                    phone = self.normalize_phone(phone_raw)
 
                     # -----------------------------
                     # USER
                     # -----------------------------
+                    user_filter = {"phone": phone} if phone else {"name": name}
+
                     user, created = User.objects.get_or_create(
-                        phone=phone,
+                        **user_filter,
                         defaults={
                             "name": name,
-                            "address": address,
+                            "address": city,
                             "city": city,
                             "postal_code": "626102",
                             "region": "rajapalayam",
                             "role": "customer",
+                            "is_industrial": True, 
                         },
                     )
 
@@ -121,7 +127,7 @@ class Command(BaseCommand):
                         customer=user,
                         customer_name=name,
                         card_type="normal",
-                        address=address,
+                        address=city,
                         city=city,
                         postal_code="626102",
                         region="rajapalayam",
@@ -133,10 +139,7 @@ class Command(BaseCommand):
                     created_cards += 1
 
             except Exception as e:
-
-                self.stderr.write(
-                    f"❌ Row {idx + 1} failed: {e}"
-                )
+                self.stderr.write(f"❌ Row {idx + 1} failed: {e}")
                 continue
 
         self.stdout.write(self.style.SUCCESS("🎉 Import completed"))
