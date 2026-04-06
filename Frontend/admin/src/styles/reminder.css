@@ -1,12 +1,12 @@
 .reminder-main {
     padding: 0;
-    padding: 4% 0;
+    padding: 50px 0;
     display: flex;
     justify-content: start;
     align-items: center;
     flex-direction: column;
     background-color: #3763ae;
-    height: 100vh;
+    height: calc(100vh - 100px);
 }
 .reminder-topbar{
     width: 90%;

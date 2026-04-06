@@ -1,11 +1,11 @@
 /* src/pages/Warranty.css */
 
 .warranty-container {
-  padding: 4%;
+  padding: 50px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: #3762ae;
-  width: 92%;
-  height: 92%;
+  width: calc(100% - 100px);
+  height: calc(100% - 100px);
 }
 
 .warranty-title {

@@ -44,6 +44,8 @@ const IndustrialAMC = () => {
   const [endDate, setEndDate] = useState("");
   const [intervalDays, setIntervalDays] = useState(120);
 
+  const [isWithSpare, setIsWithSpare] = useState(false);
+
   /* ---------------- UTIL ---------------- */
 
   const addDays = (dateStr, days) => {
@@ -357,6 +359,7 @@ const IndustrialAMC = () => {
         start_date: startDate,
         end_date: endDate,
         interval_days: Number(intervalDays),
+        is_with_spare: isWithSpare,
       });
 
 
@@ -364,6 +367,7 @@ const IndustrialAMC = () => {
 
       setShowCreateAMC(false);
       fetchIndustrialAMC(selectedMonth);
+      setIsWithSpare(false);
 
     } catch (err) {
       console.error(err);
@@ -532,6 +536,19 @@ const IndustrialAMC = () => {
                     onChange={(e) => setIntervalDays(e.target.value)}
                   />
 
+                </div>
+
+                <div className="iamc-createcard-input-cont">
+                  <p>Spare</p>
+
+                  <label style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                    <input
+                      type="checkbox"
+                      checked={isWithSpare}
+                      onChange={(e) => setIsWithSpare(e.target.checked)}
+                    />
+                    {isWithSpare ? "With Spare" : "Without Spare"}
+                  </label>
                 </div>
 
               </div>

@@ -1,7 +1,7 @@
 .followup-main {
     padding: 25px;
     background: #3763ae;
-    min-height: 100vh;
+    min-height: calc(100vh - 50px);
 }
 
 .followup-main h2 {
