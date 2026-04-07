@@ -262,6 +262,22 @@ class ServiceViewSet(viewsets.ModelViewSet):
         if assigned_q:
             qs = qs.filter(assigned_to_id=assigned_q)
         return qs
+    
+    @action(detail=False, methods=["get"], url_path="industrial")
+    def industrial_services(self, request):
+        qs = self.get_queryset().filter(
+            card__customer__is_industrial=True
+        )
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=["get"], url_path="non-industrial")
+    def non_industrial_services(self, request):
+        qs = self.get_queryset().filter(
+            card__customer__is_industrial=False
+        )
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         """
