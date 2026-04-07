@@ -264,6 +264,28 @@ const Service = () => {
         }
     }
 
+    const getUserByCustomerCode = async (code) => {
+        const Token = await refresh_token();
+        if (!Token) {
+            navigate('/head/');
+            return null;
+        }
+
+        try {
+            const res = await axios.get(
+                `${BASEURL}/api/auth/admin/users/?customer_code=${code}`,
+                { headers: { Authorization: `Bearer ${Token}` } }
+            );
+
+            console.log("GET USER BY CUSTOMER CODE");
+
+            return res.data[0]; // same pattern as phone
+        } catch (error) {
+            console.error("Error in Get User By Customer Code:", error);
+            return null;
+        }
+    };
+
     // ~~~~~~~~~~~ GET CARD BY USER ~~~~~~~~~~~~~
 
     const getCardByUser=async(id)=>{
@@ -488,20 +510,35 @@ const Service = () => {
 
     // ~~~~~~~~~~~ ASSIGN PHONE TO CUSTOMER ~~~~~~~~~~~~~~~
 
-    const assignPhoneToCustomer=async(phone)=>{
-        if(phone.length>=10){
-            const user=await getUserByPhone(phone);
-            if(user!=null && user["role"]=="customer"){
-                setCreateServiceCustomer(user);
-                const cards=await getCardByUser(user.id);
-                setcreateServiceCardAll(cards);
-            }
-        }
-        else{
+    const assignCustomer = async (value) => {
+
+        if (!value) {
             setCreateServiceCustomer(null);
-            setcreateServiceCardAll([])
+            setcreateServiceCardAll([]);
+            return;
         }
-    }
+
+        let user = null;
+
+        // 🔥 If contains alphabets → customer_code
+        if (/[a-zA-Z]/.test(value)) {
+            user = await getUserByCustomerCode(value);
+        } 
+        // 🔥 Otherwise → phone
+        else if (value.length >= 10) {
+            user = await getUserByPhone(value);
+        }
+
+        if (user && user.role === "customer") {
+            setCreateServiceCustomer(user);
+
+            const cards = await getCardByUser(user.id);
+            setcreateServiceCardAll(cards);
+        } else {
+            setCreateServiceCustomer(null);
+            setcreateServiceCardAll([]);
+        }
+    };
 
     // ~~~~~~~~~~~ ASSIGN PHONE TO STAFF ~~~~~~~~~~~~~~~
 
@@ -1474,7 +1511,18 @@ const Service = () => {
                                         <div className='service-bottom-right-bottom-create-info-box'>
                                             <div className='service-bottom-right-bottom-create-info-cont'>
                                                 <p className='service-bottom-right-bottom-create-info-title'>Customer : {createServiceCustomer!=null?createServiceCustomer["name"] + " ( " + createServiceCustomer["id"] + " )" : "Not Found"}</p>
-                                                <input type="text" placeholder='Enter Customer Phone' className='service-bottom-right-bottom-create-info-input' required value={createServiceCustomerPhone} onChange={(e)=>{setCreateServiceCustomerPhone(e.target.value); assignPhoneToCustomer(e.target.value)}} />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter Phone or Customer Code"
+                                                    className='service-bottom-right-bottom-create-info-input'
+                                                    required
+                                                    value={createServiceCustomerPhone}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value;
+                                                        setCreateServiceCustomerPhone(value);
+                                                        assignCustomer(value);
+                                                    }}
+                                                    />
                                             </div>
                                             
                                             <div className='service-bottom-right-bottom-create-info-cont-drop'>
