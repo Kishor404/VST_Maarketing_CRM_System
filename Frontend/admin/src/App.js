@@ -17,6 +17,7 @@ import AMC from "./pages/amc";
 import IndustrialAMC from "./pages/industrial_amc";
 import JobCard from "./pages/jobcard";
 import IndustrialAMCList from "./pages/IndustrialAMCList";
+import IndustrialService from "./pages/industrial_service";
 
 const HeadLayout = () => {
   const location = useLocation();
@@ -44,6 +45,7 @@ const App = () => {
           <Route path="createcard" element={<CreateCard />} />
           <Route path="showcard" element={<ShowCard />} />
           <Route path="service" element={<Service />} />
+          <Route path="industrialService" element={<IndustrialService />} />
           <Route path="jobcard" element={<JobCard />} />
           <Route path="warranty" element={<Warranty />} />
           <Route path="amc" element={<AMC />} />

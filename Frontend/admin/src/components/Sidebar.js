@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaUsers, FaIdBadge, FaEdit, FaInfo, FaAddressCard, FaPlus, FaTicketAlt, FaStickyNote, FaAdversal, FaBook, FaArrowsAltH, FaLocationArrow, FaNetworkWired, FaReceipt } from "react-icons/fa";
-import { MdAccountCircle, MdFactCheck, MdFactory, MdRoomPreferences, MdRoomService, MdTag, MdTagFaces } from "react-icons/md";
+import { MdAccountCircle, MdDataObject, MdFactCheck, MdFactory, MdRoomPreferences, MdRoomService, MdSecurity, MdTag, MdTagFaces } from "react-icons/md";
 import { MdHotelClass } from "react-icons/md";
 import '../styles/sidebar.css';
 import Logo from '../assets/logo.jpg';
@@ -27,6 +27,12 @@ return (
                     <Link to="/head/service" className="sidebar-link">
                         <MdRoomService className="sidebar-item-icon" size={20}/>
                         Services
+                    </Link>
+                </div>
+                <div className="sidebar-item">
+                    <Link to="/head/industrialService" className="sidebar-link">
+                        <MdRoomPreferences className="sidebar-item-icon" size={20}/>
+                        Industrial Services
                     </Link>
                 </div>
                 <div className="sidebar-item">

@@ -19,6 +19,24 @@
     justify-content: start;
     align-items: center;
     overflow-y: auto;
+
+}
+.sidebar-list::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+}
+
+.sidebar-list::-webkit-scrollbar-track {
+    background: #ddd;
+}
+
+.sidebar-list::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border-radius: 10px;
+}
+
+.sidebar-list::-webkit-scrollbar-thumb:hover {
+    background-color: #aaa;
 }
 .sidebar-item{
     display: flex;

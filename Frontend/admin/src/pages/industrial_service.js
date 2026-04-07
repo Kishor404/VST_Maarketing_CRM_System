@@ -11,7 +11,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useParams } from "react-router-dom";
 
-const Service = () => {
+const IndustrialService = () => {
 
     const BASEURL = "http://157.173.220.208";
     const navigate = useNavigate();
@@ -237,7 +237,7 @@ const Service = () => {
             return null;
         }
         try {
-            const res = await axios.get(BASEURL+`/api/crm/services/non-industrial/`, { headers: { Authorization: `Bearer ${Token}` } });
+            const res = await axios.get(BASEURL+`/api/crm/services/industrial/`, { headers: { Authorization: `Bearer ${Token}` } });
             console.log("GET SERVICE LIST");
             return res.data;
         } catch (error) {
@@ -1625,4 +1625,4 @@ const Service = () => {
     );
 };
 
-export default Service;
+export default IndustrialService;
