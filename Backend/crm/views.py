@@ -919,7 +919,6 @@ class WarrantyReportView(APIView):
             "pre_carbon": 0,
             "sediments": 0,
             "post_carbon": 0,
-            "filter": 0
         })
 
         cards = Card.objects.select_related("customer").filter(
@@ -974,8 +973,8 @@ class WarrantyReportView(APIView):
                     warranty_note = "Spun Filter Change"
                     totals["spun_filter"] += 1
                 elif idx == 2:
-                    warranty_note = "Filter, Pre Carbon and Sediments Filters"
-                    totals["filter"] += 1
+                    warranty_note = "Spun Filter, Pre Carbon and Sediments Filters"
+                    totals["spun_filter"] += 1
                     totals["pre_carbon"] += 1
                     totals["sediments"] += 1
                 elif idx == 3:
