@@ -58,6 +58,11 @@ JOB_CARD_STATUS = (
     ("reinstalled", "Reinstalled"),
 )
 
+IMAGE_TYPE_CHOICES = (
+    ("installation", "Installation"),
+    ("report", "Report"),
+)
+
 
 
 class Card(models.Model):
@@ -77,6 +82,12 @@ class Card(models.Model):
     address = models.TextField(blank=True)
     city = models.CharField(max_length=100, blank=True)
     postal_code = models.CharField(max_length=20, blank=True)
+
+    installation_image = models.ImageField(
+        upload_to="card_installations/",
+        null=True,
+        blank=True
+    )
 
     date_of_installation = models.DateField(null=True, blank=True)
     warranty_start_date = models.DateField(null=True, blank=True, db_index=True)
@@ -138,7 +149,19 @@ class ServiceEntry(models.Model):
     parts_replaced = JSONField(blank=True, null=True)
     amount_charged = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     image = models.ImageField(upload_to="service_entries/", null=True, blank=True)
+    image_type = models.CharField(
+        max_length=20,
+        choices=IMAGE_TYPE_CHOICES,
+        default="report"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.visit_type == "I":
+            self.image_type = "installation"
+        else:
+            self.image_type = "report"
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Entry {self.id} for Service {self.service.id}"

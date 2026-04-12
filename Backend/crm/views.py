@@ -589,6 +589,10 @@ class ServiceViewSet(viewsets.ModelViewSet):
                 amount_charged=amount_charged,
                 image=service_image, 
             )
+            if service.visit_type == "I" and service_image:
+                card = service.card
+                card.installation_image = service_image
+                card.save(update_fields=["installation_image"])
 
             # If job cards exist → create them
             if job_cards_data:
