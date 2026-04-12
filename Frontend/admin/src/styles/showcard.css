@@ -73,6 +73,8 @@
 .showcard-list thead{
     background-color: #3763ae;
     color: white;
+    position: sticky;
+    top: 0;
 }
 .showcard-list tbody{
     background-color: #f0f0f0;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation} from 'react-router-dom';
 import '../styles/showcard.css';
 import { FaAddressCard } from "react-icons/fa";
 import axios from 'axios';
@@ -13,6 +13,18 @@ const BASEURL = "http://157.173.220.208";
 const ShowCard = () => {
 
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const cardId = params.get("card");
+
+        if (cardId) {
+            fetchCardDetails(cardId);
+        } else {
+            setSelectedCard(null);
+        }
+    }, [location.search]);
 
     /* ---------------- AUTH CHECK ---------------- */
     useEffect(() => {
@@ -323,7 +335,10 @@ const ShowCard = () => {
                                 {filteredCards.map(card => (
                                     <tr
                                         key={card.id}
-                                        onClick={() => fetchCardDetails(card.id)}
+                                        onClick={() => {
+                                            navigate(`?card=${card.id}`);
+                                            fetchCardDetails(card.id);
+                                        }}
                                         style={{ cursor: "pointer" }}
                                     >
                                         <td>{card.id}</td>
@@ -344,6 +359,28 @@ const ShowCard = () => {
                             <div className="showcard-details-box-cont">
                                 {selectedCard ? (
                                     <>
+                                        <div style={{ marginBottom: "15px", textAlign: "center" }}>
+                                            <p style={{ marginBottom: "10px", textAlign: "center"}} className="showcard-details-key">Machine Image</p>
+
+                                            <img
+                                                src={
+                                                    selectedCard?.installation_image ||
+                                                    selectedCard?.installation_image_url ||
+                                                    "/placeholder.png"
+                                                }
+                                                alt="Installation"
+                                                style={{
+                                                    width: "300px",
+                                                    height: "300px",
+                                                    objectFit: "cover",
+                                                    borderRadius: "8px",
+                                                    border: "1px solid #ddd"
+                                                }}
+                                                onError={(e) => {
+                                                    e.target.src = "https://placehold.net/default.png";
+                                                }}
+                                            />
+                                        </div>
                                         <DetailBox type="text" label="Model" field="model" data={selectedCard} setData={setSelectedCard} />
                                         <DetailBox type="text" label="Customer Name" field="customer_name" data={selectedCard} setData={setSelectedCard} />
                                         <DetailBox type="text" label="Region" field="region" data={selectedCard} setData={setSelectedCard} />
