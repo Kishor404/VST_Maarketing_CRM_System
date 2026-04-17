@@ -616,3 +616,25 @@ hr{
     padding: 10px 20px;
     font-weight: 600;
 }
+
+/* ============================
+   FIX TABLE ROW HEIGHT + ELLIPSIS
+============================ */
+
+/* Fix row height */
+.service-list tbody tr {
+    height: 50px; /* adjust as needed */
+}
+
+/* Apply ellipsis to all cells */
+.service-list td {
+    max-width: 150px;   /* adjust column width */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Optional: better for complaint column (long text) */
+.service-list td:nth-child(5) {
+    max-width: 250px;
+}

@@ -17,6 +17,8 @@ class ApiEndpoints {
       '/api/crm/services/$id/request_otp/';
   static String verifyOtp(int id) =>
       '/api/crm/services/$id/verify_otp/';
+  static String partialComplete(int id) =>
+    '/api/crm/services/$id/partial_complete/';
 
   static const String serviceEntries =
       '/api/crm/service-entries/';

@@ -433,7 +433,10 @@ const Service = () => {
         console.log(data);
         if(data.length!=0){
             setServiceList(data);
-            const sPen = data.filter(service => service.status === "pending").length;
+            const sPen = data.filter(service =>
+                service.status === "pending" ||
+                service.status === "components_pending"
+            ).length;
             const sCom = data.filter(service => service.status === "completed").length;
             const sAss = data.filter(service => service.status === "assigned").length;
             const sTot = data.length;
@@ -733,6 +736,26 @@ const Service = () => {
         }
 
         return filtered.length;
+    };
+
+    const reassignService = async (id) => {
+        const confirmAction = window.confirm("Reassign this service?");
+        if (!confirmAction) return;
+
+        const updatedData = {
+            assigned_to: serviceStaffID,
+            card: serviceCardID,
+            scheduled_at: serviceScheduleDate,
+            next_service_date: serviceNextServiceDate,
+            description: serviceDescription,
+            service_type: serviceType,
+            visit_type: serviceVisitType,
+
+            // 🔥 IMPORTANT CHANGE
+            status: "assigned"
+        };
+
+        await patchServiceByID(id, updatedData);
     };
 
     const exportServicesFiltered = () => {
@@ -1097,7 +1120,11 @@ const Service = () => {
                                             <td>{service.customer_data.name}</td>
                                             <td>{service.assigned_to_detail!=null?service.assigned_to_detail["name"]:"Not Assigned"}</td>
                                             <td>{service.description}</td>
-                                            <td>{service.status}</td>
+                                            <td>
+                                            {service.status === "components_pending"
+                                                ? "Components Pending"
+                                                : service.status}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -1174,6 +1201,7 @@ const Service = () => {
                                     <option value="awaiting_otp">Awaiting OTP</option>
                                     <option value="completed">Completed</option>
                                     <option value="cancelled">Cancelled</option>
+                                    <option value="components_pending">Components Pending</option>
                                 </select>
                                 <select
                                     className="service-export-select"
@@ -1319,6 +1347,7 @@ const Service = () => {
                                                 >
                                                     <option value="">Select Status</option>
                                                     <option value="pending">Pending</option>
+                                                    <option value="components_pending">Components Pending</option>
                                                     <option value="scheduled">Scheduled</option>
                                                     <option value="assigned">Assigned</option>
                                                     <option value="in_progress">In Progress</option>
@@ -1497,11 +1526,32 @@ const Service = () => {
                                         
                                         <hr/>
                                         <div className='service-bottom-right-bottom-edit-button-cont'>
-                                            
-                                            <button className='service-bottom-right-bottom-edit-submit' onClick={editServiceForm}>Edit Service</button>
-                                            {serviceStatus=="pending"?
-                                                <button className='service-bottom-right-bottom-edit-submit-as' onClick={()=>{setShowAssignStaffForm(true)}}>Assign Staff</button>:<></>
-                                            }
+    
+                                            <button
+                                                className='service-bottom-right-bottom-edit-submit'
+                                                onClick={editServiceForm}
+                                            >
+                                                Edit Service
+                                            </button>
+
+                                            {serviceStatus === "pending" && (
+                                                <button
+                                                    className='service-bottom-right-bottom-edit-submit-as'
+                                                    onClick={() => { setShowAssignStaffForm(true) }}
+                                                >
+                                                    Assign Staff
+                                                </button>
+                                            )}
+
+                                            {serviceStatus === "components_pending" && (
+                                                <button
+                                                    className='service-bottom-right-bottom-edit-submit-as'
+                                                    onClick={() => reassignService(serviceID)}
+                                                >
+                                                    Reassign
+                                                </button>
+                                            )}
+
                                         </div>
                                     </div>
                                 ):

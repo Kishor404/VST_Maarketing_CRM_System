@@ -113,4 +113,15 @@ class ServiceProvider {
       isMultipart: true,
     );
   }
+
+  Future<void> partialCompleteMultipart({
+    required int serviceId,
+    required FormData formData,
+  }) async {
+    await _apiClient.post(
+      ApiEndpoints.partialComplete(serviceId),
+      data: formData,
+      isMultipart: true,
+    );
+  }
 }

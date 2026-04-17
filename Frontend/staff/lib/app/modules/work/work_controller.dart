@@ -33,6 +33,18 @@ class WorkController extends GetxController {
 
   final serviceImage = Rx<File?>(null);
 
+  final isPartial = false.obs;
+  final pendingDescription = ''.obs;
+
+  final selectedPendingComponents = <String>[].obs;
+
+  final defaultComponents = [
+    "Spun Filter",
+    "Pre Carbon",
+    "Post Carbon",
+    "Sediment Filter",
+  ];
+
   final devOtp = ''.obs; // ⚠️ DEV ONLY
 
 
@@ -67,6 +79,86 @@ class WorkController extends GetxController {
       loading.value = false;
     }
   }
+
+  String buildPendingWork() {
+    final desc = pendingDescription.value.trim();
+    final comps = selectedPendingComponents;
+
+    if (desc.isEmpty && comps.isEmpty) {
+      return "Pending Service";
+    }
+
+    if (desc.isNotEmpty && comps.isEmpty) {
+      return desc;
+    }
+
+    if (desc.isEmpty && comps.isNotEmpty) {
+      return "Pending Work: ${comps.join(', ')}";
+    }
+
+    return "$desc | Pending Work: ${comps.join(', ')}";
+  }
+
+  void resetForm() {
+    selectedService.value = null;
+    workDetail.value = '';
+    amountCharged.value = '';
+    otp.value = '';
+    devOtp.value = '';
+    partsReplaced.clear();
+    jobCards.clear();
+    serviceImage.value = null;
+
+    isPartial.value = false;
+    pendingDescription.value = '';
+    selectedPendingComponents.clear();
+  }
+
+  Future<void> partialComplete({
+    required int serviceId,
+    required String otp,
+  }) async {
+    try {
+      otpLoading.value = true;
+
+      final pendingWork = buildPendingWork();
+
+      dio.FormData formData = dio.FormData.fromMap({
+        "otp": otp,
+        "pending_work": pendingWork,
+        "work_detail": workDetail.value,
+        "amount_charged": amountCharged.value,
+        "parts_replaced": jsonEncode(partsReplaced),
+      });
+
+      await _provider.partialCompleteMultipart(
+        serviceId: serviceId,
+        formData: formData,
+      );
+
+      /// RESET
+      resetForm();
+
+      await loadAll();
+
+      Get.back();
+      Get.back();
+
+      AppSnackbar.success(
+        title: "Partial Completed",
+        message: "Service marked as pending",
+      );
+    } catch (e) {
+      AppSnackbar.error(
+        title: "Failed",
+        message: e.toString(),
+      );
+    } finally {
+      otpLoading.value = false;
+    }
+  }
+
+  
 
   
 

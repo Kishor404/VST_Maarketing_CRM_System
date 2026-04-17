@@ -469,6 +469,66 @@ class WorkCompletionPage extends GetView<WorkController> {
               );
             }),
 
+            const SizedBox(height: 20),
+
+            Obx(() => SwitchListTile(
+              title: const Text("Partial Completion"),
+              subtitle: const Text("Enable if service is not fully completed"),
+              value: controller.isPartial.value,
+              onChanged: (v) => controller.isPartial.value = v,
+            )),
+
+            Obx(() {
+              if (!controller.isPartial.value) return const SizedBox();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+
+                  Text(
+                    "Pending Work",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  /// DESCRIPTION
+                  TextField(
+                    onChanged: (v) => controller.pendingDescription.value = v,
+                    decoration: const InputDecoration(
+                      hintText: "Describe pending work (optional)",
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  /// COMPONENT SELECT
+                  Wrap(
+                    spacing: 8,
+                    children: controller.defaultComponents.map((comp) {
+                      return Obx(() {
+                        final selected =
+                            controller.selectedPendingComponents.contains(comp);
+
+                        return FilterChip(
+                          label: Text(comp),
+                          selected: selected,
+                          onSelected: (v) {
+                            if (v) {
+                              controller.selectedPendingComponents.add(comp);
+                            } else {
+                              controller.selectedPendingComponents.remove(comp);
+                            }
+                          },
+                        );
+                      });
+                    }).toList(),
+                  ),
+                ],
+              );
+            }),
+
             SizedBox(height: 20,),
 
             /// ============================
@@ -654,6 +714,12 @@ class WorkCompletionPage extends GetView<WorkController> {
               onPressed: (!isFormValid || controller.otpLoading.value)
                   ? null
                   : () {
+                    if (controller.isPartial.value) {
+                      controller.partialComplete(
+                        serviceId: service.id,
+                        otp: controller.otp.value,
+                      );
+                    } else {
                       controller.completeService(
                         serviceId: service.id,
                         otp: controller.otp.value,
@@ -673,6 +739,7 @@ class WorkCompletionPage extends GetView<WorkController> {
                         },
 
                       );
+                    }
                     },
               icon: controller.otpLoading.value
                   ? const SizedBox(
