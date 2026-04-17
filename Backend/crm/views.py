@@ -512,6 +512,84 @@ class ServiceViewSet(viewsets.ModelViewSet):
             service.save()
 
         return Response({"detail": "Selected parts reinstalled"})
+    
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    def partial_complete(self, request, pk=None):
+        """
+        Partial completion with OTP → marks service as pending
+        """
+        service = self.get_object()
+        user = request.user
+
+        # 🔐 Permission check
+        if user.role not in ("worker", "staff", "admin") and service.assigned_to_id != user.id:
+            return Response({"detail": "not allowed"}, status=403)
+
+        otp = request.data.get("otp")
+        pending_work = request.data.get("pending_work")
+
+        if not otp:
+            return Response({"detail": "otp is required"}, status=400)
+
+        if not pending_work:
+            return Response({"detail": "pending_work is required"}, status=400)
+
+        # 🔒 OTP validation
+        if not service.otp_hash or not service.otp_expires_at or timezone.now() > service.otp_expires_at:
+            return Response({"detail": "otp expired or not requested"}, status=400)
+
+        if not verify_otp_hash(otp, service.otp_hash):
+            return Response({"detail": "invalid otp"}, status=400)
+
+        # 📦 Optional fields (same as verify_otp)
+        work_detail = request.data.get("work_detail", "")
+        parts_replaced = request.data.get("parts_replaced", "[]")
+        amount_charged = request.data.get("amount_charged")
+
+        if isinstance(parts_replaced, str):
+            try:
+                parts_replaced = json.loads(parts_replaced)
+            except:
+                parts_replaced = []
+
+        with transaction.atomic():
+
+            # 🧾 Create ServiceEntry (same as normal)
+            se = ServiceEntry.objects.create(
+                service=service,
+                performed_by=user,
+                actual_complaint=service.description,
+                visit_type=service.visit_type,
+                work_detail=work_detail,
+                parts_replaced=parts_replaced,
+                amount_charged=amount_charged,
+            )
+
+            # ✏️ Update description
+            service.description = f"Need to done {pending_work}. {service.description}"
+
+            # 🔁 Set status to pending
+            service.status = "components_pending"
+
+            # 🧹 Clear OTP
+            service.otp_hash = None
+            service.otp_expires_at = None
+
+            service.save(update_fields=[
+                "description",
+                "status",
+                "otp_hash",
+                "otp_expires_at",
+            ])
+
+        return Response(
+            {
+                "detail": "service partially completed",
+                "service_entry_id": se.id,
+                "status": service.status,
+            },
+            status=200,
+        )
 
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])

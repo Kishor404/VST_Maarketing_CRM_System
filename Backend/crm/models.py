@@ -40,7 +40,8 @@ SERVICE_STATUS = (
     ("awaiting_otp", "Awaiting OTP"),
     ("completed", "Completed"),
     ("cancelled", "Cancelled"),
-    ("job_card_pending", "Job Card Pending")
+    ("job_card_pending", "Job Card Pending"),
+    ("components_pending", "Components Pending")
 )
 
 VISIT_TYPE = (
