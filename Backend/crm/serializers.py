@@ -16,6 +16,7 @@ class CardSerializer(serializers.ModelSerializer):
     customer_id = serializers.IntegerField(source="customer.id", read_only=True)
     customer_name = serializers.CharField(source="customer.name", read_only=True)
     customer_phone = serializers.CharField(source="customer.phone", read_only=True)
+    is_industrial = serializers.CharField(source="customer.is_industrial", read_only=True)
 
     class Meta:
         model = Card
