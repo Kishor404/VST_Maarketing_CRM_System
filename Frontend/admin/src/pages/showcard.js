@@ -41,6 +41,7 @@ const ShowCard = () => {
     const [selectedCard, setSelectedCard] = useState(null);
 
     const [statusFilter, setStatusFilter] = useState("all"); // all | warranty | amc
+    const [cardType, setCardType] = useState("all"); 
 
     /* ---------------- REFRESH TOKEN ---------------- */
     const refresh_token = async () => {
@@ -214,33 +215,45 @@ const ShowCard = () => {
     const filteredCards = [...cardList]
         .filter(card => {
 
-            /* SEARCH FILTER */
-            if (search) {
-                if (searchBy === "phone") {
-                    if (!card.customer_phone?.includes(search)) return false;
-                } else {
-                    if (!card.customer_name?.toLowerCase().includes(search.toLowerCase())) return false;
-                }
+        /* ---------------- TYPE FILTER ---------------- */
+        if (cardType === "industrial" && card.is_industrial==="False") return false;
+        if (cardType === "domestic" && card.is_industrial==="True") return false;
+
+        /* ---------------- SEARCH FILTER ---------------- */
+        if (search) {
+            if (searchBy === "phone") {
+                if (!card.customer_phone?.includes(search)) return false;
+            } else {
+                if (!card.customer_name?.toLowerCase().includes(search.toLowerCase())) return false;
             }
+        }
 
-            /* WARRANTY FILTER */
-            if (statusFilter === "warranty") {
-                const ws = new Date(card.warranty_start_date);
-                const we = new Date(card.warranty_end_date);
+        /* ---------------- WARRANTY FILTER ---------------- */
+        if (statusFilter === "warranty") {
 
-                if (!(ws <= today && we >= today)) return false;
-            }
+            // ONLY domestic allowed
+            if (card.is_industrial=="True") return false;
 
-            /* AMC FILTER */
-            if (statusFilter === "amc") {
-                const as = new Date(card.amc_start_date);
-                const ae = new Date(card.amc_end_date);
+            const ws = new Date(card.warranty_start_date);
+            const we = new Date(card.warranty_end_date);
 
-                if (!(as <= today && ae >= today)) return false;
-            }
+            if (!(ws <= today && we >= today)) return false;
+        }
 
-            return true;
-        })
+        /* ---------------- AMC FILTER ---------------- */
+        if (statusFilter === "amc") {
+
+            // ONLY domestic allowed
+            if (card.is_industrial=="True") return false;
+
+            const as = new Date(card.amc_start_date);
+            const ae = new Date(card.amc_end_date);
+
+            if (!(as <= today && ae >= today)) return false;
+        }
+
+        return true;
+    })
         .sort((a, b) => {
             switch (sortBy) {
                 case "oldest":
@@ -301,6 +314,15 @@ const ShowCard = () => {
                             <option value="oldest">Oldest First</option>
                             <option value="name">Customer Name (A-Z)</option>
                             <option value="install">Installation Date</option>
+                        </select>
+                        <select
+                            className='showcard-edit-select'
+                            value={cardType}
+                            onChange={(e) => setCardType(e.target.value)}
+                        >
+                            <option value="all">All Types</option>
+                            <option value="industrial">Industrial</option>
+                            <option value="domestic">Domestic</option>
                         </select>
                         <select
                             className='showcard-edit-select'
