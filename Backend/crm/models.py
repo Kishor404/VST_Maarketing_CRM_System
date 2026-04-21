@@ -240,6 +240,7 @@ class IndustrialAMC(models.Model):
 
     interval_days = models.PositiveIntegerField()
     is_with_spare = models.BooleanField(default=False)
+    spares = models.JSONField(blank=True, null=True)
     start_date = models.DateField()
     end_date = models.DateField()
 
@@ -262,6 +263,9 @@ class IndustrialAMC(models.Model):
 
         if self.end_date <= self.start_date:
             raise ValidationError("End date must be after start date")
+        
+        if not self.is_with_spare:
+            self.spares = []
 
     def __str__(self):
         return f"Industrial AMC Card {self.card.id} ({self.interval_days} days)"

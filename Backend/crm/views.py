@@ -1985,6 +1985,8 @@ class IndustrialAMCReportView(APIView):
                     
                     "is_with_spare": amc.is_with_spare,
 
+                    "spares": amc.spares or [], 
+
                     "milestone": m.isoformat(),
                     "status": status,
                     "staff": done_staff,

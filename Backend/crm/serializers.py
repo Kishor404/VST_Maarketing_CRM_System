@@ -517,9 +517,21 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
         )
 
         return service
+    
+    
+from rest_framework import serializers
+from django.core.exceptions import ValidationError as DjangoValidationError
+
 class IndustrialAMCSerializer(serializers.ModelSerializer):
 
     is_with_spare = serializers.BooleanField(default=False, required=False)
+
+    spares = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        allow_empty=True
+    )
+
     customer_name = serializers.CharField(source="card.customer.name", read_only=True)
     customer_id = serializers.IntegerField(source="card.customer.id", read_only=True)
     card_model = serializers.CharField(source="card.model", read_only=True)
@@ -541,17 +553,64 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
             )
         return card
 
+    def validate(self, data):
+        is_with_spare = data.get("is_with_spare", False)
+        spares = data.get("spares", [])
+
+        # 🔹 Clean input
+        spares = [s.strip() for s in spares if s.strip()]
+
+        # 🔥 YOUR RULE
+        if not is_with_spare:
+            data["spares"] = []
+        else:
+            data["spares"] = spares  # optional, can be empty
+
+        return data
+
     def create(self, validated_data):
 
         request = self.context.get("request")
         admin = request.user if request else None
 
         validated_data.setdefault("is_with_spare", False)
+        validated_data.setdefault("spares", [])
 
         instance = IndustrialAMC(
             created_by=admin,
             **validated_data
         )
+
+        try:
+            instance.full_clean()
+            instance.save()
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(e.message_dict)
+
+        return instance
+
+    def update(self, instance, validated_data):
+
+        request = self.context.get("request")
+        admin = request.user if request else None
+
+        is_with_spare = validated_data.get("is_with_spare", instance.is_with_spare)
+        spares = validated_data.get("spares", instance.spares or [])
+
+        # 🔥 APPLY RULE AGAIN DURING UPDATE
+        if not is_with_spare:
+            spares = []
+        else:
+            spares = [s.strip() for s in spares if s.strip()]
+
+        validated_data["spares"] = spares
+        validated_data["is_with_spare"] = is_with_spare
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if admin:
+            instance.created_by = admin
 
         try:
             instance.full_clean()
