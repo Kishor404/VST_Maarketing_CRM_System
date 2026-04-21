@@ -70,6 +70,7 @@ const IndustrialAMCList = () => {
         start_date: selectedAMC.start_date,
         end_date: selectedAMC.end_date,
         is_with_spare: selectedAMC.is_with_spare,
+        spares: selectedAMC.spares || [],
       });
 
       alert("Updated successfully ✅");
@@ -132,7 +133,13 @@ const IndustrialAMCList = () => {
 
           <tbody>
             {filtered.map((a) => (
-                <tr key={a.id} onClick={() => setSelectedAMC(a)}>
+                <tr key={a.id} onClick={() =>
+                  setSelectedAMC({
+                    ...a,
+                    spares: a.spares || [], // ✅ ensure array
+                    newSpare: ""            // temp input
+                  })
+                }>
 
                 <td>{a.customer_id}</td>
 
@@ -219,11 +226,87 @@ const IndustrialAMCList = () => {
                   setSelectedAMC({
                     ...selectedAMC,
                     is_with_spare: e.target.checked,
+                    spares: e.target.checked ? selectedAMC.spares || [] : [], // ✅ cleanup
                   })
                 }
               />
               With Spare
             </label>
+
+            {selectedAMC.is_with_spare && (
+              <div style={{ marginTop: "15px" }}>
+
+                <h4>Add Spares</h4>
+
+                {/* Input + Add button */}
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <input
+                    type="text"
+                    placeholder="Enter spare name"
+                    value={selectedAMC.newSpare || ""}
+                    onChange={(e) =>
+                      setSelectedAMC({
+                        ...selectedAMC,
+                        newSpare: e.target.value,
+                      })
+                    }
+                  />
+
+                  <button
+                    onClick={() => {
+                      if (!selectedAMC.newSpare?.trim()) return;
+
+                      setSelectedAMC({
+                        ...selectedAMC,
+                        spares: [
+                          ...(selectedAMC.spares || []),
+                          selectedAMC.newSpare.trim(),
+                        ],
+                        newSpare: "",
+                      });
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {/* Spare List */}
+                <div style={{ marginTop: "10px" }}>
+                  {(selectedAMC.spares || []).map((s, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "5px",
+                        background: "#f5f5f5",
+                        padding: "5px 10px",
+                        borderRadius: "5px",
+                      }}
+                    >
+                      <span>{s}</span>
+
+                      <button
+                        onClick={() => {
+                          const updated = selectedAMC.spares.filter(
+                            (_, i) => i !== index
+                          );
+
+                          setSelectedAMC({
+                            ...selectedAMC,
+                            spares: updated,
+                          });
+                        }}
+                        style={{ color: "red", border: "none", background: "none" }}
+                      >
+                        ❌
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            )}
 
             <div style={{ marginTop: "15px" }}>
               <button

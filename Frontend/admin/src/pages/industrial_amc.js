@@ -579,6 +579,7 @@ const IndustrialAMC = () => {
               <tr>
                 <th>Milestone</th>
                 <th>All Milestones</th>
+                <th>Is Spare</th>
                 <th>Spare</th>
                 <th>Customer</th>
                 <th>Phone</th>
@@ -614,6 +615,22 @@ const IndustrialAMC = () => {
 
                   <td>
                     {card.is_with_spare ? "With Spare" : "Without Spare"}
+                  </td>
+
+                  <td>
+                    {card.is_with_spare ? (
+                      card.spares && card.spares.length > 0 ? (
+                        <ul style={{ paddingLeft: "15px", margin: 0 }}>
+                          {card.spares.map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span style={{ color: "#999" }}>No Spares</span>
+                      )
+                    ) : (
+                      <span style={{ color: "#999" }}>—</span>
+                    )}
                   </td>
 
                   <td>{card.customer_name}</td>
