@@ -255,7 +255,7 @@ const IndustrialAMC = () => {
   const exportExcel = () => {
 
     if (!cards.length) return alert("No data");
-
+    
     const data = cards.map((card, i) => ({
       "S.No": i + 1,
       Milestone: formatDate(card.milestone),
@@ -264,8 +264,12 @@ const IndustrialAMC = () => {
       City: card.city,
       Status: card.status,
       Interval: card.interval_days + " days",
+      IsSpare: card.is_with_spare,
+      Spare: Array.isArray(card.spares) 
+        ? card.spares.join(", ") 
+        : ""
     }));
-
+    
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
 
