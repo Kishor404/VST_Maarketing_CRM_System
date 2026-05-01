@@ -231,6 +231,9 @@ const JobCard = () => {
                         <h3>Job Card #{selectedCard.id}</h3>
 
                         <p><b>Service:</b> {selectedCard.service_id}</p>
+                        <p><b>Customer:</b> {selectedCard.customer_name}</p>
+                        <p><b>Customer Phone:</b> {selectedCard.customer_phone}</p>
+                        <p><b>Service:</b> {selectedCard.service_id}</p>
                         <p><b>Service Status:</b> {selectedCard.service_status}</p>
                         <p><b>Part:</b> {selectedCard.part_name}</p>
                         <p><b>Serial Number:</b> {selectedCard.serial_number || "-"}</p>
