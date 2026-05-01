@@ -76,6 +76,16 @@ class JobCardSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    customer_name = serializers.CharField(
+        source="customer.name",
+        read_only=True
+    )
+
+    customer_phone = serializers.CharField(
+        source="customer.phone",
+        read_only=True
+    )
+
     staff_name = serializers.SerializerMethodField()
     reinstall_staff_name = serializers.SerializerMethodField()
 
@@ -97,6 +107,8 @@ class JobCardSerializer(serializers.ModelSerializer):
             "reinstall_staff_name",
 
             "customer",
+            "customer_name",
+            "customer_phone",
 
             "part_name",
             "details",

@@ -56,6 +56,7 @@ const JobCard = () => {
 
             setJobCards(res.data);
             setFilteredCards(res.data);
+            console.log(res.data)
         } catch (err) {
             console.error(err);
         } finally {
