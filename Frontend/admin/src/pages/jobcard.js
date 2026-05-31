@@ -23,6 +23,10 @@ const JobCard = () => {
 
     const [loading, setLoading] = useState(false);
 
+    const [editPartName, setEditPartName] = useState("");
+    const [editSerialNumber, setEditSerialNumber] = useState("");
+    const [editDetails, setEditDetails] = useState("");
+
     // ================= TOKEN =================
 
     const refresh_token = async () => {
@@ -84,6 +88,35 @@ const JobCard = () => {
         }
     };
 
+    const deleteJobCard = async (id) => {
+        const token = await refresh_token();
+        if (!token) return navigate("/head/");
+
+        if (!window.confirm("Are you sure you want to delete this Job Card?")) {
+            return;
+        }
+
+        try {
+            await axios.delete(
+                `${BASEURL}/api/crm/job-cards/${id}/`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            alert("Job Card Deleted Successfully");
+
+            setSelectedCard(null);
+            fetchJobCards();
+
+        } catch (err) {
+            console.error(err);
+            alert("Delete Failed");
+        }
+    };
+
     // ================= STAFF SEARCH =================
 
     const getUserByPhone = async (phone) => {
@@ -105,7 +138,12 @@ const JobCard = () => {
 
     const handleSelectCard = (card) => {
         setSelectedCard(card);
+
         setEditStatus(card.status);
+        setEditPartName(card.part_name || "");
+        setEditSerialNumber(card.serial_number || "");
+        setEditDetails(card.details || "");
+
         setReinstallStaff(null);
         setReinstallStaffPhone("");
     };
@@ -115,7 +153,11 @@ const JobCard = () => {
 
         patchJobCard(selectedCard.id, {
             status: editStatus,
-            reinstall_staff: reinstallStaff?.id || selectedCard.reinstall_staff
+            part_name: editPartName,
+            serial_number: editSerialNumber,
+            details: editDetails,
+            reinstall_staff:
+                reinstallStaff?.id || selectedCard.reinstall_staff
         });
     };
 
@@ -287,6 +329,28 @@ const JobCard = () => {
                             }}
                         />
 
+                        <hr style={{marginTop:"20px"}}/>
+
+                        <h5>Edit The Job Card</h5>
+
+                        <label>Part Name</label>
+                            <input
+                                value={editPartName}
+                                onChange={(e) => setEditPartName(e.target.value)}
+                            />
+
+                            <label>Serial Number</label>
+                            <input
+                                value={editSerialNumber}
+                                onChange={(e) => setEditSerialNumber(e.target.value)}
+                            />
+
+                            <label>Details</label>
+                            <input
+                                value={editDetails}
+                                onChange={(e) => setEditDetails(e.target.value)}
+                            />
+
                         {reinstallStaff && (
                             <p className="jobcard-staff">
                                 {reinstallStaff.name} (ID {reinstallStaff.id})
@@ -295,9 +359,21 @@ const JobCard = () => {
                         </>
                         :<></>}
 
-                        <button onClick={handleUpdate}>
-                            Update Job Card
-                        </button>
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <button onClick={handleUpdate}>
+                                Update Job Card
+                            </button>
+
+                            <button
+                                onClick={() => deleteJobCard(selectedCard.id)}
+                                style={{
+                                    background: "#dc3545",
+                                    color: "#fff"
+                                }}
+                            >
+                                Delete Job Card
+                            </button>
+                        </div>
 
                     </div>
                 ) : (

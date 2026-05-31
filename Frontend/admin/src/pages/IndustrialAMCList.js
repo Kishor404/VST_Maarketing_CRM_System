@@ -28,6 +28,24 @@ const IndustrialAMCList = () => {
     }
   };
 
+  const deleteAMC = async () => {
+    if (!window.confirm("Delete this AMC?")) return;
+
+    try {
+      await api.delete(`/crm/industrial-amc/${selectedAMC.id}/`);
+
+      alert("AMC deleted successfully");
+
+      setSelectedAMC(null);
+
+      fetchAMC();
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete AMC");
+    }
+  };
+
   /* ---------------- FILTER / SEARCH / SORT ---------------- */
 
   useEffect(() => {
@@ -314,6 +332,13 @@ const IndustrialAMCList = () => {
                 onClick={updateAMC}
               >
                 Save
+              </button>
+
+              <button
+                className="amc-btn amc-btn-delete"
+                onClick={deleteAMC}
+              >
+                Delete
               </button>
 
               <button

@@ -15,6 +15,15 @@
   color: #ffffff;
 }
 
+.amc-btn-delete {
+  background: #dc3545;
+  color: white;
+  margin-left: 10px;
+}
+
+.amc-btn-delete:hover {
+  background: #b02a37;
+}
 /* ================= CONTROLS ================= */
 
 .amc-controls {
@@ -181,13 +190,13 @@
 }
 
 .amc-btn-close {
-  background: #ef4444;
+  background: #747474;
   color: white;
   margin-left: 10px;
 }
 
 .amc-btn-close:hover {
-  background: #dc2626;
+  background: #919191;
 }
 
 /* ================= RESPONSIVE ================= */

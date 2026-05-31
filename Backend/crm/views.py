@@ -1280,7 +1280,7 @@ class AMCReportView(APIView):
 
             if c.customer.is_industrial:
                 continue
-            
+
             if c.card_type == "om":
                 continue
 
@@ -1647,6 +1647,10 @@ class JobCardViewSet(viewsets.ModelViewSet):
         status_val = request.data.get("status")
         reinstall_staff_id = request.data.get("reinstall_staff")
 
+        part_name = request.data.get("part_name")
+        serial_number = request.data.get("serial_number")
+        details = request.data.get("details")
+
         allowed_status = [
             "get_from_customer",
             "received_office",
@@ -1657,7 +1661,7 @@ class JobCardViewSet(viewsets.ModelViewSet):
         if status_val and status_val not in allowed_status:
             return Response({"detail": "Invalid status"}, status=400)
 
-        # ---- STATUS TIMESTAMPS ----
+        # Status timestamps
         if status_val == "received_office":
             job_card.received_office_at = timezone.now()
 
@@ -1673,10 +1677,23 @@ class JobCardViewSet(viewsets.ModelViewSet):
         if status_val:
             job_card.status = status_val
 
+        # NEW FIELDS
+        if part_name is not None:
+            job_card.part_name = part_name
+
+        if serial_number is not None:
+            job_card.serial_number = serial_number
+
+        if details is not None:
+            job_card.details = details
+
         job_card.save()
 
         return Response(
-            self.get_serializer(job_card, context={"request": request}).data
+            self.get_serializer(
+                job_card,
+                context={"request": request}
+            ).data
         )
     
     @action(
