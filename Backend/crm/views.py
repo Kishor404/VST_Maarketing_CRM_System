@@ -1277,6 +1277,10 @@ class AMCReportView(APIView):
         # 3. Process milestones
         # ----------------------------------
         for c in cards:
+
+            if c.customer.is_industrial:
+                continue
+            
             if c.card_type == "om":
                 continue
 
