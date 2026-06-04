@@ -14,6 +14,9 @@ CHATINFY_LICENSE_NUMBER = config("CHATINFY_LICENSE_NUMBER")
 CHATINFY_API_KEY = config("CHATINFY_API_KEY")
 CHATINFY_CONTACT = config("CHATINFY_CONTACT")
 
+MSG91_AUTH_KEY = os.getenv("MSG91_AUTH_KEY")
+MSG91_TEMPLATE_ID = os.getenv("MSG91_TEMPLATE_ID")
+
 if not all([CHATINFY_LICENSE_NUMBER, CHATINFY_API_KEY, CHATINFY_CONTACT]):
     raise RuntimeError("Missing Chatinfy environment variables")
 
@@ -51,7 +54,8 @@ INSTALLED_APPS = [
     'core',   # optional: for firebase init AppConfig
     'user',
     'crm',
-    'reminder'
+    'reminder',
+    'utils'
 ]
 
 MIDDLEWARE = [

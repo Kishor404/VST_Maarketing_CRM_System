@@ -202,6 +202,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 import json
+from utils.msg91 import send_otp
 
 
 
@@ -441,8 +442,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
         service.status = "awaiting_otp"
         service.save()
 
-        message = str(otp)+" is your OTP for verfiy the service "+str(service.id)+" for "+service.description+". Thanks For Choosing VST Maarketing."
-        Send_SMS(phone, message)
+        send_otp(phone, otp)
         
         if getattr(settings, "CRM_DEV_RETURN_OTP", False):
             return Response({"detail": "otp-generated", "otp": otp})
