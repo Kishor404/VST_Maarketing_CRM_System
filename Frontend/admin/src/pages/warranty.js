@@ -16,6 +16,7 @@ const Warranty = () => {
   const [bulkBooking, setBulkBooking] = useState(false);
   const [attendanceMap, setAttendanceMap] = useState({});
   const [scheduledDates, setScheduledDates] = useState({});
+  const [bookSelection, setBookSelection] = useState({});
 
   const addDays = (dateStr, days) => {
     const d = new Date(dateStr);
@@ -72,6 +73,7 @@ const Warranty = () => {
       setTotals(summaryTotals);
       const defaults = {};
       const staffDefaults = {};
+      const bookingDefaults = {};
       reportData.forEach((card) => {
         if (card.status === 'done' && card.scheduled_date) {
           // ✅ use actual service date
@@ -83,9 +85,16 @@ const Warranty = () => {
         if (card.status === 'done' && card.staff) {
           staffDefaults[card.card_id] = card.staff.staff_id;
         }
+
+        if (card.status === "done") {
+          bookingDefaults[card.card_id] = false;
+        } else {
+          bookingDefaults[card.card_id] = true;
+        }
       });
       setScheduledDates(defaults);
       setSelectedStaff(staffDefaults);
+      setBookSelection(bookingDefaults);
 
     } catch (err) {
       setError('Failed to load warranty customers. Please try again.');
@@ -104,6 +113,13 @@ const Warranty = () => {
     } catch (err) {
       console.error('Failed to load staff:', err);
     }
+  };
+
+  const handleBookToggle = (cardId) => {
+    setBookSelection((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
   };
 
   const fetchTodayAttendance = async () => {
@@ -233,7 +249,11 @@ const Warranty = () => {
     if (cards.length === 0) return;
 
     for (const card of cards) {
-      if (selectedStaff[card.card_id] && !scheduledDates[card.card_id]) {
+      if (
+        bookSelection[card.card_id] &&
+        selectedStaff[card.card_id] &&
+        !scheduledDates[card.card_id]
+      ) {
         setError('Scheduled date is mandatory for all selected services.');
         setBulkBooking(false);
         return;
@@ -245,7 +265,7 @@ const Warranty = () => {
 
     try {
       const bookingPromises = cards
-        .filter((card) => selectedStaff[card.card_id] && card.status !== "done")
+        .filter((card) => bookSelection[card.card_id] && selectedStaff[card.card_id] && card.status !== "done")
         .map(async (card) => {
           const staffId = selectedStaff[card.card_id];
 
@@ -371,6 +391,7 @@ const Warranty = () => {
           <table className="warranty-table">
             <thead>
               <tr>
+                <th>Book?</th>
                 <th>Milestone</th>
                 <th>Note</th>
                 <th>All Milestone</th>
@@ -398,6 +419,17 @@ const Warranty = () => {
                     key={card.card_id}
                     className={getRowBgClass(card.status)}
                   >
+                    <td>
+                      <label className="switch">
+                        <input
+                          type="checkbox"
+                          checked={bookSelection[card.card_id] || false}
+                          disabled={card.status === "done"}
+                          onChange={() => handleBookToggle(card.card_id)}
+                        />
+                        <span className="slider"></span>
+                      </label>
+                    </td>
                     <td>{formatDate(card.milestone)}</td>
                     <td>{card.warranty_note?card.warranty_note:"None"}</td>
                     <td>
