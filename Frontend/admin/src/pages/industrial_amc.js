@@ -32,6 +32,8 @@ const IndustrialAMC = () => {
 
   const [bulkBooking, setBulkBooking] = useState(false);
 
+  const [bookSelection, setBookSelection] = useState({});
+
   /* ---------- CREATE AMC PANEL ---------- */
 
   const [showCreateAMC, setShowCreateAMC] = useState(false);
@@ -105,6 +107,7 @@ const IndustrialAMC = () => {
 
       const dateDefaults = {};
       const staffDefaults = {};
+      const bookingDefaults = {};
 
       res.data.forEach((card) => {
 
@@ -117,10 +120,17 @@ const IndustrialAMC = () => {
         if (card.status === "done" && card.staff) {
           staffDefaults[card.card_id] = card.staff.staff_id;
         }
+
+        if (card.status === "done") {
+          bookingDefaults[card.card_id] = false;
+        } else {
+          bookingDefaults[card.card_id] = true;
+        }
       });
 
       setScheduledDates(dateDefaults);
       setSelectedStaff(staffDefaults);
+      setBookSelection(bookingDefaults);
 
     } catch {
       setError("Failed to load Industrial AMC data");
@@ -140,6 +150,13 @@ const IndustrialAMC = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const handleBookToggle = (cardId) => {
+    setBookSelection((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
   };
 
   /* ---------------- ATTENDANCE ---------------- */
@@ -214,10 +231,26 @@ const IndustrialAMC = () => {
 
     setBulkBooking(true);
 
+    for (const card of cards) {
+      if (
+        bookSelection[card.card_id] &&
+        selectedStaff[card.card_id] &&
+        !scheduledDates[card.card_id]
+      ) {
+        setError("Scheduled date is mandatory.");
+        setBulkBooking(false);
+        return;
+      }
+    }
+
     try {
 
       const bookingPromises = cards
-        .filter((c) => selectedStaff[c.card_id])
+        .filter(
+          (c) =>
+            bookSelection[c.card_id] &&
+            selectedStaff[c.card_id]
+        )
         .map(async (card) => {
 
           const payload = {
@@ -238,6 +271,12 @@ const IndustrialAMC = () => {
             return false;
           }
         });
+
+      if (bookingPromises.length === 0) {
+        setError("No Industrial AMC selected for booking.");
+        setBulkBooking(false);
+        return;
+      }
 
       await Promise.all(bookingPromises);
 
@@ -270,7 +309,21 @@ const IndustrialAMC = () => {
         : ""
     }));
     
-    const ws = XLSX.utils.json_to_sheet(data);
+    const ws = XLSX.utils.aoa_to_sheet([
+      [`Industrial AMC - ${selectedMonth}`],
+      [],
+    ]);
+
+    XLSX.utils.sheet_add_json(ws, data, {
+      origin: 'A3',
+    });
+
+    ws['!merges'] = [
+      {
+        s: { r: 0, c: 0 }, // A1
+        e: { r: 0, c: 7 }, // Merge across columns A-H
+      },
+    ];
     const wb = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(wb, ws, "Industrial AMC");
@@ -581,6 +634,7 @@ const IndustrialAMC = () => {
 
             <thead>
               <tr>
+                <th>Book?</th>
                 <th>Milestone</th>
                 <th>All Milestones</th>
                 <th>Is Spare</th>
@@ -602,6 +656,17 @@ const IndustrialAMC = () => {
                   className={getRowBgClass(card.status)}
                 >
 
+                  <td>
+                    <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={bookSelection[card.card_id] || false}
+                        disabled={card.status === "done"}
+                        onChange={() => handleBookToggle(card.card_id)}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                  </td>
 
                   <td>{formatDate(card.milestone)}</td>
 

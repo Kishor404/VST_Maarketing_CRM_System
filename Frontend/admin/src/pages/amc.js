@@ -16,6 +16,7 @@ const AMC = () => {
   const [bulkBooking, setBulkBooking] = useState(false);
   const [attendanceMap, setAttendanceMap] = useState({});
   const [scheduledDates, setScheduledDates] = useState({});
+  const [bookSelection, setBookSelection] = useState({});
 
   const addDays = (dateStr, days) => {
     const d = new Date(dateStr);
@@ -74,6 +75,7 @@ const AMC = () => {
 
       const defaults = {};
       const staffDefaults = {};
+      const bookingDefaults = {};
 
       reportData.forEach((card) => {
         // ✅ use actual visit date if already done
@@ -86,11 +88,18 @@ const AMC = () => {
         if (card.status === 'done' && card.staff) {
           staffDefaults[card.card_id] = card.staff.staff_id;
         }
+
+        if (card.status === "done") {
+          bookingDefaults[card.card_id] = false;
+        } else {
+          bookingDefaults[card.card_id] = true;
+        }
       });
 
 
       setScheduledDates(defaults);
       setSelectedStaff(staffDefaults);
+      setBookSelection(bookingDefaults);
 
     } catch (err) {
       setError('Failed to load amc customers. Please try again.');
@@ -109,6 +118,13 @@ const AMC = () => {
     } catch (err) {
       console.error('Failed to load staff:', err);
     }
+  };
+
+  const handleBookToggle = (cardId) => {
+    setBookSelection((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
   };
 
   const fetchTodayAttendance = async () => {
@@ -180,9 +196,23 @@ const AMC = () => {
     }));
 
 
-    const worksheet = XLSX.utils.json_to_sheet(data, {
-      cellDates: true,
+    // Title + Data
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      [`Domestic AMC - ${selectedMonth}`],
+      [],
+    ]);
+
+    XLSX.utils.sheet_add_json(worksheet, data, {
+      origin: 'A3',
     });
+
+    // Merge title across all columns
+    worksheet['!merges'] = [
+      {
+        s: { r: 0, c: 0 }, // A1
+        e: { r: 0, c: 12 }, // M1
+      },
+    ];
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'AMC');
@@ -238,7 +268,11 @@ const AMC = () => {
     if (cards.length === 0) return;
 
     for (const card of cards) {
-      if (selectedStaff[card.card_id] && !scheduledDates[card.card_id]) {
+      if (
+        bookSelection[card.card_id] &&
+        selectedStaff[card.card_id] &&
+        !scheduledDates[card.card_id]
+      ) {
         setError('Scheduled date is mandatory for all selected services.');
         setBulkBooking(false);
         return;
@@ -250,7 +284,11 @@ const AMC = () => {
 
     try {
       const bookingPromises = cards
-        .filter((card) => selectedStaff[card.card_id])
+        .filter(
+          (card) =>
+            bookSelection[card.card_id] &&
+            selectedStaff[card.card_id]
+        )
         .map(async (card) => {
           const staffId = selectedStaff[card.card_id];
 
@@ -275,7 +313,7 @@ const AMC = () => {
         });
 
       if (bookingPromises.length === 0) {
-        setError('No staff selected for bulk booking.');
+        setError('No AMC selected for booking.');
         setBulkBooking(false);
         return;
       }
@@ -376,6 +414,7 @@ const AMC = () => {
           <table className="amc-table">
             <thead>
               <tr>
+                <th>Book?</th>
                 <th>Milestone</th>
                 <th>Note</th>
                 <th>All Milestone</th>
@@ -403,6 +442,17 @@ const AMC = () => {
                     key={card.card_id}
                     className={getRowBgClass(card.status)}
                   >
+                    <td>
+                      <label className="switch">
+                      <input
+                        type="checkbox"
+                        checked={bookSelection[card.card_id] || false}
+                        disabled={card.status === "done"}
+                        onChange={() => handleBookToggle(card.card_id)}
+                      />
+                      <span className="slider"></span>
+                    </label>
+                    </td>
                     <td>{formatDate(card.milestone)}</td>
                     <td>{card.amc_note ? card.amc_note : "None"}</td>
                     <td>

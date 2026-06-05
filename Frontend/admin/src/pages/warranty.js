@@ -191,9 +191,29 @@ const Warranty = () => {
     }));
 
 
-    const worksheet = XLSX.utils.json_to_sheet(data, {
-      cellDates: true,
+    // Add title row
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ['Domestic Warranty'], // Title Row
+      [], // Empty Row
+    ]);
+
+    // Add data starting from row 3
+    XLSX.utils.sheet_add_json(worksheet, data, {
+      origin: 'A3',
     });
+
+    worksheet['!merges'] = [
+      {
+        s: { r: 0, c: 0 }, // Start A1
+        e: { r: 0, c: 12 }, // End M1 (adjust according to your column count)
+      },
+    ];
+
+    // Optional: Set column width for title visibility
+    worksheet['A1'].s = {
+      font: { bold: true, sz: 16 },
+      alignment: { horizontal: 'center' },
+    };
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Warranty');
