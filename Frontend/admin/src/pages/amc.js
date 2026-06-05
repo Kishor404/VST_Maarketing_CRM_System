@@ -360,10 +360,9 @@ const AMC = () => {
       {/* --- INVENTORY SUMMARY SECTION --- */}
       {!loading && cards.length > 0 && (
         <div className="summary-section">
-          <div className="summary-card"><strong>Spun Filter:</strong> {totals.spun_filter}</div>
+          <div className="summary-card"><strong>Spun:</strong> {totals.spun_filter}</div>
           <div className="summary-card"><strong>Pre Carbon:</strong> {totals.pre_carbon}</div>
           <div className="summary-card"><strong>Sediment:</strong> {totals.sediments}</div>
-          <div className="summary-card"><strong>Filter:</strong> {totals.filter}</div>
           <div className="summary-card"><strong>Post Carbon:</strong> {totals.post_carbon}</div>
         </div>
       )}
