@@ -447,7 +447,7 @@ const Service = () => {
     // ~~~~~~~~~~~ UPDATE SERVICE TABLE BY FILTER ~~~~~~~~~~~~~~
 
     const getAssignedServiceList = () => setFilteredList(serviceList.filter(service => service.status === "assigned"));
-    const getPendingServiceList = () => setFilteredList(serviceList.filter(service => service.status === "pending"));
+    const getPendingServiceList = () => setFilteredList(serviceList.filter(service => service.status === "pending" || service.status === "components_pending"));
     const getCompletedServiceList = () => setFilteredList(serviceList.filter(service => service.status === "completed"));
     const getAllServiceList = async() => {await updateServiceList();setFilteredList(serviceList);};
 
@@ -630,6 +630,8 @@ const Service = () => {
         const headers = [
             "Service ID",
             "Card ID",
+            "Machine Model",
+            "Customer Address",
 
             "Requested By ID",
             "Requested By Name",
@@ -666,6 +668,11 @@ const Service = () => {
             return [
                 s.id,
                 s.card,
+                `="${s.card_data?.model || ""}"`,
+                `"${(
+                    (s.card_data?.address || "") +
+                    (s.card_data?.city ? ", " + s.card_data.city : "")
+                ).replace(/"/g, '""')}"`,
                 s.requested_by || "",
                 `="${s.customer_data?.name || ""}"`,
                 `="${s.customer_data?.phone || ""}"`,
