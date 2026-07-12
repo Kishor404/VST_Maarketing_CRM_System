@@ -435,7 +435,8 @@ const Service = () => {
             setServiceList(data);
             const sPen = data.filter(service =>
                 service.status === "pending" ||
-                service.status === "components_pending"
+                service.status === "components_pending"||
+                service.status === "job_card_pending"
             ).length;
             const sCom = data.filter(service => service.status === "completed").length;
             const sAss = data.filter(service => service.status === "assigned").length;
@@ -447,7 +448,7 @@ const Service = () => {
     // ~~~~~~~~~~~ UPDATE SERVICE TABLE BY FILTER ~~~~~~~~~~~~~~
 
     const getAssignedServiceList = () => setFilteredList(serviceList.filter(service => service.status === "assigned"));
-    const getPendingServiceList = () => setFilteredList(serviceList.filter(service => service.status === "pending" || service.status === "components_pending"));
+    const getPendingServiceList = () => setFilteredList(serviceList.filter(service => service.status === "pending" || service.status === "components_pending" || service.status === "job_card_pending"));
     const getCompletedServiceList = () => setFilteredList(serviceList.filter(service => service.status === "completed"));
     const getAllServiceList = async() => {await updateServiceList();setFilteredList(serviceList);};
 
@@ -1129,9 +1130,15 @@ const Service = () => {
                                             <td>{service.assigned_to_detail!=null?service.assigned_to_detail["name"]:"Not Assigned"}</td>
                                             <td>{service.description}</td>
                                             <td>
-                                            {service.status === "components_pending"
+                                            {
+                                                service.status === "components_pending"
                                                 ? "Components Pending"
-                                                : service.status}
+
+                                                : service.status === "job_card_pending"
+                                                ? "Job Card Pending"
+
+                                                : service.status
+                                            }
                                             </td>
                                         </tr>
                                     ))}
@@ -1210,6 +1217,9 @@ const Service = () => {
                                     <option value="completed">Completed</option>
                                     <option value="cancelled">Cancelled</option>
                                     <option value="components_pending">Components Pending</option>
+                                    <option value="job_card_pending">
+                                        Job Card Pending
+                                    </option>
                                 </select>
                                 <select
                                     className="service-export-select"

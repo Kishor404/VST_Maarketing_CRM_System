@@ -1633,6 +1633,7 @@ class JobCardViewSet(viewsets.ModelViewSet):
     # 4️⃣ ADMIN UPDATE STATUS + ASSIGN REINSTALL STAFF
     # ======================================================
     def partial_update(self, request, *args, **kwargs):
+
         user = request.user
 
         if user.role != "admin":
@@ -1642,6 +1643,8 @@ class JobCardViewSet(viewsets.ModelViewSet):
             )
 
         job_card = self.get_object()
+
+        old_status = job_card.status
 
         status_val = request.data.get("status")
         reinstall_staff_id = request.data.get("reinstall_staff")
@@ -1658,9 +1661,15 @@ class JobCardViewSet(viewsets.ModelViewSet):
         ]
 
         if status_val and status_val not in allowed_status:
-            return Response({"detail": "Invalid status"}, status=400)
+            return Response(
+                {"detail": "Invalid status"},
+                status=400
+            )
 
+        # ----------------------------
         # Status timestamps
+        # ----------------------------
+
         if status_val == "received_office":
             job_card.received_office_at = timezone.now()
 
@@ -1670,13 +1679,20 @@ class JobCardViewSet(viewsets.ModelViewSet):
         elif status_val == "reinstalled":
             job_card.reinstalled_at = timezone.now()
 
+        # ----------------------------
+        # Assign reinstall staff
+        # ----------------------------
+
         if reinstall_staff_id:
             job_card.reinstall_staff_id = reinstall_staff_id
 
         if status_val:
             job_card.status = status_val
 
-        # NEW FIELDS
+        # ----------------------------
+        # Editable fields
+        # ----------------------------
+
         if part_name is not None:
             job_card.part_name = part_name
 
@@ -1687,6 +1703,47 @@ class JobCardViewSet(viewsets.ModelViewSet):
             job_card.details = details
 
         job_card.save()
+
+        # ============================================
+        # AUTO CREATE REINSTALL SERVICE
+        # ============================================
+
+        if (
+            old_status != "repair_completed"
+            and job_card.status == "repair_completed"
+            and job_card.reinstall_staff
+            and not job_card.reinstall_service
+        ):
+
+            parent_service = job_card.service
+
+            reinstall_service = Service.objects.create(
+
+                card=parent_service.card,
+
+                requested_by=parent_service.requested_by,
+
+                created_by=request.user,
+
+                assigned_to=job_card.reinstall_staff,
+
+                service_type=parent_service.service_type,
+
+                visit_type=parent_service.visit_type,
+
+                description=f"Reinstall : {job_card.part_name}",
+
+                status="assigned",
+
+                scheduled_at=timezone.localdate(),
+
+                parent_service=parent_service,
+
+                is_reinstall=True,
+            )
+
+            job_card.reinstall_service = reinstall_service
+            job_card.save(update_fields=["reinstall_service"])
 
         return Response(
             self.get_serializer(
@@ -1705,7 +1762,7 @@ class JobCardViewSet(viewsets.ModelViewSet):
 
         job_card = self.get_object()
         user = request.user
-        service = job_card.service
+        service = job_card.reinstall_service
 
         # 🔐 Permission
         if job_card.reinstall_staff_id != user.id and user.role != "admin":
@@ -1735,9 +1792,13 @@ class JobCardViewSet(viewsets.ModelViewSet):
         job_card.save()
 
         # ✅ If All JobCards Done → Complete Service
+        parent = service.parent_service
+
         pending = JobCard.objects.filter(
-            service=service
-        ).exclude(status="reinstalled").exists()
+            service=parent
+        ).exclude(
+            status="reinstalled"
+        ).exists()
 
         if not pending:
             service.status = "completed"
@@ -1768,7 +1829,13 @@ class JobCardViewSet(viewsets.ModelViewSet):
                 status=403
             )
 
-        service = job_card.service
+        service = job_card.reinstall_service
+
+        if not service:
+            return Response(
+                {"detail": "Reinstall service not found"},
+                status=400
+            )
 
         phone = request.data.get("phone") or service.otp_phone
 
@@ -1824,7 +1891,14 @@ class JobCardViewSet(viewsets.ModelViewSet):
                 status=403
             )
 
-        service = job_card.service
+        service = job_card.reinstall_service
+
+        if not service:
+            return Response(
+                {"detail": "Reinstall service not found"},
+                status=400
+            )
+
         otp = request.data.get("otp")
 
         if not otp:
@@ -1854,7 +1928,31 @@ class JobCardViewSet(viewsets.ModelViewSet):
             service.status = "completed"
             service.otp_hash = None
             service.otp_expires_at = None
-            service.save()
+            service.save(update_fields=[
+                "status",
+                "otp_hash",
+                "otp_expires_at",
+            ])
+
+            # Mark current job card reinstalled
+            job_card.status = "reinstalled"
+            job_card.reinstalled_at = timezone.now()
+            job_card.save(update_fields=[
+                "status",
+                "reinstalled_at",
+            ])
+
+            # Complete original service if all job cards finished
+            parent = service.parent_service
+
+            if parent:
+                pending = JobCard.objects.filter(
+                    service=parent
+                ).exclude(status="reinstalled").exists()
+
+                if not pending:
+                    parent.status = "completed"
+                    parent.save(update_fields=["status"])
 
         return Response({"detail": "Reinstallation completed"})
 

@@ -125,6 +125,15 @@ class Service(models.Model):
     visit_type = models.CharField(max_length=20, choices=VISIT_TYPE, default="C")
     next_service_date = models.DateField(null=True, blank=True)
 
+    parent_service = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="child_services"
+    )
+    is_reinstall = models.BooleanField(default=False)
+
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="created_services")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -222,6 +231,14 @@ class JobCard(models.Model):
     image = models.ImageField(upload_to="job_cards/", null=True, blank=True)
 
     status = models.CharField(max_length=30, choices=JOB_CARD_STATUS, default="get_from_customer")
+
+    reinstall_service = models.ForeignKey(
+        Service,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="reinstall_job_cards"
+    )
 
     get_from_customer_at = models.DateTimeField(auto_now_add=True)
     received_office_at = models.DateTimeField(null=True, blank=True)
