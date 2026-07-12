@@ -264,6 +264,40 @@ class ServiceViewSet(viewsets.ModelViewSet):
             qs = qs.filter(assigned_to_id=assigned_q)
         return qs
     
+    def complete_reinstall_service(self, service):
+
+        if not service.is_reinstall:
+            return
+
+        job_card = JobCard.objects.filter(
+            reinstall_service=service
+        ).first()
+
+        if not job_card:
+            return
+
+        job_card.status = "reinstalled"
+        job_card.reinstalled_at = timezone.now()
+        job_card.save(update_fields=[
+            "status",
+            "reinstalled_at",
+        ])
+
+        parent = service.parent_service
+
+        if not parent:
+            return
+
+        pending = JobCard.objects.filter(
+            service=parent
+        ).exclude(
+            status="reinstalled"
+        ).exists()
+
+        if not pending:
+            parent.status = "completed"
+            parent.save(update_fields=["status"])
+    
     @action(detail=False, methods=["get"], url_path="industrial")
     def industrial_services(self, request):
         qs = self.get_queryset().filter(
@@ -711,6 +745,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
                     "next_service_date",
                     "scheduled_at",
                 ])
+                self.complete_reinstall_service(service)
 
 
         final_status = "job_card_pending" if job_cards_data else "completed"
@@ -1627,7 +1662,39 @@ class JobCardViewSet(viewsets.ModelViewSet):
             Q(reinstall_staff=user)
         )
 
+    def complete_reinstall_service(self, service):
 
+        if not service.is_reinstall:
+            return
+
+        job_card = JobCard.objects.filter(
+            reinstall_service=service
+        ).first()
+
+        if not job_card:
+            return
+
+        job_card.status = "reinstalled"
+        job_card.reinstalled_at = timezone.now()
+        job_card.save(update_fields=[
+            "status",
+            "reinstalled_at",
+        ])
+
+        parent = service.parent_service
+
+        if not parent:
+            return
+
+        pending = JobCard.objects.filter(
+            service=parent
+        ).exclude(
+            status="reinstalled"
+        ).exists()
+
+        if not pending:
+            parent.status = "completed"
+            parent.save(update_fields=["status"])
 
     # ======================================================
     # 4️⃣ ADMIN UPDATE STATUS + ASSIGN REINSTALL STAFF
@@ -1792,19 +1859,17 @@ class JobCardViewSet(viewsets.ModelViewSet):
         job_card.save()
 
         # ✅ If All JobCards Done → Complete Service
-        parent = service.parent_service
+        service.status = "completed"
+        service.otp_hash = None
+        service.otp_expires_at = None
 
-        pending = JobCard.objects.filter(
-            service=parent
-        ).exclude(
-            status="reinstalled"
-        ).exists()
+        service.save(update_fields=[
+            "status",
+            "otp_hash",
+            "otp_expires_at",
+        ])
 
-        if not pending:
-            service.status = "completed"
-            service.otp_hash = None
-            service.otp_expires_at = None
-            service.save()
+        self.complete_reinstall_service(service)
 
         return Response({
             "detail": "Reinstallation completed"
@@ -1918,41 +1983,17 @@ class JobCardViewSet(viewsets.ModelViewSet):
         job_card.status = "reinstalled"
         job_card.reinstalled_at = timezone.now()
         job_card.save()
+        service.status = "completed"
+        service.otp_hash = None
+        service.otp_expires_at = None
 
-        # ✅ Check if all job cards are reinstalled
-        pending = JobCard.objects.filter(
-            service=service
-        ).exclude(status="reinstalled").exists()
+        service.save(update_fields=[
+            "status",
+            "otp_hash",
+            "otp_expires_at",
+        ])
 
-        if not pending:
-            service.status = "completed"
-            service.otp_hash = None
-            service.otp_expires_at = None
-            service.save(update_fields=[
-                "status",
-                "otp_hash",
-                "otp_expires_at",
-            ])
-
-            # Mark current job card reinstalled
-            job_card.status = "reinstalled"
-            job_card.reinstalled_at = timezone.now()
-            job_card.save(update_fields=[
-                "status",
-                "reinstalled_at",
-            ])
-
-            # Complete original service if all job cards finished
-            parent = service.parent_service
-
-            if parent:
-                pending = JobCard.objects.filter(
-                    service=parent
-                ).exclude(status="reinstalled").exists()
-
-                if not pending:
-                    parent.status = "completed"
-                    parent.save(update_fields=["status"])
+        self.complete_reinstall_service(service)
 
         return Response({"detail": "Reinstallation completed"})
 
