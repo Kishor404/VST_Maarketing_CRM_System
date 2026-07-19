@@ -121,6 +121,15 @@ class Service(models.Model):
     otp_hash = models.CharField(max_length=128, blank=True, null=True)
     otp_phone = models.CharField(max_length=128, blank=True, null=True)
     otp_expires_at = models.DateTimeField(null=True, blank=True)
+    otp_requested_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+    otp_requested_location = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True
+    )
 
     visit_type = models.CharField(max_length=20, choices=VISIT_TYPE, default="C")
     next_service_date = models.DateField(null=True, blank=True)

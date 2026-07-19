@@ -462,6 +462,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
             return Response({"detail": "not allowed"}, status=status.HTTP_403_FORBIDDEN)
         
         phone = request.data.get("phone")
+        location = request.data.get("location")
 
         if not phone:
             return Response(
@@ -473,6 +474,8 @@ class ServiceViewSet(viewsets.ModelViewSet):
         service.otp_hash = hash_otp(otp)
         service.otp_expires_at = otp_expiry_time()
         service.otp_phone=phone
+        service.otp_requested_at = timezone.now()
+        service.otp_requested_location = location
         service.status = "awaiting_otp"
         service.save()
 
@@ -1903,6 +1906,7 @@ class JobCardViewSet(viewsets.ModelViewSet):
             )
 
         phone = request.data.get("phone") or service.otp_phone
+        location = request.data.get("location")
 
         if not phone:
             return Response(
@@ -1916,6 +1920,8 @@ class JobCardViewSet(viewsets.ModelViewSet):
         service.otp_hash = hash_otp(otp)
         service.otp_expires_at = otp_expiry_time()
         service.otp_phone = phone
+        service.otp_requested_at = timezone.now()
+        service.otp_requested_location = location
         service.save()
 
         # ✅ Send SMS

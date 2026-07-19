@@ -304,7 +304,7 @@ class ServiceSerializer(serializers.ModelSerializer):
             "id", "card", "card_data","requested_by", "customer_data", "service_type", "status", "description",
             "preferred_date", "scheduled_at", "assigned_to", "assigned_to_detail",
             "is_paid", "amount_charged", "visit_type", "next_service_date",
-            "entries", "feedback", "otp_phone", "created_at",
+            "entries", "feedback", "otp_phone", "otp_requested_at", "otp_requested_location", "created_at",
         ]
         read_only_fields = ("id", "requested_by", "created_at")
     
