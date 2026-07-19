@@ -3,6 +3,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
 
 import '../../data/models/service_model.dart';
 import '../../data/providers/service_provider.dart';
@@ -197,9 +198,12 @@ class WorkController extends GetxController {
 
       final fullPhone = "+91${phone.value}";
 
+      String? location = await getCurrentLocation();
+
       final otpFromApi = await _provider.requestOtp(
         serviceId,
         phone: fullPhone,
+        location: location,
       );
 
       // DEV ONLY
@@ -356,6 +360,42 @@ class WorkController extends GetxController {
     } finally {
       otpLoading.value = false;
     }
+  }
+
+  Future<String?> getCurrentLocation() async {
+
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+    if (!serviceEnabled) {
+
+      // Opens Location Settings
+      await Geolocator.openLocationSettings();
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+
+      // User still refused
+      if (!serviceEnabled) {
+        return null;
+      }
+    }
+
+    LocationPermission permission =
+        await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return null;
+    }
+
+    Position pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    return "${pos.latitude},${pos.longitude}";
   }
 
 

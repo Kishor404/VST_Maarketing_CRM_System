@@ -68,24 +68,31 @@ class ServiceProvider {
   /// ============================
 
   /// POST /api/crm/services/{id}/request_otp/
-  Future<String?> requestOtp(int serviceId, {required String phone}) async {
+  Future<String?> requestOtp(
+    int serviceId, {
+    required String phone,
+    String? location,
+  }) async {
+
+    final body = <String, dynamic>{
+      "phone": phone,
+    };
+
+    if (location != null) {
+      body["location"] = location;
+    }
+
     final data = await _apiClient.post(
       ApiEndpoints.requestOtp(serviceId),
-      data: {
-        "phone": phone,
-      },
+      data: body,
     );
 
-    // Example expected response:
-    // { "message": "OTP sent", "otp": "1234" }
-
-    if (data is Map<String, dynamic> && data.containsKey('otp')) {
-      return data['otp']?.toString();
+    if (data is Map<String, dynamic> && data.containsKey("otp")) {
+      return data["otp"]?.toString();
     }
 
     return null;
   }
-
 
   /// POST /api/crm/services/{id}/verify_otp/
   Future<void> verifyOtpAndComplete({

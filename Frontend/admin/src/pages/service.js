@@ -1404,8 +1404,8 @@ const Service = () => {
                                                 serviceOtpAt!=null?
                                                 (
                                                     <div className='service-bottom-right-bottom-edit-info-cont'>
-                                                        <p className='service-bottom-right-bottom-edit-info-title'>OTP Send To</p>
-                                                        <input className='service-bottom-right-bottom-edit-info-input' value={serviceOtpAt} disabled/>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>OTP Request Time</p>
+                                                        <input className='service-bottom-right-bottom-edit-info-input' value={serviceOtpAt?serviceOtpAt.split("T")[0]+" "+serviceOtpAt.split("T")[1].split("+")[0]:""} disabled/>
                                                     </div>
                                                 ):<div></div>
                                             }
@@ -1413,8 +1413,9 @@ const Service = () => {
                                                 serviceOtpLocation!=null?
                                                 (
                                                     <div className='service-bottom-right-bottom-edit-info-cont'>
-                                                        <p className='service-bottom-right-bottom-edit-info-title'>OTP Send To</p>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>OTP Request Location</p>
                                                         <input className='service-bottom-right-bottom-edit-info-input' value={serviceOtpLocation} disabled/>
+                                                        <a href={"https://www.google.com/maps?q="+serviceOtpLocation} target="_blank">Open In Map</a>
                                                     </div>
                                                 ):<div></div>
                                             }
