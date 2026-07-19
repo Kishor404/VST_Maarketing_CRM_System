@@ -91,6 +91,8 @@ const Service = () => {
     const [serviceRating, setServiceRating]=useState(0);
 
     const [serviceOtpPhone, setServiceOtpPhone]=useState(null);
+    const [serviceOtpAt, setServiceOtpAt]=useState(null);
+    const [serviceOtpLocation, setServiceOtpLocation]=useState(null);
 
     const [serviceAddress, setServiceAddress]=useState("");
 
@@ -378,6 +380,8 @@ const Service = () => {
         setServiceRating("");
         setServiceBookedDate("");
         setServiceOtpPhone("");
+        setServiceOtpAt("");
+        setServiceOtpLocation("");
         setServiceFetch(true);
         setServiceData({});
         setServiceAddress("");
@@ -402,6 +406,8 @@ const Service = () => {
             setServiceRating(data.feedback==null?"":data.feedback["rating"]);
             setServiceBookedDate(data.created_at);
             setServiceOtpPhone(data.otp_phone);
+            setServiceOtpAt(data.otp_requested_at);
+            setServiceOtpLocation(data.otp_requested_location);
             setServiceFetch(true);
             setServiceData(data);
             setServiceAddress(data.card_data.address+", "+data.card_data.city);
@@ -1391,6 +1397,24 @@ const Service = () => {
                                                     <div className='service-bottom-right-bottom-edit-info-cont'>
                                                         <p className='service-bottom-right-bottom-edit-info-title'>OTP Send To</p>
                                                         <input className='service-bottom-right-bottom-edit-info-input' value={serviceOtpPhone} disabled/>
+                                                    </div>
+                                                ):<div></div>
+                                            }
+                                            {
+                                                serviceOtpAt!=null?
+                                                (
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>OTP Send To</p>
+                                                        <input className='service-bottom-right-bottom-edit-info-input' value={serviceOtpAt} disabled/>
+                                                    </div>
+                                                ):<div></div>
+                                            }
+                                            {
+                                                serviceOtpLocation!=null?
+                                                (
+                                                    <div className='service-bottom-right-bottom-edit-info-cont'>
+                                                        <p className='service-bottom-right-bottom-edit-info-title'>OTP Send To</p>
+                                                        <input className='service-bottom-right-bottom-edit-info-input' value={serviceOtpLocation} disabled/>
                                                     </div>
                                                 ):<div></div>
                                             }
