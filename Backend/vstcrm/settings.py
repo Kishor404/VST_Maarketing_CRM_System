@@ -16,6 +16,7 @@ CHATINFY_CONTACT = config("CHATINFY_CONTACT")
 
 MSG91_AUTH_KEY = os.getenv("MSG91_AUTH_KEY")
 MSG91_TEMPLATE_ID = os.getenv("MSG91_TEMPLATE_ID")
+MSG91_REMINDER_TEMPLATE_ID = os.getenv("MSG91_REMINDER_TEMPLATE_ID")
 
 if not all([CHATINFY_LICENSE_NUMBER, CHATINFY_API_KEY, CHATINFY_CONTACT]):
     raise RuntimeError("Missing Chatinfy environment variables")
@@ -168,3 +169,12 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Kolkata'
 
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    "send-reminders": {
+        "task": "reminder.tasks.process_admin_reminders",
+        "schedule": 60.0,
+    }
+}

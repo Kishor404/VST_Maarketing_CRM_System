@@ -41,6 +41,7 @@ class WorkCompletionPage extends GetView<WorkController> {
     final service = controller.selectedService.value!;
     final partCtrl = TextEditingController();
     final serialCtrl = TextEditingController();
+    const bool enablePartsSection = false;
 
     // final otpCtrl = TextEditingController();
     // final workCtrl = TextEditingController();
@@ -127,6 +128,11 @@ class WorkCompletionPage extends GetView<WorkController> {
             /// ============================
             /// Parts Replaced Section
             /// ============================
+            
+            
+
+            if (enablePartsSection) ...[
+
             Text(
               'Parts Replaced',
               style: theme.textTheme.headlineMedium?.copyWith(fontSize: 18),
@@ -222,6 +228,8 @@ class WorkCompletionPage extends GetView<WorkController> {
 
 
             const SizedBox(height: 32),
+
+            ],
 
             /// ============================
             /// Job Card Section (UPDATED)
