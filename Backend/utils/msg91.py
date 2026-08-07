@@ -10,7 +10,7 @@ def send_otp(phone: str, otp: str):
         "short_url": "0",
         "recipients": [
             {
-                "mobiles": f"+91{phone}",
+                "mobiles": f"91{phone}",
                 "number": str(otp)
             }
         ]
