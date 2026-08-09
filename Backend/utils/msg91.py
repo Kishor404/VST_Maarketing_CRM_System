@@ -45,7 +45,7 @@ def send_reminder(phone, message):
         "short_url": "0",
         "recipients": [
             {
-                "mobiles": settings.ADMIN_PHONE,
+                "mobiles": f"91{phone}",
                 "var1": message
             }
         ]
