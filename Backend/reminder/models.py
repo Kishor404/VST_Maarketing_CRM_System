@@ -27,7 +27,9 @@ class AdminReminder(models.Model):
     region = models.CharField(
         max_length=50,
         choices=REGION_CHOICES,
-        db_index=True
+        db_index=True,
+        null=True,
+        blank=True,
     )
 
     reminder_dates = models.JSONField()
