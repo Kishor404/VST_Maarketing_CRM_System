@@ -1,5 +1,3 @@
-# reminders/serializers.py
-
 from rest_framework import serializers
 from user.serializers import UserSerializer
 from user.models import User
@@ -13,30 +11,44 @@ class AdminReminderSerializer(serializers.ModelSerializer):
     customer_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.filter(role="customer"),
         write_only=True,
-        source='customer',
+        source="customer",
         required=False,
         allow_null=True
     )
 
-    name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    phone = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    name = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
+
+    phone = serializers.CharField(
+        required=False,
+        allow_null=True,
+        allow_blank=True
+    )
 
     class Meta:
         model = AdminReminder
+
         fields = [
-            'id',
-            'customer',
-            'customer_id',
-            'name',
-            'phone',
-            'reminder_dates',
-            'message',
-            'is_active',
-            'created_at',
-            'updated_at',
+            "id",
+            "customer",
+            "customer_id",
+            "name",
+            "phone",
+            "reminder_dates",
+            "message",
+            "is_active",
+            "created_at",
+            "updated_at",
         ]
 
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]
 
     def validate(self, data):
         request = self.context.get("request")
@@ -45,22 +57,34 @@ class AdminReminderSerializer(serializers.ModelSerializer):
         name = data.get("name")
         phone = data.get("phone")
 
-        if not customer and not (name and phone):
+        # ==========================================
+        # MODE 1: EXISTING CUSTOMER
+        # ==========================================
+        if customer:
+
+            if request and request.user.role == "admin":
+
+                if customer.region != request.user.region:
+                    raise serializers.ValidationError({
+                        "customer_id": (
+                            "Customer belongs to another region."
+                        )
+                    })
+
+            return data
+
+        # ==========================================
+        # MODE 2: NEW / EXTERNAL CONTACT
+        # ==========================================
+        if not name or not phone:
             raise serializers.ValidationError(
                 "Either customer OR both name and phone must be provided."
             )
 
-        # 🔒 Customer must belong to admin's region
-        if customer and request:
-            if customer.region != request.user.region:
-                raise serializers.ValidationError({
-                    "customer_id": (
-                        "Customer belongs to another region."
-                    )
-                })
+        # IMPORTANT:
+        # We deliberately do NOT create a User here.
 
         return data
-
 
     def validate_reminder_dates(self, value):
 
