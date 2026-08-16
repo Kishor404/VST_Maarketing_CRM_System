@@ -56,6 +56,17 @@ class CardCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("warranty_end_date must be after warranty_start_date.")
         return attrs
 
+    def validate_customer(self, customer):
+        request = self.context.get("request")
+
+        if request and request.user.role == "admin":
+            if customer.region != request.user.region:
+                raise serializers.ValidationError(
+                    "Customer belongs to another region."
+                )
+
+        return customer
+
     def create(self, validated_data):
         # If customer_name is not provided, default to customer's name
         customer = validated_data.get("customer")
@@ -215,21 +226,29 @@ class FeedbackSerializer(serializers.ModelSerializer):
         fields = ("id", "service", "card", "rating", "comments", "created_at", "customer")
         read_only_fields = ("id", "created_at", "customer", "card")
 
-    def validate_service(self, value: Service):
-        """
-        Ensure the request user is allowed to give feedback for this service.
-        Optionally enforce that service.status == 'completed'.
-        """
+    def validate_service(self, value):
         request = self.context.get("request")
-        if request and getattr(request, "user", None):
+
+        if request:
             user = request.user
-            # If user is a customer, ensure they own the service's card
+
             if user.role == "customer":
                 if value.card.customer_id != user.id:
-                    raise serializers.ValidationError("You cannot give feedback for a service that is not yours.")
-            # Optionally: require completed services only
-            if getattr(value, "status", "").lower() != "completed":
-                raise serializers.ValidationError("Feedback can only be given for completed services.")
+                    raise serializers.ValidationError(
+                        "You cannot access this service."
+                    )
+
+            elif user.role == "admin":
+                if value.card.customer.region != user.region:
+                    raise serializers.ValidationError(
+                        "Service belongs to another region."
+                    )
+
+        if value.status.lower() != "completed":
+            raise serializers.ValidationError(
+                "Feedback can only be given for completed services."
+            )
+
         return value
 
     def create(self, validated_data):
@@ -486,6 +505,38 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
+        request = self.context.get("request")
+
+        if not request:
+            return data
+
+        admin = request.user
+
+        if admin.role != "admin":
+            raise serializers.ValidationError(
+                "Only admin can use this serializer."
+            )
+
+        card = data.get("card")
+        customer = data.get("requested_by")
+        worker = data.get("assigned_to")
+
+        if card and card.customer.region != admin.region:
+            raise serializers.ValidationError({
+                "card": "Card belongs to another region."
+            })
+
+        if customer and customer.region != admin.region:
+            raise serializers.ValidationError({
+                "requested_by": "Customer belongs to another region."
+            })
+
+        if worker and worker.region != admin.region:
+            raise serializers.ValidationError({
+                "assigned_to": "Worker belongs to another region."
+            })
+
+        
         today = timezone.localdate()
 
         # Default preferred_date → today
@@ -560,10 +611,19 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
         return value
 
     def validate_card(self, card):
+        request = self.context.get("request")
+
         if not card.customer.is_industrial:
             raise serializers.ValidationError(
                 "Selected card does not belong to industrial customer"
             )
+
+        if request and request.user.role == "admin":
+            if card.customer.region != request.user.region:
+                raise serializers.ValidationError(
+                    "Card belongs to another region."
+                )
+
         return card
 
     def validate(self, data):

@@ -102,13 +102,21 @@ class CardViewSet(viewsets.ModelViewSet):
 
         # 👑 ADMIN → full access + optional filters
         if user.role == "admin":
+            qs = qs.filter(
+                customer__region=user.region
+            )
+
             phone = self.request.query_params.get("phone")
             if phone:
-                qs = qs.filter(customer__phone__icontains=phone)
+                qs = qs.filter(
+                    customer__phone__icontains=phone
+                )
 
             customer_id = self.request.query_params.get("customer")
             if customer_id:
-                qs = qs.filter(customer_id=customer_id)
+                qs = qs.filter(
+                    customer_id=customer_id
+                )
 
             return qs
 
@@ -117,21 +125,38 @@ class CardViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user = self.request.user
-        allow_customer_create = getattr(settings, "CRM_ALLOW_CUSTOMER_CARD_CREATE", False)
 
-        # Admins can create any card
         if user.role == "admin":
-            serializer.save()
+            customer = serializer.validated_data["customer"]
+
+            if customer.region != user.region:
+                raise PermissionDenied(
+                    "You cannot create a card for a customer "
+                    "from another region."
+                )
+
+            serializer.save(
+                region=user.region
+            )
             return
 
-        # If customers can create their own card, ensure they are creating for themselves
+        allow_customer_create = getattr(
+            settings,
+            "CRM_ALLOW_CUSTOMER_CARD_CREATE",
+            False
+        )
+
         if allow_customer_create and user.role == "customer":
-            # Force customer field to the current user (ignore any client-submitted customer id)
-            serializer.save(customer=user, customer_name=serializer.validated_data.get("customer_name", user.name))
+            serializer.save(
+                customer=user,
+                customer_name=user.name,
+                region=user.region
+            )
             return
 
-        # otherwise not allowed
-        raise PermissionDenied("Only admin can create cards.")
+        raise PermissionDenied(
+            "Only admin can create cards."
+        )
     
     @action(
         detail=True,
@@ -223,10 +248,23 @@ class ServiceViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if user.role == "customer":
-            qs = qs.filter(card__customer=user)
+            qs = qs.filter(
+                card__customer=user
+            )
+
         elif user.role in ("worker", "staff"):
-            qs = qs.filter(assigned_to=user)
-            
+            qs = qs.filter(
+                assigned_to=user
+            )
+
+        elif user.role == "admin":
+            qs = qs.filter(
+                card__customer__region=user.region
+            )
+
+        else:
+            return qs.none()
+
 
         # ordering: scheduled_at asc (NULLs last), then created_at
         try:
@@ -372,7 +410,17 @@ class ServiceViewSet(viewsets.ModelViewSet):
         if not assigned_to_id:
             return Response({"detail": "assigned_to required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        staff = get_object_or_404(User, pk=assigned_to_id)
+        staff = get_object_or_404(
+            User,
+            pk=assigned_to_id,
+            role="worker",
+            region=request.user.region
+        )
+
+        if staff.region != request.user.region:
+            raise PermissionDenied(
+                "Worker belongs to another region."
+            )
 
         # msg="New Service Assigned To You At "+scheduled_at+". The Service Of "+service.description+"."
 
@@ -771,12 +819,23 @@ class ServiceEntryViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         user = self.request.user
-        if user.role == "customer":
-            return qs.filter(service__card__customer=user)
-        if user.role in ("worker", "staff"):
-            return qs.filter(performed_by=user)
-        return qs
 
+        if user.role == "customer":
+            return qs.filter(
+                service__card__customer=user
+            )
+
+        if user.role in ("worker", "staff"):
+            return qs.filter(
+                performed_by=user
+            )
+
+        if user.role == "admin":
+            return qs.filter(
+                service__card__customer__region=user.region
+            )
+
+        return qs.none()
 
 # ---------- Feedback ----------
 
@@ -842,7 +901,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if not user_id:
             return Response({"detail": "user is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        staff = get_object_or_404(User, pk=user_id)
+        staff = get_object_or_404(
+            User,
+            pk=user_id,
+            region=request.user.region
+        )
 
         try:
             d = parse_iso_date(date_str) if date_str else timezone.localdate()
@@ -879,7 +942,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if not user_id:
             return Response({"detail": "user is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        staff = get_object_or_404(User, pk=user_id)
+        staff = get_object_or_404(
+            User,
+            pk=user_id,
+            region=request.user.region
+        )
 
         try:
             d = parse_iso_date(date_str) if date_str else timezone.localdate()
@@ -928,7 +995,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         absent_ids = request.data.get("absent", [])
 
         for uid in present_ids:
-            staff = get_object_or_404(User, pk=uid)
+            staff = get_object_or_404(
+                User,
+                pk=uid,
+                region=request.user.region
+            )
             Attendance.objects.update_or_create(
                 user=staff, date=d,
                 defaults={"status": "present", "marked_by": request.user}
@@ -937,7 +1008,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             staff.save(update_fields=["is_available"])
 
         for uid in absent_ids:
-            staff = get_object_or_404(User, pk=uid)
+            staff = get_object_or_404(
+                User,
+                pk=uid,
+                region=request.user.region
+            )
             Attendance.objects.update_or_create(
                 user=staff, date=d,
                 defaults={"status": "absent", "marked_by": request.user}
@@ -966,7 +1041,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        qs = Attendance.objects.filter(date=d).select_related("user", "marked_by")
+        qs = Attendance.objects.filter(
+            date=d,
+            user__region=request.user.region
+        ).select_related(
+            "user",
+            "marked_by"
+        )
 
         data = []
         for att in qs:
@@ -1042,6 +1123,7 @@ class WarrantyReportView(APIView):
         })
 
         cards = Card.objects.select_related("customer").filter(
+            customer__region=request.user.region,
             warranty_start_date__isnull=False,
             warranty_end_date__isnull=False,
         )
@@ -1179,7 +1261,8 @@ class WarrantyReportByCardView(APIView):
 
         card = get_object_or_404(
             Card.objects.select_related("customer"),
-            pk=card_id
+            pk=card_id,
+            customer__region=request.user.region
         )
 
         if user.role in ("worker", "staff"):
@@ -1281,7 +1364,9 @@ class AMCReportView(APIView):
         # ----------------------------------
         # 1. Fetch cards
         # ----------------------------------
+
         cards = Card.objects.select_related("customer").filter(
+            customer__region=request.user.region,
             amc_start_date__isnull=False,
             amc_end_date__isnull=False,
         )
@@ -1430,7 +1515,8 @@ class AMCReportByCardView(APIView):
 
         card = get_object_or_404(
             Card.objects.select_related("customer"),
-            pk=card_id
+            pk=card_id,
+            customer__region=request.user.region
         )
 
         if user.role in ("worker", "staff"):
@@ -1513,7 +1599,10 @@ class UpcomingServicesReportView(APIView):
     def get(self, request):
         from_date = request.query_params.get("from")
         to_date = request.query_params.get("to")
-        qs = Service.objects.filter(status__in=("scheduled", "assigned", "pending"))
+        qs = Service.objects.filter(
+            card__customer__region=request.user.region,
+            status__in=("scheduled", "assigned", "pending")
+        )
         if from_date:
             try:
                 dt_from = parse_iso_datetime(from_date)
@@ -1556,7 +1645,9 @@ class ExportServicesCSVView(APIView):
         """Export services as CSV for given date range"""
         from_date = request.query_params.get("from")
         to_date = request.query_params.get("to")
-        qs = Service.objects.all()
+        qs = Service.objects.filter(
+            card__customer__region=request.user.region
+        )
         if from_date:
             qs = qs.filter(created_at__gte=from_date)
         if to_date:
@@ -1641,7 +1732,9 @@ class JobCardViewSet(viewsets.ModelViewSet):
 
         # 👑 ADMIN
         if user.role == "admin":
-            return qs
+            return qs.filter(
+                customer__region=user.region
+            )
 
         mine = self.request.query_params.get("mine") == "true"
         reinstall = self.request.query_params.get("reinstall") == "true"
@@ -2025,6 +2118,16 @@ class IndustrialAMCViewSet(viewsets.ModelViewSet):
     serializer_class = IndustrialAMCSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        if self.request.user.role == "admin":
+            return qs.filter(
+                card__customer__region=self.request.user.region
+            )
+
+        return qs.none()
+
 class IndustrialAMCReportView(APIView):
 
     permission_classes = [IsAuthenticated, IsAdmin]
@@ -2193,6 +2296,9 @@ class FollowUpCardsView(APIView):
                 )
             )
             .filter(last_service_date__isnull=False)
+        )
+        Card.objects.filter(
+            customer__region=request.user.region
         )
 
         results = []

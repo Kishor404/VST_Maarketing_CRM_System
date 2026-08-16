@@ -104,6 +104,7 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
+
         fields = [
             "id",
             "customer_code",
@@ -121,11 +122,19 @@ class AdminCreateUserSerializer(serializers.ModelSerializer):
             "is_available",
         ]
 
+        read_only_fields = [
+            "id",
+            "customer_code",
+            "region",
+        ]
+
     def create(self, validated_data):
         password = validated_data.pop("password")
+
         user = User(**validated_data)
         user.set_password(password)
         user.save()
+
         return user
 
 # user/serializers.py

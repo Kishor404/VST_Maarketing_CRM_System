@@ -116,43 +116,58 @@ class AdminUserListView(generics.ListAPIView):
     permission_classes = [IsAdmin]
 
     def get_queryset(self):
-        queryset = User.objects.all().order_by("-id")
+        admin = self.request.user
+
+        queryset = User.objects.filter(
+            region=admin.region
+        ).order_by("-id")
 
         phone = self.request.query_params.get("phone")
         role = self.request.query_params.get("role")
         customer_code = self.request.query_params.get("customer_code")
 
         if phone:
-            queryset = queryset.filter(phone__icontains=phone)
+            queryset = queryset.filter(
+                phone__icontains=phone
+            )
+
         if role:
-            queryset = queryset.filter(role__iexact=role)
+            queryset = queryset.filter(
+                role__iexact=role
+            )
+
         if customer_code:
-            queryset = queryset.filter(customer_code__iexact=customer_code)
+            queryset = queryset.filter(
+                customer_code__iexact=customer_code
+            )
 
         return queryset
 
-
-
+    
 # ------------------------------
 # Get user by ID (Admin)
 # ------------------------------
 class AdminUserDetailView(generics.RetrieveAPIView):
-    queryset = User.objects.all()
     serializer_class = UserProfileSerializer
     permission_classes = [IsAdmin]
     lookup_field = "id"
 
-
+    def get_queryset(self):
+        return User.objects.filter(
+            region=self.request.user.region
+        )
 # ------------------------------
 # Update user by ID (Admin)
 # ------------------------------
 class AdminUserUpdateView(generics.UpdateAPIView):
-    queryset = User.objects.all()
     serializer_class = AdminUserUpdateSerializer
     permission_classes = [IsAdmin]
     lookup_field = "id"
 
-
+    def get_queryset(self):
+        return User.objects.filter(
+            region=self.request.user.region
+        )
 # ------------------------------
 # Change user password (Admin)
 # No old password required
@@ -161,12 +176,20 @@ class AdminChangeUserPasswordView(APIView):
     permission_classes = [IsAdmin]
 
     def post(self, request, id):
-        user = get_object_or_404(User, id=id)
+        user = get_object_or_404(
+            User,
+            id=id,
+            region=request.user.region
+        )
 
-        serializer = AdminChangePasswordSerializer(data=request.data)
+        serializer = AdminChangePasswordSerializer(
+            data=request.data
+        )
         serializer.is_valid(raise_exception=True)
 
-        user.set_password(serializer.validated_data["new_password"])
+        user.set_password(
+            serializer.validated_data["new_password"]
+        )
         user.save()
 
         return Response(
@@ -174,18 +197,26 @@ class AdminChangeUserPasswordView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
 # user/views.py
 
 class AdminCreateUserView(generics.CreateAPIView):
     serializer_class = AdminCreateUserSerializer
     permission_classes = [IsAdmin]
 
+    def perform_create(self, serializer):
+        serializer.save(
+            region=self.request.user.region
+        )
+
 class AdminDeleteUserView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def delete(self, request, id):
-        user = get_object_or_404(User, id=id)
+        user = get_object_or_404(
+            User,
+            id=id,
+            region=request.user.region
+        )
 
         # Prevent admin from deleting himself (optional but recommended)
         if user.id == request.user.id:
