@@ -2113,20 +2113,17 @@ def generate_industrial_milestones(amc):
 
 
 class IndustrialAMCViewSet(viewsets.ModelViewSet):
-
-    queryset = IndustrialAMC.objects.select_related("card", "card__customer")
+    queryset = IndustrialAMC.objects.select_related(
+        "card",
+        "card__customer"
+    )
     serializer_class = IndustrialAMCSerializer
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get_queryset(self):
-        qs = super().get_queryset()
-
-        if self.request.user.role == "admin":
-            return qs.filter(
-                card__customer__region=self.request.user.region
-            )
-
-        return qs.none()
+        return self.queryset.filter(
+            card__customer__region=self.request.user.region
+        )
 
 class IndustrialAMCReportView(APIView):
 
@@ -2158,11 +2155,14 @@ class IndustrialAMCReportView(APIView):
         amcs = IndustrialAMC.objects.select_related(
             "card",
             "card__customer"
+        ).filter(
+            card__customer__region=request.user.region
         )
 
         # ✅ Fetch all services ONCE
         all_services = Service.objects.filter(
-            service_type="free"
+            service_type="free",
+            card__customer__region=request.user.region
         ).values(
             "card_id",
             "scheduled_at",
@@ -2274,41 +2274,58 @@ from rest_framework.response import Response
 from .serializers import FollowUpCardSerializer
 from datetime import timedelta
 
-class FollowUpCardsView(APIView):
 
+class FollowUpCardsView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
 
         try:
-            n_days = int(request.query_params.get("days", 30))
+            n_days = int(
+                request.query_params.get("days", 30)
+            )
         except ValueError:
-            return Response({"detail": "Invalid days parameter"}, status=400)
+            return Response(
+                {"detail": "Invalid days parameter"},
+                status=400
+            )
 
         today = timezone.localdate()
 
+        # 🔒 REGION ISOLATION
         cards = (
             Card.objects
+            .filter(
+                customer__region=request.user.region
+            )
             .annotate(
                 last_service_date=Max(
                     "services__scheduled_at",
-                    filter=models.Q(services__status="completed")
+                    filter=models.Q(
+                        services__status="completed"
+                    )
                 )
             )
-            .filter(last_service_date__isnull=False)
-        )
-        Card.objects.filter(
-            customer__region=request.user.region
+            .filter(
+                last_service_date__isnull=False
+            )
         )
 
         results = []
 
         for card in cards:
-            days_since = (today - card.last_service_date).days
+
+            days_since = (
+                today - card.last_service_date
+            ).days
 
             if days_since > n_days:
                 card.days_since_service = days_since
                 results.append(card)
 
-        serializer = FollowUpCardSerializer(results, many=True)
+        serializer = FollowUpCardSerializer(
+            results,
+            many=True
+        )
+
         return Response(serializer.data)

@@ -621,7 +621,7 @@ class IndustrialAMCSerializer(serializers.ModelSerializer):
         if request and request.user.role == "admin":
             if card.customer.region != request.user.region:
                 raise serializers.ValidationError(
-                    "Card belongs to another region."
+                    "You cannot select a card from another region."
                 )
 
         return card

@@ -4,6 +4,15 @@ from django.db import models
 
 class AdminReminder(models.Model):
 
+    REGION_CHOICES = [
+        ("rajapalayam", "Rajapalayam"),
+        ("ambasamuthiram", "Ambasamuthiram"),
+        ("sankarankovil", "Sankarankovil"),
+        ("tenkasi", "Tenkasi"),
+        ("tirunelveli", "Tirunelveli"),
+        ("chennai", "Chennai"),
+    ]
+
     customer = models.ForeignKey(
         'user.User',
         on_delete=models.CASCADE,
@@ -15,6 +24,12 @@ class AdminReminder(models.Model):
     # NEW optional fields
     name = models.CharField(max_length=255, null=True, blank=True)
     phone = models.CharField(max_length=20, null=True, blank=True)
+    region = models.CharField(
+        max_length=50,
+        choices=REGION_CHOICES,
+        db_index=True,
+        null=True
+    )
 
     reminder_dates = models.JSONField()
     triggered_dates = models.JSONField(default=list)

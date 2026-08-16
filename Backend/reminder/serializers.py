@@ -11,7 +11,7 @@ class AdminReminderSerializer(serializers.ModelSerializer):
     customer = UserSerializer(read_only=True)
 
     customer_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
+        queryset=User.objects.filter(role="customer"),
         write_only=True,
         source='customer',
         required=False,
@@ -39,6 +39,7 @@ class AdminReminderSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate(self, data):
+        request = self.context.get("request")
 
         customer = data.get("customer")
         name = data.get("name")
@@ -48,6 +49,15 @@ class AdminReminderSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Either customer OR both name and phone must be provided."
             )
+
+        # 🔒 Customer must belong to admin's region
+        if customer and request:
+            if customer.region != request.user.region:
+                raise serializers.ValidationError({
+                    "customer_id": (
+                        "Customer belongs to another region."
+                    )
+                })
 
         return data
 
