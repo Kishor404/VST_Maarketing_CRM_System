@@ -42,6 +42,12 @@ return (
                     </Link>
                 </div>
                 <div className="sidebar-item">
+                    <Link to="/head/industrialwarranty" className="sidebar-link">
+                        <MdHotelClass className="sidebar-item-icon" size={20}/>
+                        Industrial Warranty
+                    </Link>
+                </div>
+                <div className="sidebar-item">
                     <Link to="/head/amc" className="sidebar-link">
                         <MdFactCheck className="sidebar-item-icon" size={20}/>
                         AMC

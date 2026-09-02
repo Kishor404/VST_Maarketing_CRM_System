@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     CardViewSet, ServiceViewSet, ServiceEntryViewSet,
     FeedbackViewSet, AttendanceViewSet,
-    WarrantyReportView, UpcomingServicesReportView,
+    WarrantyReportView, IndustrialWarrantyReportView, UpcomingServicesReportView,
     AutoAssignRunView, ExportServicesCSVView, DevSendOtpView, WarrantyReportByCardView,
     AMCReportByCardView, AMCReportView, JobCardViewSet, IndustrialAMCViewSet, IndustrialAMCReportView, FollowUpCardsView
 )
@@ -29,6 +29,7 @@ urlpatterns = [
 
     # Admin reports & utilities
     path("reports/warranty/", WarrantyReportView.as_view(), name="report-warranty"),
+    path("reports/industrial-warranty/", IndustrialWarrantyReportView.as_view(), name="report-industrial-warranty"),
     path("reports/amc/", AMCReportView.as_view(), name="report-amc"),
     path("reports/upcoming-services/", UpcomingServicesReportView.as_view(), name="report-upcoming-services"),
     path("reports/warranty-report/by_card/",WarrantyReportByCardView.as_view(),name="warranty-report-by-card"),

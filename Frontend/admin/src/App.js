@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import "./App.css";
 import Attendance from './pages/attendance';
 import Warranty from './pages/warranty';
+import IndustrialWarranty from './pages/industrial_warranty';
 import Reminder from "./pages/reminder";
 import FollowUp from "./pages/followup";
 import AMC from "./pages/amc";
@@ -48,6 +49,7 @@ const App = () => {
           <Route path="industrialService" element={<IndustrialService />} />
           <Route path="jobcard" element={<JobCard />} />
           <Route path="warranty" element={<Warranty />} />
+          <Route path="industrialwarranty" element={<IndustrialWarranty />} />
           <Route path="amc" element={<AMC />} />
           <Route path="industrialamc" element={<IndustrialAMC />} />
           <Route path="attendance" element={<Attendance />} />

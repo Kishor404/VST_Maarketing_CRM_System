@@ -1126,6 +1126,146 @@ class WarrantyReportView(APIView):
             customer__region=request.user.region,
             warranty_start_date__isnull=False,
             warranty_end_date__isnull=False,
+            customer__is_industrial=False,
+        )
+
+        free_services = (
+            Service.objects
+            .filter(service_type="free")
+            .values("card_id", "scheduled_at", "assigned_to_id", "assigned_to__name")
+        )
+
+        services_by_card = {}
+        for s in free_services:
+            services_by_card.setdefault(s["card_id"], []).append({
+                "date": s["scheduled_at"],
+                "staff_id": s["assigned_to_id"],
+                "staff_name": s["assigned_to__name"]
+            })
+
+        for c in cards:
+            if c.card_type == "om":
+                continue
+
+            if c.warranty_start_date > last_day or c.warranty_end_date < first_day:
+                continue
+
+            milestones = []
+            current_milestone = c.warranty_start_date + relativedelta(months=3)
+
+            while current_milestone < c.warranty_end_date:
+                milestones.append(current_milestone)
+                current_milestone += relativedelta(months=3)
+
+            if c.warranty_end_date not in milestones:
+                milestones.append(c.warranty_end_date)
+
+            card_services = services_by_card.get(c.id, [])
+
+            for idx, m in enumerate(milestones, start=1):
+
+                if not (first_day <= m <= last_day):
+                    continue
+
+                # ---------------------------
+                # WARRANTY NOTE LOGIC
+                # ---------------------------
+                warranty_note = None
+
+                if idx == 1:
+                    warranty_note = "Spun Filter Change"
+                    totals["spun_filter"] += 1
+                elif idx == 2:
+                    warranty_note = "Spun Filter, Pre Carbon and Sediments Filters"
+                    totals["spun_filter"] += 1
+                    totals["pre_carbon"] += 1
+                    totals["sediments"] += 1
+                elif idx == 3:
+                    warranty_note = "Spun Filter Change"
+                    totals["spun_filter"] += 1
+                elif idx == 4:
+                    warranty_note = "Post Carbon filter"
+                    totals["post_carbon"] += 1
+
+                # after 1 year -> None
+
+                start_window = m - timedelta(days=30)
+                end_window = m + timedelta(days=30)
+
+                status = "notdone"
+                done_staff = None
+                scheduled_date = None
+
+                for svc in card_services:
+                    svc_date = svc["date"]
+
+                    if svc_date and start_window <= svc_date <= end_window:
+                        status = "done"
+                        scheduled_date = svc_date.isoformat() if svc_date else None
+                        done_staff = {
+                            "staff_id": svc["staff_id"],
+                            "staff_name": svc["staff_name"],
+                        }
+                        break
+
+                results.append({
+                    "card_id": c.id,
+                    "card_model": c.model,
+                    "customer_id": c.customer.id,
+                    "customer_name": c.customer.name,
+                    "customer_phone": c.customer.phone,
+                    "address": c.address,
+                    "city": c.city,
+                    "milestone": m.isoformat(),
+                    "status": status,
+                    "staff": done_staff,
+                    "scheduled_date": scheduled_date,
+                    "warranty_note": warranty_note,  # ✅ NEW FIELD
+                    "allmilestones": [m.isoformat() for m in milestones],
+                })
+
+        return Response({
+            "report_data": results,
+            "summary_totals": totals
+        })
+
+from datetime import datetime, timedelta
+from calendar import monthrange
+from dateutil.relativedelta import relativedelta
+
+from django.utils import timezone
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from collections import Counter
+
+class IndustrialWarrantyReportView(APIView):
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        month = request.query_params.get("month")
+        if not month:
+            today = timezone.localdate()
+            month = f"{today.year}-{today.month:02d}"
+
+        year, mon = map(int, month.split("-"))
+
+        first_day = datetime(year, mon, 1).date()
+        last_day = datetime(year, mon, monthrange(year, mon)[1]).date()
+
+        results = []
+
+        totals = Counter({
+            "spun_filter": 0,
+            "pre_carbon": 0,
+            "sediments": 0,
+            "post_carbon": 0,
+        })
+
+        cards = Card.objects.select_related("customer").filter(
+            customer__region=request.user.region,
+            warranty_start_date__isnull=False,
+            warranty_end_date__isnull=False,
+            customer__is_industrial=True,
         )
 
         free_services = (
