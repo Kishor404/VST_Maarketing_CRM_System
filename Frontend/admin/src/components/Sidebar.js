@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { FaUsers, FaIdBadge, FaEdit, FaInfo, FaAddressCard, FaPlus, FaTicketAlt, FaStickyNote, FaAdversal, FaBook, FaArrowsAltH, FaLocationArrow, FaNetworkWired, FaReceipt } from "react-icons/fa";
-import { MdAccountCircle, MdDataObject, MdFactCheck, MdFactory, MdRoomPreferences, MdRoomService, MdSecurity, MdTag, MdTagFaces } from "react-icons/md";
+import { MdAccountCircle, MdDataObject, MdFactCheck, MdFactory, MdRoomPreferences, MdRoomService, MdSecurity, MdTag, MdTagFaces, MdHandshake } from "react-icons/md";
 import { MdHotelClass } from "react-icons/md";
 import '../styles/sidebar.css';
 import Logo from '../assets/logo.jpg';
@@ -43,7 +43,7 @@ return (
                 </div>
                 <div className="sidebar-item">
                     <Link to="/head/industrialwarranty" className="sidebar-link">
-                        <MdHotelClass className="sidebar-item-icon" size={20}/>
+                        <MdHandshake className="sidebar-item-icon" size={20}/>
                         Industrial Warranty
                     </Link>
                 </div>
