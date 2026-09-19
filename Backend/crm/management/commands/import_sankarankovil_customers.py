@@ -18,7 +18,7 @@ User = get_user_model()
 class Command(BaseCommand):
     help = "Import Sankarankovil customers and cards from Excel"
 
-    REGION = "sankarankovil"
+    REGION = "tenkasi"
 
     # =========================================================
     # COMMAND ARGUMENTS
