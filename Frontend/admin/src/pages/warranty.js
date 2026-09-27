@@ -615,13 +615,13 @@ const Warranty = () => {
 
                       {card.status === 'BookedButNotCompleted' && (
                         <span className="warranty-status warranty-status-booked">
-                          Booked But Not Completed
+                          Booked
                         </span>
                       )}
 
                       {card.status === 'notdone' && (
                         <span className="warranty-status warranty-status-notdone">
-                          Not Booked
+                          Pending
                         </span>
                       )}
                     </td>
