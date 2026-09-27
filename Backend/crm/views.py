@@ -1104,6 +1104,7 @@ class WarrantyReportView(APIView):
 
     def get(self, request):
         month = request.query_params.get("month")
+
         if not month:
             today = timezone.localdate()
             month = f"{today.year}-{today.month:02d}"
@@ -1111,7 +1112,11 @@ class WarrantyReportView(APIView):
         year, mon = map(int, month.split("-"))
 
         first_day = datetime(year, mon, 1).date()
-        last_day = datetime(year, mon, monthrange(year, mon)[1]).date()
+        last_day = datetime(
+            year,
+            mon,
+            monthrange(year, mon)[1]
+        ).date()
 
         results = []
 
@@ -1122,106 +1127,264 @@ class WarrantyReportView(APIView):
             "post_carbon": 0,
         })
 
-        cards = Card.objects.select_related("customer").filter(
+        cards = Card.objects.select_related(
+            "customer"
+        ).filter(
             customer__region=request.user.region,
             warranty_start_date__isnull=False,
             warranty_end_date__isnull=False,
             customer__is_industrial=False,
         )
 
-        free_services = (
+        # ONLY warranty services
+        warranty_services = (
             Service.objects
-            .filter(service_type="free")
-            .values("card_id", "scheduled_at", "assigned_to_id", "assigned_to__name")
+            .filter(
+                is_warranty_service=True
+            )
+            .exclude(
+                status="cancelled"
+            )
+            .select_related("assigned_to")
+            .values(
+                "id",
+                "card_id",
+                "scheduled_at",
+                "preferred_date",
+                "assigned_to_id",
+                "assigned_to__name",
+                "status",
+                "description",
+                "service_type",
+                "visit_type",
+                "is_warranty_service",
+                "created_at",
+                "updated_at",
+            )
         )
 
         services_by_card = {}
-        for s in free_services:
-            services_by_card.setdefault(s["card_id"], []).append({
-                "date": s["scheduled_at"],
-                "staff_id": s["assigned_to_id"],
-                "staff_name": s["assigned_to__name"]
-            })
+
+        for service in warranty_services:
+            services_by_card.setdefault(
+                service["card_id"],
+                []
+            ).append(service)
 
         for c in cards:
+
             if c.card_type == "om":
                 continue
 
-            if c.warranty_start_date > last_day or c.warranty_end_date < first_day:
+            if (
+                c.warranty_start_date > last_day
+                or c.warranty_end_date < first_day
+            ):
                 continue
 
             milestones = []
-            current_milestone = c.warranty_start_date + relativedelta(months=3)
+
+            current_milestone = (
+                c.warranty_start_date
+                + relativedelta(months=3)
+            )
 
             while current_milestone < c.warranty_end_date:
                 milestones.append(current_milestone)
-                current_milestone += relativedelta(months=3)
+
+                current_milestone += relativedelta(
+                    months=3
+                )
 
             if c.warranty_end_date not in milestones:
                 milestones.append(c.warranty_end_date)
 
-            card_services = services_by_card.get(c.id, [])
+            card_services = services_by_card.get(
+                c.id,
+                []
+            )
 
-            for idx, m in enumerate(milestones, start=1):
+            for idx, milestone in enumerate(
+                milestones,
+                start=1
+            ):
 
-                if not (first_day <= m <= last_day):
+                if not (
+                    first_day <= milestone <= last_day
+                ):
                     continue
 
                 # ---------------------------
-                # WARRANTY NOTE LOGIC
+                # WARRANTY NOTE
                 # ---------------------------
+
                 warranty_note = None
 
                 if idx == 1:
                     warranty_note = "Spun Filter Change"
                     totals["spun_filter"] += 1
+
                 elif idx == 2:
-                    warranty_note = "Spun Filter, Pre Carbon and Sediments Filters"
+                    warranty_note = (
+                        "Spun Filter, Pre Carbon "
+                        "and Sediments Filters"
+                    )
+
                     totals["spun_filter"] += 1
                     totals["pre_carbon"] += 1
                     totals["sediments"] += 1
+
                 elif idx == 3:
                     warranty_note = "Spun Filter Change"
                     totals["spun_filter"] += 1
+
                 elif idx == 4:
                     warranty_note = "Post Carbon filter"
                     totals["post_carbon"] += 1
 
-                # after 1 year -> None
+                # ---------------------------
+                # SERVICE WINDOW
+                # ---------------------------
 
-                start_window = m - timedelta(days=30)
-                end_window = m + timedelta(days=30)
+                start_window = (
+                    milestone - timedelta(days=30)
+                )
+
+                end_window = (
+                    milestone + timedelta(days=30)
+                )
+
+                matching_services = [
+                    service
+                    for service in card_services
+                    if service["scheduled_at"]
+                    and start_window
+                    <= service["scheduled_at"]
+                    <= end_window
+                ]
 
                 status = "notdone"
-                done_staff = None
-                scheduled_date = None
 
-                for svc in card_services:
-                    svc_date = svc["date"]
+                selected_service = None
 
-                    if svc_date and start_window <= svc_date <= end_window:
-                        status = "done"
-                        scheduled_date = svc_date.isoformat() if svc_date else None
-                        done_staff = {
-                            "staff_id": svc["staff_id"],
-                            "staff_name": svc["staff_name"],
-                        }
-                        break
+                # --------------------------------
+                # 1. COMPLETED SERVICE FIRST
+                # --------------------------------
+
+                completed_services = [
+                    service
+                    for service in matching_services
+                    if service["status"] == "completed"
+                ]
+
+                if completed_services:
+
+                    selected_service = sorted(
+                        completed_services,
+                        key=lambda x: x["scheduled_at"] or milestone,
+                        reverse=True
+                    )[0]
+
+                    status = "done"
+
+                # --------------------------------
+                # 2. BOOKED BUT NOT COMPLETED
+                # --------------------------------
+
+                elif matching_services:
+
+                    selected_service = sorted(
+                        matching_services,
+                        key=lambda x: x["scheduled_at"] or milestone,
+                        reverse=True
+                    )[0]
+
+                    status = "BookedButNotCompleted"
+
+                # --------------------------------
+                # SERVICE DATA FOR UI
+                # --------------------------------
+
+                service_data = None
+
+                if selected_service:
+
+                    service_data = {
+                        "id": selected_service["id"],
+                        "status": selected_service["status"],
+                        "service_type": selected_service["service_type"],
+                        "description": selected_service["description"],
+                        "visit_type": selected_service["visit_type"],
+                        "preferred_date": (
+                            selected_service["preferred_date"].isoformat()
+                            if selected_service["preferred_date"]
+                            else None
+                        ),
+                        "scheduled_at": (
+                            selected_service["scheduled_at"].isoformat()
+                            if selected_service["scheduled_at"]
+                            else None
+                        ),
+                        "assigned_to": selected_service["assigned_to_id"],
+                        "assigned_to_name": selected_service["assigned_to__name"],
+                        "is_warranty_service": True,
+                        "created_at": (
+                            selected_service["created_at"].isoformat()
+                            if selected_service["created_at"]
+                            else None
+                        ),
+                        "updated_at": (
+                            selected_service["updated_at"].isoformat()
+                            if selected_service["updated_at"]
+                            else None
+                        ),
+                    }
 
                 results.append({
                     "card_id": c.id,
                     "card_model": c.model,
+
                     "customer_id": c.customer.id,
                     "customer_name": c.customer.name,
                     "customer_phone": c.customer.phone,
+
                     "address": c.address,
                     "city": c.city,
-                    "milestone": m.isoformat(),
+
+                    "milestone": milestone.isoformat(),
+
                     "status": status,
-                    "staff": done_staff,
-                    "scheduled_date": scheduled_date,
-                    "warranty_note": warranty_note,  # ✅ NEW FIELD
-                    "allmilestones": [m.isoformat() for m in milestones],
+
+                    "staff": (
+                        {
+                            "staff_id": selected_service["assigned_to_id"],
+                            "staff_name": selected_service["assigned_to__name"],
+                        }
+                        if selected_service
+                        else None
+                    ),
+
+                    "scheduled_date": (
+                        selected_service["scheduled_at"].isoformat()
+                        if selected_service
+                        and selected_service["scheduled_at"]
+                        else None
+                    ),
+
+                    "warranty_note": warranty_note,
+
+                    "service_id": (
+                        selected_service["id"]
+                        if selected_service
+                        else None
+                    ),
+
+                    "service": service_data,
+
+                    "allmilestones": [
+                        m.isoformat()
+                        for m in milestones
+                    ],
                 })
 
         return Response({

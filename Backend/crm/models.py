@@ -108,7 +108,7 @@ class Service(models.Model):
     card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name="services")
     requested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="requested_services")
     service_type = models.CharField(max_length=20, choices=SERVICE_TYPE, default="normal", db_index=True)
-    status = models.CharField(max_length=20, choices=SERVICE_STATUS, default="pending", db_index=True)
+    status = models.CharField(max_length=30, choices=SERVICE_STATUS, default="pending", db_index=True)
     description = models.TextField(blank=True)
 
     preferred_date = models.DateField(null=True, blank=True)
@@ -117,6 +117,11 @@ class Service(models.Model):
 
     is_paid = models.BooleanField(default=False)
     amount_charged = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)])
+
+    is_warranty_service = models.BooleanField(
+        default=False,
+        db_index=True
+    )
 
     otp_hash = models.CharField(max_length=128, blank=True, null=True)
     otp_phone = models.CharField(max_length=128, blank=True, null=True)

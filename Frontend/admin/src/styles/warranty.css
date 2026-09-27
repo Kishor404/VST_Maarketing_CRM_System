@@ -1,5 +1,218 @@
 /* src/pages/Warranty.css */
 
+
+/* =========================
+   WARRANTY ROW COLORS
+   ========================= */
+
+.warranty-table tbody tr.row-done {
+  background-color: #dcfce7;
+}
+
+.warranty-table tbody tr.row-booked {
+  background-color: #dbeafe;
+}
+
+.warranty-table tbody tr.row-notdone {
+  background-color: #ffffff;
+}
+
+.warranty-table tbody tr.row-done:hover {
+  background-color: #bbf7d0;
+}
+
+.warranty-table tbody tr.row-booked:hover {
+  background-color: #bfdbfe;
+}
+
+.warranty-clickable-row {
+  cursor: pointer;
+}
+
+
+/* =========================
+   STATUS BADGES
+   ========================= */
+
+.warranty-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.warranty-status-done {
+  color: #166534;
+  background: #bbf7d0;
+}
+
+.warranty-status-booked {
+  color: #1d4ed8;
+  background: #bfdbfe;
+}
+
+.warranty-status-notdone {
+  color: #6b7280;
+  background: #f3f4f6;
+}
+
+
+/* =========================
+   SERVICE MODAL
+   ========================= */
+
+.service-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+
+  padding: 20px;
+}
+
+.service-modal {
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+
+  background: #ffffff;
+  border-radius: 12px;
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+
+  overflow: hidden;
+}
+
+.service-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 22px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.service-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.modal-close-btn {
+  border: none;
+  background: transparent;
+
+  font-size: 28px;
+  cursor: pointer;
+
+  line-height: 1;
+}
+
+.service-modal-body {
+  padding: 22px;
+
+  max-height: 65vh;
+  overflow-y: auto;
+}
+
+.service-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  margin-bottom: 24px;
+}
+
+.service-info-grid label,
+.form-group label {
+  display: block;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  color: #6b7280;
+
+  margin-bottom: 5px;
+}
+
+.service-info-grid strong {
+  display: block;
+
+  font-size: 14px;
+  color: #111827;
+}
+
+.service-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+
+  padding: 9px 11px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.service-value,
+.service-description {
+  padding: 10px 12px;
+
+  background: #f9fafb;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+
+  font-size: 14px;
+}
+
+.service-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  padding: 16px 22px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+
+  border: none;
+  border-radius: 6px;
+
+  padding: 9px 15px;
+
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
+
+
 .warranty-container {
   padding: 50px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

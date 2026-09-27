@@ -321,7 +321,7 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = [
             "id", "card", "card_data","requested_by", "customer_data", "service_type", "status", "description",
-            "preferred_date", "scheduled_at", "assigned_to", "assigned_to_detail",
+            "preferred_date", "scheduled_at", "assigned_to", "assigned_to_detail", "is_warranty_service",
             "is_paid", "amount_charged", "visit_type", "next_service_date",
             "entries", "feedback", "otp_phone", "otp_requested_at", "otp_requested_location", "created_at",
         ]
@@ -491,6 +491,11 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
     preferred_date = serializers.DateField(required=False, allow_null=True)
     scheduled_at = serializers.DateField(required=False, allow_null=True)  # ✅ DATE ONLY
 
+    is_warranty_service = serializers.BooleanField(
+        required=False,
+        default=False
+    )
+
     class Meta:
         model = Service
         fields = [
@@ -502,6 +507,7 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
             "visit_type",
             "requested_by",
             "assigned_to",
+            "is_warranty_service",
         ]
 
     def validate(self, data):
@@ -574,6 +580,11 @@ class ServiceAdminCreateSerializer(serializers.ModelSerializer):
             preferred_date=validated_data["preferred_date"],
             scheduled_at=validated_data["scheduled_at"],  # ✅ DATE
             visit_type=validated_data.get("visit_type", "onsite"),
+
+            is_warranty_service=validated_data.get(
+                "is_warranty_service",
+                False
+            ),
 
             # 🔥 FORCE STATUS
             status="assigned",
