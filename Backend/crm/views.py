@@ -2516,29 +2516,49 @@ class IndustrialAMCReportView(APIView):
                 # =====================
                 # Service Matching
                 # =====================
+
+                status = "notdone"
+                done_staff = None
+                scheduled_date = None
+
+                matching_services = []
+
                 for svc in services:
 
                     svc_date = svc["scheduled_at"]
 
+                    if not svc_date:
+                        continue
+
                     # Normalize datetime → date
-                    if svc_date:
-                        svc_date = (
-                            svc_date.date()
-                            if hasattr(svc_date, "date")
-                            else svc_date
-                        )
+                    if hasattr(svc_date, "date"):
+                        svc_date = svc_date.date()
 
-                    if svc_date and start_window <= svc_date <= end_window:
+                    # Find the nearest milestone for this service
+                    nearest_milestone = min(
+                        milestones,
+                        key=lambda milestone: abs((svc_date - milestone).days)
+                    )
 
-                        status = "done"
-                        scheduled_date = svc_date.isoformat()
+                    # This service belongs only to its nearest milestone
+                    if nearest_milestone == m:
+                        matching_services.append((svc_date, svc))
 
-                        done_staff = {
-                            "staff_id": svc["assigned_to_id"],
-                            "staff_name": svc["assigned_to__name"],
-                        }
+                if matching_services:
 
-                        break
+                    # Select the closest service date to this milestone
+                    svc_date, svc = min(
+                        matching_services,
+                        key=lambda item: abs((item[0] - m).days)
+                    )
+
+                    status = "done"
+                    scheduled_date = svc_date.isoformat()
+
+                    done_staff = {
+                        "staff_id": svc["assigned_to_id"],
+                        "staff_name": svc["assigned_to__name"],
+                    }
 
                 results.append({
 
